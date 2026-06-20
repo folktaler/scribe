@@ -1,0 +1,1958 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Scribe</title>
+<link rel="manifest" href="manifest.webmanifest" />
+<meta name="theme-color" content="#7c5cff" />
+<link rel="apple-touch-icon" href="scribe-icon.svg" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Serif:wght@400;500&family=Inter:wght@400;500&family=Atkinson+Hyperlegible:wght@400;700&family=Newsreader:wght@400;500&family=Caveat:wght@400;500&family=Lora:wght@400;500&family=Shantell+Sans:wght@400;500&family=Lexend:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://unpkg.com/@excalidraw/excalidraw@0.17.6/dist/excalidraw.production.min.css" />
+<style>
+  :root {
+    --bg: #fafaf7; --fg: #1d1d1b; --muted: #8a8a85; --accent: #b07d2e;
+    --rule: #e6e4dc; --card-bg: #ffffff; --shadow: 0 8px 24px rgba(0,0,0,.10);
+  }
+  [data-theme="dark"] {
+    --bg: #282c34; --fg: #abb2bf; --muted: #5c6370; --accent: #61afef;
+    --rule: #3b4048; --card-bg: #21252b; --shadow: 0 8px 24px rgba(0,0,0,.45);
+  }
+  [data-theme="sepia"] {
+    --bg: #f3ead5; --fg: #3a2e1f; --muted: #8a7a5a; --accent: #9b6a1f;
+    --rule: #ddd1b3; --card-bg: #fbf4e0; --shadow: 0 8px 24px rgba(80,60,30,.12);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--fg);
+    font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace; font-size: 16px; line-height: 1.7; }
+  #topbar { position: fixed; top: 0; left: 0; right: 0; height: 42px; z-index: 6;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 10px; gap: 8px; background: var(--bg); border-bottom: 1px solid var(--rule);
+    font-size: 12px; color: var(--muted); }
+  .row { display: flex; align-items: center; gap: 10px; }
+  #filename { color: var(--fg); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #topleft { flex: 1; min-width: 0; }
+  #topright { flex-shrink: 0; gap: 7px; }
+  .btn.ic { min-width: 28px; padding: 4px 6px; text-align: center; }
+  #bottomstrip { position: fixed; bottom: 0; left: 0; right: 0; height: 30px; z-index: 5;
+    display: flex; align-items: center; justify-content: space-between; padding: 0 12px;
+    background: var(--bg); border-top: 1px solid var(--rule); font-size: 11px; color: var(--muted); }
+  #drawhint b { color: var(--fg); }
+  #fontSelect { background: transparent; color: var(--fg); border: 1px solid var(--rule);
+    border-radius: 4px; padding: 2px 6px; font-family: inherit; font-size: 11px; cursor: pointer; }
+  #fontSelect:hover { border-color: var(--accent); }
+  body[data-font="mono"] .cm-content { font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace; }
+  body[data-font="serif"] .cm-content { font-family: "IBM Plex Serif", Georgia, serif; }
+  body[data-font="lora"] .cm-content { font-family: "Lora", Georgia, serif; }
+  body[data-font="newsreader"] .cm-content { font-family: "Newsreader", Georgia, serif; }
+  body[data-font="sans"] .cm-content { font-family: "Inter", system-ui, sans-serif; }
+  body[data-font="atkinson"] .cm-content { font-family: "Atkinson Hyperlegible", system-ui, sans-serif; }
+  body[data-font="lexend"] .cm-content { font-family: "Lexend", system-ui, sans-serif; }
+  /* Comfortable spacing — evidence-based reading-comfort mode (wider letter/word/line spacing reduces visual crowding) */
+  body.roomy .cm-content { line-height: 2 !important; }
+  body.roomy .cm-line { letter-spacing: .045em; word-spacing: .2em; }
+  body[data-font="shantell"] .cm-content { font-family: "Shantell Sans", "Comic Sans MS", cursive; font-size: 17px; }
+  body[data-font="caveat"] .cm-content { font-family: "Caveat", cursive; font-size: 20px; line-height: 1.5; }
+  .btn { background: none; border: 1px solid var(--rule); border-radius: 5px;
+    padding: 4px 10px; color: var(--fg); font-family: inherit; font-size: 12px;
+    cursor: pointer; transition: background .15s, border-color .15s; }
+  .btn:hover { background: var(--rule); }
+  .btn.accent { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .btn.accent:hover { opacity: .9; background: var(--accent); }
+  #editor { position: absolute; top: 76px; bottom: 30px; left: 0; right: 0; overflow: auto; }
+  #btn-dest.on { color: var(--accent); border-color: var(--accent); }
+  #composeBar { position: fixed; top: 42px; left: 0; right: 0; height: 34px; z-index: 5;
+    display: flex; align-items: center; gap: 8px; padding: 0 10px;
+    background: var(--bg); border-bottom: 1px solid var(--rule); }
+  #composeLabel { flex-shrink: 0; font-size: 11px; color: var(--accent); font-weight: 600; letter-spacing: .02em; }
+  #composeFmt { flex: 1; min-width: 0; display: flex; align-items: center; gap: 1px; overflow-x: auto;
+    scrollbar-width: thin; scrollbar-color: var(--rule) transparent; }
+  #composeFmt::-webkit-scrollbar { height: 6px; }
+  #composeFmt::-webkit-scrollbar-thumb { background: var(--rule); border-radius: 3px; }
+  #composeFmt::-webkit-scrollbar-track { background: transparent; }
+  #composeFmt button { background: none; border: 0; border-radius: 4px; padding: 4px 7px; min-width: 26px; flex-shrink: 0;
+    color: var(--fg); font-family: inherit; font-size: 13px; cursor: pointer; }
+  #composeFmt button:hover { background: var(--rule); }
+  #composeFmt button b { font-weight: 700; } #composeFmt button i { font-style: italic; } #composeFmt button s { text-decoration: line-through; }
+  #composeFmt .fmtsep { width: 1px; height: 16px; background: var(--rule); margin: 0 3px; flex-shrink: 0; }
+  #composeCopy { flex-shrink: 0; }
+  .cm-editor { background: var(--bg); color: var(--fg); height: 100%; }
+  .cm-editor.cm-focused { outline: none; }
+  .cm-scroller { font-family: inherit; }
+  .cm-content { max-width: 70ch; margin: 0 auto; padding: 40px 20px 200px; caret-color: var(--accent); }
+  .cm-cursor { border-left: 2px solid var(--accent) !important; }
+  .cm-gutters { display: none; }
+  ::selection { background: rgba(176,125,46,.2); }
+  /* slim, unobtrusive scrollbars */
+  .cm-scroller, #editor, #tasksList, #overlay-canvas { scrollbar-width: thin; scrollbar-color: var(--rule) transparent; }
+  .cm-scroller::-webkit-scrollbar, #editor::-webkit-scrollbar, #tasksList::-webkit-scrollbar { width: 10px; height: 10px; }
+  .cm-scroller::-webkit-scrollbar-track, #editor::-webkit-scrollbar-track, #tasksList::-webkit-scrollbar-track { background: transparent; }
+  .cm-scroller::-webkit-scrollbar-thumb, #editor::-webkit-scrollbar-thumb, #tasksList::-webkit-scrollbar-thumb {
+    background: var(--rule); border-radius: 6px; border: 3px solid transparent; background-clip: padding-box; }
+  .cm-scroller::-webkit-scrollbar-thumb:hover, #editor::-webkit-scrollbar-thumb:hover, #tasksList::-webkit-scrollbar-thumb:hover {
+    background: var(--muted); background-clip: padding-box; }
+
+  /* draw block (collapsed, inline) */
+  .drawblock { margin: 14px 0; border: 1px solid var(--rule); border-radius: 8px;
+    background: var(--card-bg); overflow: hidden; box-shadow: var(--shadow); }
+  .drawblock-bar { display: flex; align-items: center; justify-content: space-between;
+    padding: 7px 12px; border-bottom: 1px solid var(--rule); font-size: 12px; color: var(--muted);
+    font-family: "IBM Plex Mono", monospace; }
+  .drawblock-bar .ttl { color: var(--fg); display: flex; align-items: center; gap: 7px; }
+  .drawblock-bar .acts { display: flex; gap: 6px; }
+  .drawblock-bar .acts button { background: none; border: 1px solid var(--rule);
+    border-radius: 5px; padding: 3px 0; min-width: 26px; text-align: center; font-size: 12px; color: var(--muted);
+    font-family: inherit; cursor: pointer; }
+  .drawblock-bar .acts button:hover { background: var(--rule); color: var(--fg); }
+  .drawblock-bar .acts .del { color: #e54848; }
+  .drawblock-bar .acts .del:hover { background: #e54848; color: #fff; border-color: #e54848; }
+  .drawblock-preview { display: flex; align-items: center; justify-content: center;
+    min-height: 120px; max-height: 320px; padding: 12px; cursor: pointer; background: transparent; }
+  .drawblock-preview svg { max-width: 100%; max-height: 296px; height: auto; }
+  /* dark mode: flip the drawing's luminance so dark strokes read as light on the dark card */
+  [data-theme="dark"] .drawblock-preview svg { filter: invert(0.9) hue-rotate(180deg); }
+  .drawblock-empty { color: var(--muted); font-size: 13px; padding: 32px; text-align: center; cursor: pointer; }
+  .drawblock-grip { cursor: grab; user-select: none; }
+  .drawblock-grip:active { cursor: grabbing; }
+  .drawblock-name { cursor: text; outline: none; padding: 1px 6px; border-radius: 4px; color: var(--fg); }
+  .drawblock-name:hover, .drawblock-name:focus { background: var(--rule); }
+  .drawblock.dragging { opacity: .4; }
+  .drag-indicator { position: fixed; height: 3px; background: var(--accent); border-radius: 2px;
+    z-index: 45; display: none; pointer-events: none; box-shadow: 0 0 0 1px rgba(176,125,46,.3); }
+  body.dragging-block, body.dragging-block * { cursor: grabbing !important; user-select: none !important; }
+
+  /* expanded overlay */
+  #overlay { position: fixed; inset: 0; z-index: 50; background: rgba(20,20,18,.45);
+    display: none; flex-direction: column; }
+  #overlay.show { display: flex; }
+  #overlay-bar { height: 46px; display: flex; align-items: center; justify-content: space-between;
+    padding: 0 14px; background: var(--bg); border-bottom: 1px solid var(--rule); }
+  #overlay-bar .ttl { font-size: 13px; color: var(--muted); cursor: text; outline: none;
+    padding: 2px 7px; border-radius: 4px; max-width: 55vw; overflow: hidden; white-space: nowrap; }
+  #overlay-bar .ttl:hover, #overlay-bar .ttl:focus { background: var(--rule); color: var(--fg); }
+  #overlay-canvas { flex: 1; min-height: 0; background: var(--bg); }
+  /* Excalidraw hides tool number shortcuts at narrow widths — force them back on */
+  .excalidraw .ToolIcon__keybinding { display: block !important; }
+  .gram-underline { text-decoration: underline wavy var(--accent); text-decoration-skip-ink: none;
+    text-underline-offset: 3px; cursor: pointer; }
+  #grammar-status { display: inline-flex; align-items: center; font-size: 11px; color: var(--muted);
+    cursor: pointer; border-radius: 4px; padding: 2px 4px; }
+  #grammar-status:hover { background: var(--rule); }
+  .gram-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+    background: var(--muted); margin-right: 5px; }
+  .gram-dot.loading { background: #d4a35a; animation: gpulse 1s infinite; }
+  .gram-dot.harper { background: #378add; }   /* blue = Harper (offline) */
+  .gram-dot.lt { background: #3cba54; }        /* green = LanguageTool */
+  .gram-dot.error { background: #e54848; }
+  @keyframes gpulse { 0%,100% { opacity: .4; } 50% { opacity: .9; } }
+  .task-check { display: inline-block; width: 17px; height: 17px; box-sizing: border-box; flex-shrink: 0;
+    border: 2px solid var(--muted); border-radius: 4px; vertical-align: -4px; margin-right: 7px;
+    cursor: pointer; user-select: none; position: relative; transition: border-color .12s; }
+  .task-check:hover { border-color: var(--accent); }
+  .task-check.done { background: var(--accent); border-color: var(--accent); }
+  .task-check.done::after { content: "✓"; position: absolute; inset: 0; display: flex;
+    align-items: center; justify-content: center; font-size: 12px; line-height: 1; color: #fff; }
+  .task-line { background: color-mix(in srgb, var(--accent) 9%, transparent); border-radius: 4px; }
+  #fmtBar { position: fixed; z-index: 36; display: none; align-items: center; gap: 1px; max-width: 94vw; overflow-x: auto;
+    background: var(--card-bg); border: 1px solid var(--rule); border-radius: 7px; box-shadow: var(--shadow); padding: 3px; }
+  #fmtBar.show { display: flex; }
+  #fmtBar button { background: none; border: 0; border-radius: 4px; padding: 4px 7px; min-width: 26px; flex-shrink: 0;
+    color: var(--fg); font-family: inherit; font-size: 13px; cursor: pointer; }
+  #fmtBar button:hover { background: var(--rule); }
+  #fmtBar .fmtsep { width: 1px; height: 16px; background: var(--rule); margin: 0 3px; flex-shrink: 0; }
+  #fmtBar button b { font-weight: 700; } #fmtBar button i { font-style: italic; } #fmtBar button s { text-decoration: line-through; }
+  #tasksPanel { position: fixed; top: 42px; bottom: 30px; right: 0; width: min(320px, 82vw); z-index: 12;
+    background: var(--card-bg); border-left: 1px solid var(--rule); box-shadow: var(--shadow); display: none; flex-direction: column; }
+  #tasksPanel.show { display: flex; }
+  #tasksPanel .tk-head { display: flex; align-items: center; justify-content: space-between;
+    padding: 9px 12px; border-bottom: 1px solid var(--rule); font-size: 13px; color: var(--fg); }
+  #tasksPanel .tk-head small { color: var(--muted); margin-left: 6px; }
+  #tasksList { list-style: none; margin: 0; padding: 5px 0; overflow: auto; flex: 1; }
+  #tasksList li { display: flex; align-items: flex-start; gap: 8px; padding: 7px 13px; font-size: 13px; line-height: 1.5; }
+  #tasksList li:hover { background: var(--rule); }
+  #tasksList .tk-text { cursor: pointer; flex: 1; word-break: break-word; color: var(--fg); }
+  #tasksList .tk-text.done { color: var(--muted); }
+  #tasksList .tk-empty { color: var(--muted); padding: 16px 13px; text-align: center; cursor: default; }
+  #tasksPanel .tk-foot { padding: 8px 13px; border-top: 1px solid var(--rule); font-size: 12px; color: var(--muted); }
+  #tasksPanel .tk-foot label { display: flex; align-items: center; gap: 6px; cursor: pointer; }
+  #tasksPanel .tk-foot input { accent-color: var(--accent); }
+  #fixesPanel { position: fixed; top: 42px; bottom: 30px; right: 0; width: min(340px, 82vw); z-index: 12;
+    background: var(--card-bg); border-left: 1px solid var(--rule); box-shadow: var(--shadow); display: none; flex-direction: column; }
+  #fixesPanel.show { display: flex; }
+  #fixesPanel .tk-head { display: flex; align-items: center; justify-content: space-between; padding: 9px 12px; border-bottom: 1px solid var(--rule); font-size: 13px; color: var(--fg); }
+  #fixesPanel .tk-head small { color: var(--muted); margin-left: 6px; }
+  #fixesList { list-style: none; margin: 0; padding: 5px 0; overflow: auto; flex: 1; }
+  #fixesList li { padding: 8px 13px; font-size: 13px; line-height: 1.5; border-bottom: 1px solid var(--rule); }
+  #fixesList li:last-child { border-bottom: 0; }
+  #fixesList .fx-before { color: var(--muted); text-decoration: line-through; }
+  #fixesList .fx-after { color: var(--accent); }
+  #fixesList .fx-why { display: block; color: var(--muted); font-size: 11px; margin-top: 2px; }
+  #fixesList .tk-empty { color: var(--muted); padding: 16px 13px; text-align: center; }
+  #fixesPanel .tk-foot { padding: 8px 13px; border-top: 1px solid var(--rule); }
+  #fixesPanel .tk-foot .btn { width: 100%; }
+  /* ----- snippets: the / picker ----- */
+  #slashMenu { position: fixed; z-index: 45; min-width: 244px; max-width: 360px; background: var(--card-bg);
+    border: 1px solid var(--rule); border-radius: 9px; box-shadow: var(--shadow); padding: 4px; display: none; max-height: 300px; overflow: auto; }
+  #slashMenu.show { display: block; }
+  #slashMenu .sm-row { display: flex; align-items: center; gap: 9px; padding: 6px 9px; border-radius: 6px; cursor: pointer; }
+  #slashMenu .sm-row.sel { background: var(--rule); }
+  #slashMenu .sm-ico { width: 18px; text-align: center; color: var(--muted); flex-shrink: 0; font-size: 13px; }
+  #slashMenu .sm-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+  #slashMenu .sm-nick { font-size: 13px; color: var(--fg); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #slashMenu .sm-nick .sm-slash { color: var(--muted); }
+  #slashMenu .sm-prev { font-size: 11px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #slashMenu .sm-tag { font-size: 10px; color: var(--muted); border: 1px solid var(--rule); border-radius: 4px; padding: 1px 5px; flex-shrink: 0; letter-spacing: .02em; }
+  #slashMenu .sm-foot { border-top: 1px solid var(--rule); margin-top: 4px; padding: 7px 10px; font-size: 11px; color: var(--muted); cursor: pointer; border-radius: 0 0 6px 6px; }
+  #slashMenu .sm-foot:hover { color: var(--fg); background: var(--rule); }
+  #slashMenu .sm-empty { padding: 9px 11px; font-size: 12px; color: var(--muted); }
+  /* ----- snippets: the manager panel ----- */
+  #snipPanel { position: fixed; top: 42px; bottom: 30px; right: 0; width: min(340px, 86vw); z-index: 12;
+    background: var(--card-bg); border-left: 1px solid var(--rule); box-shadow: var(--shadow); display: none; flex-direction: column; }
+  #snipPanel.show { display: flex; }
+  #snipPanel .tk-head { display: flex; align-items: center; justify-content: space-between; padding: 9px 12px; border-bottom: 1px solid var(--rule); font-size: 13px; color: var(--fg); }
+  #snipPanel .tk-head small { color: var(--muted); margin-left: 6px; }
+  #snipList { list-style: none; margin: 0; padding: 4px 0; overflow: auto; flex: 1; }
+  #snipList li { padding: 8px 12px; border-bottom: 1px solid var(--rule); font-size: 13px; }
+  #snipList li:last-child { border-bottom: 0; }
+  #snipList .sn-top { display: flex; align-items: center; gap: 8px; }
+  #snipList .sn-nick { flex: 1; color: var(--fg); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #snipList .sn-nick b { color: var(--accent); font-weight: 600; }
+  #snipList .sn-tag { font-size: 10px; color: var(--muted); border: 1px solid var(--rule); border-radius: 4px; padding: 1px 5px; flex-shrink: 0; }
+  #snipList .sn-prev { color: var(--muted); font-size: 12px; margin-top: 3px; line-height: 1.4; max-height: 2.8em; overflow: hidden; }
+  #snipList .sn-acts { display: flex; gap: 5px; margin-top: 7px; }
+  #snipList .sn-acts .btn { font-size: 11px; padding: 3px 9px; }
+  #snipList textarea { width: 100%; box-sizing: border-box; margin-top: 7px; font-family: inherit; font-size: 12px; line-height: 1.5;
+    border: 1px solid var(--rule); border-radius: 6px; background: var(--bg); color: var(--fg); padding: 7px; min-height: 76px; resize: vertical; }
+  #snipPanel .tk-empty { color: var(--muted); padding: 18px 14px; text-align: center; line-height: 1.6; }
+  #snipPanel .tk-foot { padding: 8px 12px; border-top: 1px solid var(--rule); }
+  #snipPanel .tk-foot .btn { width: 100%; }
+  #pasteChooser, #fontMenu, #timerMenu, #soundMenu, #shareMenu, #destMenu, #gramPopover { position: fixed; z-index: 40; min-width: 230px; background: var(--card-bg);
+    border: 1px solid var(--rule); border-radius: 8px; box-shadow: var(--shadow); padding: 5px; display: none; }
+  #pasteChooser.show, #fontMenu.show, #timerMenu.show, #soundMenu.show, #shareMenu.show, #destMenu.show, #gramPopover.show { display: block; }
+  #pasteChooser button, #fontMenu button, #timerMenu button, #soundMenu button, #shareMenu button, #destMenu button, #gramPopover button { display: block; width: 100%; text-align: left; background: none; border: 0;
+    padding: 7px 11px; border-radius: 5px; color: var(--fg); font-family: inherit; font-size: 13px; cursor: pointer; }
+  #pasteChooser button:hover, #pasteChooser button.sel, #fontMenu button:hover, #fontMenu button.sel, #timerMenu button:hover, #soundMenu button:hover, #shareMenu button:hover, #destMenu button:hover, #destMenu button.sel, #gramPopover button:hover { background: var(--rule); }
+  #gramPopover .gp-msg { padding: 7px 11px 4px; font-size: 12px; color: var(--muted); max-width: 280px; }
+  #gramPopover button b { color: var(--accent); font-weight: 500; }
+  #gramPopover .gp-add { color: var(--accent); border-top: 1px solid var(--rule); margin-top: 3px; }
+  #pasteChooser button small, #fontMenu button small, #timerMenu button small, #soundMenu button small, #shareMenu button small, #destMenu button small { display: block; color: var(--muted); font-size: 11px; margin-top: 1px; }
+  #pasteChooser .pc-count { padding: 9px 13px 3px; font-size: 14px; color: var(--fg); white-space: nowrap; }
+  #pasteChooser .pc-count b { color: var(--accent); font-size: 1.15em; }
+  #pasteChooser .pc-hint { padding: 0 13px 9px; font-size: 11px; color: var(--muted); white-space: nowrap; }
+  #pasteChooser .pc-hint b { color: var(--fg); font-weight: 500; }
+  #printArea { display: none; }
+  @media print {
+    body.printing > * { display: none !important; }
+    body.printing #printArea { display: block !important; color: #111; padding: 8px 4px; font-family: Georgia, serif; line-height: 1.6; }
+    #printArea figure { margin: 1.2em 0; text-align: center; page-break-inside: avoid; }
+    #printArea figure svg { max-width: 100%; height: auto; }
+    #printArea figcaption { color: #555; font-size: .85em; margin-bottom: 6px; font-style: italic; }
+    #printArea h1, #printArea h2, #printArea h3 { color: #111; }
+    #printArea a { color: #1a5fb4; }
+    #printArea code, #printArea pre { background: #f3f3f3; }
+  }
+  #fontMenu, #timerMenu, #destMenu { min-width: 170px; }
+  #timer, #sound { font-variant-numeric: tabular-nums; user-select: none; }
+  #timer:hover, #timer:focus, #timer:active, #sound:hover, #sound:focus, #sound:active { background: none; }
+  #timer.running, #sound.playing { color: var(--accent); border-color: var(--accent); }
+  #timer.ended { animation: timerpulse 1.2s ease-in-out 3; }
+  @keyframes timerpulse { 0%,100% { background: transparent; } 50% { background: color-mix(in srgb, var(--accent) 25%, transparent); } }
+  #pasteChooser button small { color: var(--muted); display: block; font-size: 11px; margin-top: 1px; }
+  #toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+    background: var(--card-bg); color: var(--fg); padding: 9px 15px; border-radius: 5px;
+    border: 1px solid var(--rule); box-shadow: var(--shadow); font-size: 13px; z-index: 60;
+    opacity: 0; transition: opacity .2s; pointer-events: none; }
+  #toast.show { opacity: 1; }
+  #bootError { display: none; position: fixed; inset: 40px; padding: 20px; background: #fff;
+    color: #900; border: 2px solid #900; border-radius: 8px; font-family: monospace;
+    font-size: 13px; white-space: pre-wrap; overflow: auto; z-index: 9999; }
+</style>
+</head>
+<body>
+  <div id="topbar">
+    <div class="row" id="topleft"><span id="filename">untitled.kitten</span><span id="dirty"></span></div>
+    <div class="row" id="topright">
+      <span id="grammar-status" title="Grammar — click to switch engine (blue = Harper offline, green = LanguageTool)"><span class="gram-dot"></span><span id="gram-count"></span></span>
+      <button class="btn ic" id="btn-autofix" title="Auto-fix all issues">AF</button>
+      <button class="btn ic" id="btn-save" title="Save (⌘S)">S</button>
+      <button class="btn ic" id="btn-open" title="Open (⌘O)">O</button>
+      <button class="btn ic" id="btn-theme" title="Theme (light / dark / sepia)">☀</button>
+    </div>
+  </div>
+  <div id="composeBar">
+    <span id="composeLabel"></span>
+    <div id="composeFmt"></div>
+    <button class="btn ic" id="composeCopy" title="Copy for this destination">⧉</button>
+  </div>
+  <div id="editor"></div>
+  <div id="bottomstrip">
+    <span id="drawhint">type <b>/</b> for snippets · <b>/draw</b> · <b>/task</b></span>
+    <div class="row" style="gap:8px">
+      <button class="btn ic" id="timer" title="Timer — click to start · click to pause · double-click to reset">⏱</button>
+      <button class="btn ic" id="sound" title="Focus noise — click to choose · click to pause · double-click to stop">♪</button>
+      <button class="btn ic" id="btn-snippets" title="Snippets — manage &amp; insert (type / in the doc)">❏</button>
+      <button class="btn ic" id="btn-tasks" title="All tasks (T)">T</button>
+      <button class="btn ic" id="btn-fonts" title="Editor font (F)">F</button>
+      <button class="btn ic" id="btn-dest" title="Compose for an app — WhatsApp / Telegram / Gmail">MD</button>
+      <button class="btn ic" id="btn-share" title="Export to PDF">⬇</button>
+    </div>
+  </div>
+
+  <div id="overlay">
+    <div id="overlay-bar">
+      <span class="ttl" id="overlay-ttl" contenteditable="true" spellcheck="false" title="Click to name this drawing">Drawing</span>
+      <div class="row">
+        <button class="btn" id="overlay-cancel">Cancel</button>
+        <button class="btn accent" id="overlay-done">Done</button>
+      </div>
+    </div>
+    <div id="overlay-canvas"></div>
+  </div>
+
+  <div id="fmtBar"></div>
+  <div id="tasksPanel">
+    <div class="tk-head"><span>Tasks <small id="tasksCount"></small></span><button class="btn ic" id="tasksClose" title="Close">✕</button></div>
+    <ul id="tasksList"></ul>
+    <div class="tk-foot"><label><input type="checkbox" id="tasksShowDone" /> show done</label></div>
+  </div>
+  <div id="fixesPanel">
+    <div class="tk-head"><span>Auto-fixed <small id="fixesCount"></small></span><button class="btn ic" id="fixesClose" title="Close">✕</button></div>
+    <ul id="fixesList"></ul>
+    <div class="tk-foot"><button class="btn" id="fixesUndo" title="Undo all these fixes">↺ Undo all</button></div>
+  </div>
+  <div id="snipPanel">
+    <div class="tk-head"><span>Snippets <small id="snipCount"></small></span><button class="btn ic" id="snipClose" title="Close">✕</button></div>
+    <ul id="snipList"></ul>
+    <div class="tk-foot"><button class="btn" id="snipNew" title="Save the current selection as a snippet">＋ New from selection</button></div>
+  </div>
+  <div id="pasteChooser"></div>
+  <div id="slashMenu"></div>
+  <div id="fontMenu"></div>
+  <div id="timerMenu"></div>
+  <div id="destMenu"></div>
+  <div id="soundMenu"></div>
+  <div id="gramPopover"></div>
+  <div id="printArea"></div>
+  <div id="toast"></div>
+  <div id="bootError"></div>
+
+  <script>
+    window.EXCALIDRAW_ASSET_PATH = "https://unpkg.com/@excalidraw/excalidraw@0.17.6/dist/";
+    function showBootError(msg) {
+      const el = document.getElementById("bootError");
+      el.style.display = "block"; el.textContent = "Scribe Next error:\n\n" + msg;
+    }
+    window.addEventListener("error", (e) => showBootError(e.error?.stack || e.message || String(e)));
+    window.addEventListener("unhandledrejection", (e) => showBootError(e.reason?.stack || String(e.reason)));
+  </script>
+  <script src="https://unpkg.com/react@18.2.0/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@excalidraw/excalidraw@0.17.6/dist/excalidraw.production.min.js"></script>
+
+  <script type="importmap">
+  {
+    "imports": {
+      "@codemirror/state": "https://esm.sh/@codemirror/state@6.4.1",
+      "@codemirror/view": "https://esm.sh/@codemirror/view@6.26.3?external=@codemirror/state",
+      "@codemirror/commands": "https://esm.sh/@codemirror/commands@6.5.0?external=@codemirror/state,@codemirror/view",
+      "@codemirror/language": "https://esm.sh/@codemirror/language@6.10.1?external=@codemirror/state,@codemirror/view",
+      "@codemirror/lang-markdown": "https://esm.sh/@codemirror/lang-markdown@6.2.5?external=@codemirror/state,@codemirror/view,@codemirror/language",
+      "@lezer/common": "https://esm.sh/@lezer/common@1",
+      "@lezer/highlight": "https://esm.sh/@lezer/highlight@1?external=@lezer/common",
+      "@lezer/markdown": "https://esm.sh/@lezer/markdown@1?external=@lezer/common,@lezer/highlight",
+      "style-mod": "https://esm.sh/style-mod@4",
+      "w3c-keyname": "https://esm.sh/w3c-keyname@2"
+    }
+  }
+  </script>
+
+  <script type="module">
+  try {
+    const { EditorView, keymap, Decoration, WidgetType, drawSelection } = await import("@codemirror/view");
+    const { EditorState, StateField, StateEffect, RangeSetBuilder, Compartment } = await import("@codemirror/state");
+    const { history, defaultKeymap, historyKeymap, undo } = await import("@codemirror/commands");
+    const { markdown } = await import("@codemirror/lang-markdown");
+    const { syntaxHighlighting, defaultHighlightStyle, HighlightStyle } = await import("@codemirror/language");
+    const { tags } = await import("@lezer/highlight");
+    // visible, theme-aware markdown styling (list markers etc. were near-invisible in dark mode)
+    const mdStyle = HighlightStyle.define([
+      { tag: tags.heading1, fontWeight: "700", fontSize: "1.35em" },
+      { tag: tags.heading2, fontWeight: "700", fontSize: "1.18em" },
+      { tag: tags.heading3, fontWeight: "600", fontSize: "1.08em" },
+      { tag: tags.heading, fontWeight: "600" },
+      { tag: tags.strong, fontWeight: "700" },
+      { tag: tags.emphasis, fontStyle: "italic" },
+      { tag: tags.strikethrough, textDecoration: "line-through" },
+      { tag: tags.link, color: "var(--accent)", textDecoration: "underline" },
+      { tag: tags.url, color: "var(--accent)" },
+      { tag: tags.monospace, color: "var(--accent)" },
+      { tag: tags.quote, color: "var(--muted)", fontStyle: "italic" },
+      { tag: tags.contentSeparator, color: "var(--muted)" },
+      { tag: tags.processingInstruction, color: "var(--accent)" },
+    ]);
+    // Full markdown highlighting (MD mode) vs none (WA/TG/Gmail modes, so native marks don't look like markdown)
+    const MD_HIGHLIGHT = [syntaxHighlighting(mdStyle), syntaxHighlighting(defaultHighlightStyle, { fallback: true })];
+    const highlightCompartment = new Compartment();
+
+    const Excalidraw = window.ExcalidrawLib;
+
+    // ---------- theme ----------
+    function currentExcalTheme() { return document.body.dataset.theme === "dark" ? "dark" : "light"; }
+    function setTheme(t) {
+      document.body.dataset.theme = t;
+      localStorage.setItem("scribeNext.theme", t);
+      const btn = document.getElementById("btn-theme");
+      if (btn) btn.textContent = t === "dark" ? "☾" : t === "sepia" ? "☕" : "☀";
+      // drawing thumbnails adapt to theme purely via CSS (see [data-theme="dark"] .drawblock-preview svg)
+    }
+    function cycleTheme() {
+      const order = ["light", "dark", "sepia"];
+      const cur = document.body.dataset.theme || "light";
+      setTheme(order[(order.indexOf(cur) + 1) % order.length]);
+    }
+
+    // ---------- scene store ----------
+    // scenes: id -> { elements, appState, files }
+    const scenes = new Map();
+    const thumbVersion = new Map(); // id -> int, bumped when a scene changes
+    const collapsed = new Set(); // ids folded down to just their title bar
+    function bump(id) { thumbVersion.set(id, (thumbVersion.get(id) || 0) + 1); }
+    function makeId() { return "dr" + Date.now().toString(36) + Math.random().toString(36).slice(2, 5); }
+
+    const MARKER = /^⟦draw:([a-z0-9]+)⟧$/; // ⟦draw:ID⟧ on its own line
+
+    // ---------- persistence ----------
+    const LS_KEY = "scribeNext.doc";
+    let destination = "md"; // copy/compose destination: md | whatsapp | telegram | gmail
+    function serialize() {
+      const s = {};
+      for (const [id, sc] of scenes) {
+        s[id] = {
+          elements: sc.elements || [],
+          appState: { viewBackgroundColor: sc.appState?.viewBackgroundColor || "#ffffff" },
+          files: sc.files || {},
+          name: sc.name || "",
+        };
+      }
+      return { version: 1, text: view.state.doc.toString(), scenes: s, destination };
+    }
+    let saveTimer = null;
+    function scheduleSave() { clearTimeout(saveTimer); saveTimer = setTimeout(() => {
+      try { localStorage.setItem(LS_KEY, JSON.stringify(serialize())); } catch (e) { console.warn("save", e); }
+    }, 500); }
+
+    function loadFromData(data) {
+      scenes.clear();
+      if (data?.scenes) for (const id of Object.keys(data.scenes)) { scenes.set(id, data.scenes[id]); bump(id); }
+      destination = data?.destination || "md";
+      return data?.text ?? "";
+    }
+
+    let initialText = "# untitled\n\nStart writing. To add a drawing, type /draw on a blank line and press Enter.\n\n";
+    try {
+      const raw = localStorage.getItem(LS_KEY);
+      if (raw) initialText = loadFromData(JSON.parse(raw));
+    } catch (e) { console.warn("load", e); }
+
+    // ---------- draw block widget ----------
+    const refreshDraw = StateEffect.define();
+
+    class DrawWidget extends WidgetType {
+      constructor(id, version) { super(); this.id = id; this.version = version; }
+      eq(other) { return other.id === this.id && other.version === this.version; }
+      ignoreEvent() { return true; }
+      toDOM() {
+        const id = this.id;
+        const wrap = document.createElement("div");
+        wrap.className = "drawblock";
+        wrap.contentEditable = "false";
+
+        const bar = document.createElement("div");
+        bar.className = "drawblock-bar";
+        const ttl = document.createElement("span");
+        ttl.className = "ttl";
+        const grip = document.createElement("span");
+        grip.className = "drawblock-grip";
+        grip.textContent = "⠿";
+        grip.title = "Drag to move this drawing";
+        grip.addEventListener("pointerdown", (e) => startBlockDrag(id, e, wrap));
+        const nameEl = document.createElement("span");
+        nameEl.className = "drawblock-name";
+        nameEl.contentEditable = "true";
+        nameEl.spellcheck = false;
+        nameEl.title = "Click to rename";
+        nameEl.textContent = (scenes.get(id)?.name || "").trim() || "drawing";
+        nameEl.addEventListener("pointerdown", (e) => e.stopPropagation());
+        nameEl.addEventListener("input", () => { const sc = scenes.get(id); if (sc) { sc.name = nameEl.textContent.trim(); scheduleSave(); } });
+        nameEl.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); nameEl.blur(); } });
+        nameEl.addEventListener("blur", () => { if (!nameEl.textContent.trim()) nameEl.textContent = "drawing"; });
+        ttl.appendChild(grip); ttl.appendChild(nameEl);
+        const isCollapsed = collapsed.has(id);
+        const acts = document.createElement("div");
+        acts.className = "acts";
+
+        // collapse/expand the inline preview — just an arrow
+        const foldBtn = document.createElement("button");
+        foldBtn.textContent = isCollapsed ? "▸" : "▾";
+        foldBtn.title = isCollapsed ? "Show the drawing" : "Collapse to save space";
+        foldBtn.addEventListener("mousedown", (e) => {
+          e.preventDefault();
+          if (collapsed.has(id)) collapsed.delete(id); else collapsed.add(id);
+          bump(id);
+          view.dispatch({ effects: refreshDraw.of(null) });
+        });
+
+        // E = open the full editing canvas
+        const editBtn = document.createElement("button");
+        editBtn.textContent = "E"; editBtn.title = "Edit drawing";
+        editBtn.addEventListener("mousedown", (e) => { e.preventDefault(); openOverlay(id); });
+
+        // D = delete (red)
+        const delBtn = document.createElement("button");
+        delBtn.className = "del"; delBtn.textContent = "D"; delBtn.title = "Delete drawing";
+        delBtn.addEventListener("mousedown", (e) => { e.preventDefault(); deleteBlock(id); });
+
+        acts.appendChild(foldBtn); acts.appendChild(editBtn); acts.appendChild(delBtn);
+        bar.appendChild(ttl); bar.appendChild(acts);
+        wrap.appendChild(bar);
+
+        if (!isCollapsed) {
+          const body = document.createElement("div");
+          const sc = scenes.get(id);
+          if (!sc || !sc.elements || sc.elements.length === 0) {
+            body.className = "drawblock-empty";
+            body.textContent = "Empty drawing — click to open the canvas";
+            body.addEventListener("mousedown", (e) => { e.preventDefault(); openOverlay(id); });
+          } else {
+            body.className = "drawblock-preview";
+            body.title = "Click to edit";
+            body.addEventListener("mousedown", (e) => { e.preventDefault(); openOverlay(id); });
+            body.textContent = "rendering…";
+            renderThumb(id, body);
+          }
+          wrap.appendChild(body);
+        }
+        return wrap;
+      }
+    }
+
+    async function renderThumb(id, container) {
+      try {
+        const sc = scenes.get(id);
+        const svg = await Excalidraw.exportToSvg({
+          elements: sc.elements || [],
+          appState: { exportBackground: false },
+          files: sc.files || {},
+        });
+        container.textContent = "";
+        container.appendChild(svg);
+      } catch (e) { container.textContent = "preview failed"; console.warn("thumb", e); }
+    }
+
+    // ---------- drag a draw block to a new spot in the text ----------
+    function findMarkerLine(id) {
+      const doc = view.state.doc;
+      for (let i = 1; i <= doc.lines; i++) {
+        const ln = doc.line(i); const m = MARKER.exec(ln.text);
+        if (m && m[1] === id) return ln;
+      }
+      return null;
+    }
+    let dragIndicator = null;
+    function getIndicator() {
+      if (!dragIndicator) { dragIndicator = document.createElement("div"); dragIndicator.className = "drag-indicator"; document.body.appendChild(dragIndicator); }
+      return dragIndicator;
+    }
+    function startBlockDrag(id, ev, wrap) {
+      ev.preventDefault(); ev.stopPropagation();
+      const grip = ev.currentTarget;
+      try { grip.setPointerCapture(ev.pointerId); } catch {}
+      document.body.classList.add("dragging-block");
+      if (wrap) wrap.classList.add("dragging");
+      const ind = getIndicator(); ind.style.display = "block";
+      const contentRect = view.contentDOM.getBoundingClientRect();
+      ind.style.left = contentRect.left + "px";
+      ind.style.width = contentRect.width + "px";
+      let targetPos = null;
+
+      function onMove(e) {
+        const pos = view.posAtCoords({ x: e.clientX, y: e.clientY });
+        if (pos == null) return;
+        const line = view.state.doc.lineAt(pos);
+        const top = view.coordsAtPos(line.from), bot = view.coordsAtPos(line.to);
+        const midY = top && bot ? (top.top + bot.bottom) / 2 : e.clientY;
+        let boundaryPos;
+        if (e.clientY < midY) boundaryPos = line.from;
+        else boundaryPos = line.number < view.state.doc.lines ? view.state.doc.line(line.number + 1).from : view.state.doc.length;
+        targetPos = boundaryPos;
+        const c = view.coordsAtPos(boundaryPos);
+        if (c) ind.style.top = (c.top - 1) + "px";
+      }
+      function onUp() {
+        grip.removeEventListener("pointermove", onMove);
+        grip.removeEventListener("pointerup", onUp);
+        document.body.classList.remove("dragging-block");
+        if (wrap) wrap.classList.remove("dragging");
+        ind.style.display = "none";
+        if (targetPos != null) moveBlockTo(id, targetPos);
+        view.focus();
+      }
+      grip.addEventListener("pointermove", onMove);
+      grip.addEventListener("pointerup", onUp);
+    }
+    function moveBlockTo(id, targetPos) {
+      const cur = findMarkerLine(id);
+      if (!cur) return;
+      const doc = view.state.doc;
+      let delFrom = cur.from, delTo = cur.to;
+      if (delTo < doc.length) delTo += 1;        // eat trailing newline
+      else if (delFrom > 0) delFrom -= 1;        // last line: eat leading newline
+      if (targetPos >= cur.from && targetPos <= cur.to + 1) return; // dropped on itself
+      const insert = "⟦draw:" + id + "⟧\n";
+      const changes = targetPos <= delFrom
+        ? [{ from: targetPos, insert }, { from: delFrom, to: delTo, insert: "" }]
+        : [{ from: delFrom, to: delTo, insert: "" }, { from: targetPos, insert }];
+      view.dispatch({ changes, effects: refreshDraw.of(null) });
+      scheduleSave();
+    }
+
+    // build block decorations by scanning doc lines for markers
+    const drawField = StateField.define({
+      create(state) { return buildDeco(state); },
+      update(deco, tr) {
+        if (tr.docChanged || tr.effects.some(e => e.is(refreshDraw))) return buildDeco(tr.state);
+        return deco.map(tr.changes);
+      },
+      provide: f => EditorView.decorations.from(f),
+    });
+    function buildDeco(state) {
+      const b = new RangeSetBuilder();
+      for (let i = 1; i <= state.doc.lines; i++) {
+        const line = state.doc.line(i);
+        const m = MARKER.exec(line.text);
+        if (m) {
+          const id = m[1];
+          if (!scenes.has(id)) { scenes.set(id, { elements: [], appState: { viewBackgroundColor: "#ffffff" }, files: {} }); bump(id); }
+          const deco = Decoration.replace({ widget: new DrawWidget(id, thumbVersion.get(id) || 0), block: true });
+          b.add(line.from, line.to, deco);
+        }
+      }
+      return b.finish();
+    }
+
+    // ---------- editor ----------
+    // ---------- grammar (Harper — offline, in-browser, auto-starts with the app) ----------
+    let harperLinter = null, harperReady = false, lintSeq = 0;
+    let currentLints = []; // {from, to, message, suggestions}
+    // personal dictionary — words to never flag/auto-fix (global, across all .cat files)
+    let dictionary = new Set();
+    try { const d = JSON.parse(localStorage.getItem("scribeNext.dictionary") || "[]"); if (Array.isArray(d)) dictionary = new Set(d); } catch {}
+    function addToDictionary(word) {
+      const w = (word || "").trim().toLowerCase();
+      if (!w) return;
+      dictionary.add(w);
+      try { localStorage.setItem("scribeNext.dictionary", JSON.stringify([...dictionary])); } catch {}
+      scheduleLint();
+    }
+    let engine = "harper"; // "harper" | "languagetool" — actual default chosen at boot by initGrammar()
+    let ltUrl = localStorage.getItem("scribeNext.ltUrl") || "http://localhost:8081/v2/check";
+
+    function setGrammarIndicator(state, count) {
+      const dot = document.querySelector("#grammar-status .gram-dot");
+      const cnt = document.getElementById("gram-count");
+      const wrap = document.getElementById("grammar-status");
+      const name = engine === "languagetool" ? "LanguageTool" : "Harper";
+      let cls = "gram-dot";
+      if (state === "loading") cls += " loading";
+      else if (state === "error") cls += " error";
+      else if (state === "ready") cls += (engine === "languagetool" ? " lt" : " harper");
+      if (dot) dot.className = cls;
+      if (cnt) cnt.textContent = state === "loading" ? "" : state === "error" ? " !"
+        : state === "ready" ? (count ? " " + count : " ✓") : "";
+      if (wrap) wrap.title = state === "error" && engine === "languagetool"
+          ? "LanguageTool unreachable at " + ltUrl + " — start your server, or click to switch back to Harper"
+        : "Grammar: " + name + " — click to switch (blue = Harper offline, green = LanguageTool)";
+    }
+
+    const setLints = StateEffect.define();
+    const lintField = StateField.define({
+      create() { return Decoration.none; },
+      update(deco, tr) {
+        deco = deco.map(tr.changes);
+        for (const e of tr.effects) if (e.is(setLints)) {
+          const b = new RangeSetBuilder();
+          for (const l of e.value) {
+            b.add(l.from, l.to, Decoration.mark({
+              class: "gram-underline",
+              attributes: { title: l.message + (l.suggestions.length ? "  →  " + l.suggestions.slice(0, 3).join(", ") : "") },
+            }));
+          }
+          deco = b.finish();
+        }
+        return deco;
+      },
+      provide: f => EditorView.decorations.from(f),
+    });
+
+    let lintTimer = null;
+    function scheduleLint() {
+      if (engine === "harper" && !harperReady) return;
+      clearTimeout(lintTimer); lintTimer = setTimeout(runLint, 500);
+    }
+
+    function harperToCommon(l) {
+      try {
+        const s = l.span();
+        let message = "Issue", suggestions = [];
+        try { message = l.message(); } catch {}
+        try { suggestions = l.suggestions().map(x => { try { return x.get_replacement_text(); } catch { return null; } }).filter(s => s != null); } catch {}
+        return { from: s.start, to: s.end, message, suggestions };
+      } catch { return null; }
+    }
+
+    async function languageToolLint(text) {
+      const params = new URLSearchParams();
+      params.append("text", text);
+      params.append("language", "en-US");
+      const r = await fetch(ltUrl, { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: params.toString() });
+      if (!r.ok) throw new Error("LT " + r.status);
+      const data = await r.json();
+      return (data.matches || []).map(m => ({
+        from: m.offset, to: m.offset + m.length,
+        message: m.message || "Issue",
+        suggestions: (m.replacements || []).map(x => x.value).filter(Boolean).slice(0, 5),
+      }));
+    }
+
+    async function runLint() {
+      const text = view.state.doc.toString();
+      const seq = ++lintSeq;
+      let raw;
+      try {
+        if (engine === "languagetool") raw = await languageToolLint(text);
+        else if (harperReady && harperLinter) raw = (await harperLinter.lint(text)).map(harperToCommon).filter(Boolean);
+        else return;
+      } catch (e) {
+        if (seq !== lintSeq) return;
+        if (engine === "languagetool") {
+          // LanguageTool went away mid-session — fall back to Harper automatically
+          engine = "harper";
+          toast("LanguageTool unavailable — using Harper");
+          if (harperReady) runLint(); else initHarper();
+          return;
+        }
+        console.warn("lint", e); currentLints = []; view.dispatch({ effects: setLints.of([]) }); setGrammarIndicator("error");
+        return;
+      }
+      if (seq !== lintSeq) return; // a newer edit superseded this run
+      const doc = view.state.doc;
+      const markerRanges = [];
+      for (let i = 1; i <= doc.lines; i++) { const ln = doc.line(i); if (MARKER.test(ln.text)) markerRanges.push([ln.from, ln.to]); }
+      const mapped = raw.filter(l => l && l.from != null && l.to != null && l.to > l.from && l.to <= doc.length
+        && !markerRanges.some(([a, b]) => l.from < b && l.to > a)
+        && !dictionary.has(doc.sliceString(l.from, l.to).trim().toLowerCase()));
+      currentLints = mapped;
+      view.dispatch({ effects: setLints.of(mapped) });
+      setGrammarIndicator("ready", mapped.length);
+    }
+
+    let lastAutoFix = [];
+    function autoFixAll() {
+      const fixable = currentLints.filter(l => l.suggestions.length).slice().sort((a, b) => b.from - a.from);
+      if (!fixable.length) { toast("Nothing to auto-fix"); return; }
+      const changes = []; let lastFrom = Infinity; const applied = [];
+      for (const l of fixable) {
+        if (l.to > lastFrom) continue; // skip overlapping fixes
+        const before = view.state.doc.sliceString(l.from, l.to);
+        changes.push({ from: l.from, to: l.to, insert: l.suggestions[0] });
+        applied.push({ before, after: l.suggestions[0], message: l.message });
+        lastFrom = l.from;
+      }
+      changes.reverse();
+      view.dispatch({ changes });
+      applied.reverse(); // back to document order
+      lastAutoFix = applied;
+      toast("Auto-fixed " + applied.length + (applied.length === 1 ? " issue" : " issues"));
+      scheduleLint();
+      openFixesPanel();
+    }
+    function openFixesPanel() { document.getElementById("fixesPanel").classList.add("show"); renderFixesPanel(); }
+    function closeFixesPanel() { document.getElementById("fixesPanel").classList.remove("show"); }
+    function renderFixesPanel() {
+      const listEl = document.getElementById("fixesList");
+      document.getElementById("fixesCount").textContent = lastAutoFix.length ? (lastAutoFix.length + (lastAutoFix.length === 1 ? " fix" : " fixes")) : "";
+      listEl.innerHTML = "";
+      if (!lastAutoFix.length) { const li = document.createElement("li"); li.className = "tk-empty"; li.textContent = "Nothing auto-fixed yet."; listEl.appendChild(li); return; }
+      for (const f of lastAutoFix) {
+        const li = document.createElement("li");
+        const b = document.createElement("span"); b.className = "fx-before"; b.textContent = f.before;
+        const a = document.createElement("span"); a.className = "fx-after"; a.textContent = f.after;
+        const why = document.createElement("span"); why.className = "fx-why"; why.textContent = f.message || "";
+        li.appendChild(b); li.appendChild(document.createTextNode(" → ")); li.appendChild(a); li.appendChild(why);
+        listEl.appendChild(li);
+      }
+    }
+    function undoAutoFix() { undo(view); lastAutoFix = []; closeFixesPanel(); scheduleLint(); toast("Reverted"); view.focus(); }
+
+    async function checkLtHealth() {
+      try {
+        const base = ltUrl.replace(/\/v2\/check\/?$/, "");
+        const r = await fetch(base + "/v2/languages", { method: "GET" });
+        return r.ok;
+      } catch { return false; }
+    }
+
+    async function switchEngine() {
+      if (engine === "harper") {
+        const up = await checkLtHealth();
+        if (!up) { toast("LanguageTool not reachable at " + ltUrl); return; }
+        engine = "languagetool";
+        toast("Grammar engine: LanguageTool");
+        setGrammarIndicator("ready", currentLints.length); runLint();
+      } else {
+        engine = "harper";
+        toast("Grammar engine: Harper");
+        if (!harperReady) { setGrammarIndicator("loading"); initHarper(); }
+        else { setGrammarIndicator("ready", currentLints.length); runLint(); }
+      }
+    }
+
+    // Boot-time engine selection: prefer LanguageTool if its server is up, else Harper.
+    async function initGrammar() {
+      setGrammarIndicator("loading");
+      const ltUp = await checkLtHealth();
+      if (ltUp) {
+        engine = "languagetool";
+        setGrammarIndicator("ready", 0);
+        runLint();
+        initHarper(); // warm Harper silently as the fallback (engine is LT, so no UI change)
+      } else {
+        engine = "harper";
+        initHarper();
+      }
+    }
+
+    async function initHarper() {
+      if (engine === "harper") setGrammarIndicator("loading");
+      try {
+        const { LocalLinter, binaryInlined } = await import("https://esm.sh/harper.js@0.65.0");
+        harperLinter = new LocalLinter({ binary: binaryInlined });
+        await harperLinter.setup();
+        harperReady = true;
+        if (engine === "harper") runLint();
+      } catch (e) {
+        console.error("harper init", e);
+        if (engine === "harper") setGrammarIndicator("error");
+      }
+    }
+
+    // ---------- tasks: markdown checkbox lines rendered as clickable boxes ----------
+    const TASK_RE = /^(\s*)[-*+] \[([ xX])\] /;
+    let tasksPanelOpen = false;
+
+    class CheckboxWidget extends WidgetType {
+      constructor(checked, statusPos) { super(); this.checked = checked; this.statusPos = statusPos; }
+      eq(o) { return o.checked === this.checked && o.statusPos === this.statusPos; }
+      ignoreEvent() { return true; }
+      toDOM() {
+        const box = document.createElement("span");
+        box.className = "task-check" + (this.checked ? " done" : "");
+        const pos = this.statusPos;
+        box.addEventListener("mousedown", (e) => { e.preventDefault(); toggleTaskStatus(pos); });
+        return box;
+      }
+    }
+    function toggleTaskStatus(pos) {
+      if (pos < 0 || pos >= view.state.doc.length) return;
+      const ch = view.state.doc.sliceString(pos, pos + 1);
+      view.dispatch({ changes: { from: pos, to: pos + 1, insert: (ch === "x" || ch === "X") ? " " : "x" } });
+      scheduleSave();
+    }
+    function buildTasks(state) {
+      const deco = new RangeSetBuilder();
+      const atoms = new RangeSetBuilder();
+      for (let i = 1; i <= state.doc.lines; i++) {
+        const line = state.doc.line(i);
+        const m = TASK_RE.exec(line.text);
+        if (!m) continue;
+        const start = line.from + m[1].length; // the bullet char
+        const status = start + 3;              // char between [ ]
+        const checked = m[2] !== " ";
+        if (checked) {
+          // completed → recede into plain text: hide the whole "- [x] " marker, no tint, no strike
+          deco.add(start, start + 6, Decoration.replace({}));
+          atoms.add(start, start + 6, Decoration.replace({}));
+        } else {
+          deco.add(line.from, line.from, Decoration.line({ class: "task-line" }));
+          deco.add(start, start + 5, Decoration.replace({ widget: new CheckboxWidget(false, status) }));
+          atoms.add(start, start + 5, Decoration.replace({}));
+        }
+      }
+      return { deco: deco.finish(), atoms: atoms.finish() };
+    }
+    const taskField = StateField.define({
+      create(state) { return buildTasks(state); },
+      update(v, tr) { return tr.docChanged ? buildTasks(tr.state) : v; },
+      provide: f => EditorView.decorations.from(f, v => v.deco),
+    });
+
+    function convertSelectionToTask() {
+      const sel = view.state.selection.main;
+      const doc = view.state.doc;
+      const fromLine = doc.lineAt(sel.from), toLine = doc.lineAt(sel.to);
+      const changes = [];
+      for (let i = fromLine.number; i <= toLine.number; i++) {
+        const line = doc.line(i);
+        if (line.text.trim() === "" || TASK_RE.test(line.text)) continue;
+        const m = /^(\s*)(?:[-*+] )?(.*)$/.exec(line.text);
+        changes.push({ from: line.from, to: line.to, insert: m[1] + "- [ ] " + m[2] });
+      }
+      if (!changes.length) { toast("Select some text to make a task"); return; }
+      view.dispatch({ changes });
+      scheduleSave();
+      hideFmtBar();
+      toast(changes.length === 1 ? "Made a task" : "Made " + changes.length + " tasks");
+    }
+    function wrapSel(prefix, suffix) {
+      const sel = view.state.selection.main; if (sel.empty) return;
+      const text = view.state.sliceDoc(sel.from, sel.to);
+      view.dispatch({ changes: { from: sel.from, to: sel.to, insert: prefix + text + suffix }, selection: { anchor: sel.from + prefix.length, head: sel.from + prefix.length + text.length } });
+      view.focus(); scheduleSave();
+    }
+    function lineToggle(prefix) {
+      const sel = view.state.selection.main, doc = view.state.doc;
+      const a = doc.lineAt(sel.from).number, b = doc.lineAt(sel.to).number;
+      const changes = [];
+      for (let i = a; i <= b; i++) { const line = doc.line(i); if (line.text.trim() === "" && a !== b) continue; const has = line.text.startsWith(prefix); changes.push(has ? { from: line.from, to: line.from + prefix.length, insert: "" } : { from: line.from, insert: prefix }); }
+      view.dispatch({ changes }); view.focus(); scheduleSave();
+    }
+    function insertLink() {
+      const sel = view.state.selection.main; const text = sel.empty ? "" : view.state.sliceDoc(sel.from, sel.to);
+      const url = prompt("Link URL:", "https://"); if (!url) return;
+      const label = text || (prompt("Link text:", "") || url);
+      const ins = "[" + label + "](" + url + ")";
+      view.dispatch({ changes: { from: sel.from, to: sel.to, insert: ins }, selection: { anchor: sel.from + ins.length } });
+      view.focus(); scheduleSave();
+    }
+    // per-destination format buttons (insert that app's NATIVE syntax — Option A)
+    const FORMAT_SETS = {
+      md: [
+        { html: "<b>B</b>", title: "Bold (⌘B)", run: () => wrapSel("**","**") },
+        { html: "<i>I</i>", title: "Italic (⌘I)", run: () => wrapSel("*","*") },
+        { html: "<s>S</s>", title: "Strikethrough", run: () => wrapSel("~~","~~") },
+        { html: "&lt;/&gt;", title: "Inline code", run: () => wrapSel("`","`") },
+        "sep",
+        { html: "H1", title: "Heading 1", run: () => lineToggle("# ") },
+        { html: "H2", title: "Heading 2", run: () => lineToggle("## ") },
+        { html: "&bull;", title: "Bullet list", run: () => lineToggle("- ") },
+        { html: "1.", title: "Numbered list", run: () => lineToggle("1. ") },
+        { html: "&gt;", title: "Quote", run: () => lineToggle("> ") },
+        { html: "&#128279;", title: "Link", run: insertLink },
+        "sep",
+        { html: "&check;", title: "Make task (⌘↵)", run: convertSelectionToTask },
+      ],
+      whatsapp: [
+        { html: "<b>B</b>", title: "Bold  *text*", run: () => wrapSel("*","*") },
+        { html: "<i>I</i>", title: "Italic  _text_", run: () => wrapSel("_","_") },
+        { html: "<s>S</s>", title: "Strikethrough  ~text~", run: () => wrapSel("~","~") },
+        { html: "&lt;/&gt;", title: "Monospace  ```text```", run: () => wrapSel("```","```") },
+        "sep",
+        { html: "&bull;", title: "Bullet line", run: () => lineToggle("• ") },
+        { html: "&check;", title: "Make task (⌘↵)", run: convertSelectionToTask },
+      ],
+      telegram: [
+        { html: "<b>B</b>", title: "Bold  **text**", run: () => wrapSel("**","**") },
+        { html: "<i>I</i>", title: "Italic  __text__", run: () => wrapSel("__","__") },
+        { html: "<s>S</s>", title: "Strikethrough  ~~text~~", run: () => wrapSel("~~","~~") },
+        { html: "&lt;/&gt;", title: "Code  `text`", run: () => wrapSel("`","`") },
+        { html: "▌", title: "Spoiler  ||text||", run: () => wrapSel("||","||") },
+        "sep",
+        { html: "&bull;", title: "Bullet line", run: () => lineToggle("• ") },
+        { html: "&check;", title: "Make task (⌘↵)", run: convertSelectionToTask },
+      ],
+      gmail: [
+        { html: "<b>B</b>", title: "Bold (⌘B)", run: () => wrapSel("**","**") },
+        { html: "<i>I</i>", title: "Italic (⌘I)", run: () => wrapSel("*","*") },
+        { html: "<s>S</s>", title: "Strikethrough", run: () => wrapSel("~~","~~") },
+        "sep",
+        { html: "H1", title: "Heading 1", run: () => lineToggle("# ") },
+        { html: "H2", title: "Heading 2", run: () => lineToggle("## ") },
+        { html: "&bull;", title: "Bullet list", run: () => lineToggle("- ") },
+        { html: "1.", title: "Numbered list", run: () => lineToggle("1. ") },
+        { html: "&gt;", title: "Quote", run: () => lineToggle("> ") },
+        { html: "&#128279;", title: "Link", run: insertLink },
+        "sep",
+        { html: "&check;", title: "Make task (⌘↵)", run: convertSelectionToTask },
+      ],
+    };
+    function buildFmtInto(el) {
+      el.innerHTML = "";
+      for (const it of (FORMAT_SETS[destination] || FORMAT_SETS.md)) {
+        if (it === "sep") { const s = document.createElement("span"); s.className = "fmtsep"; el.appendChild(s); continue; }
+        const b = document.createElement("button"); b.innerHTML = it.html; b.title = it.title;
+        b.addEventListener("mousedown", (e) => { e.preventDefault(); it.run(); });
+        el.appendChild(b);
+      }
+      const sep = document.createElement("span"); sep.className = "fmtsep"; el.appendChild(sep);
+      const sb = document.createElement("button"); sb.innerHTML = "&#10063;"; sb.title = "Save selection as a snippet";
+      sb.addEventListener("mousedown", (e) => { e.preventDefault(); captureSnippet(); }); el.appendChild(sb);
+    }
+    function renderToolbars() {
+      buildFmtInto(document.getElementById("composeFmt"));
+      if (document.getElementById("fmtBar").classList.contains("show")) buildFmtInto(document.getElementById("fmtBar"));
+    }
+    const DEST_CODE = { md: "MD", whatsapp: "WA", telegram: "TG", gmail: "GM" };
+    const DEST_NAME = { md: "Markdown", whatsapp: "WhatsApp", telegram: "Telegram", gmail: "Gmail" };
+    function setDestination(dest) {
+      destination = FORMAT_SETS[dest] ? dest : "md";
+      const label = document.getElementById("composeLabel");
+      if (label) label.textContent = DEST_NAME[destination] || "";
+      const chip = document.getElementById("btn-dest");
+      if (chip) { chip.textContent = DEST_CODE[destination] || "MD"; chip.classList.toggle("on", destination !== "md"); }
+      view.dispatch({ effects: highlightCompartment.reconfigure(destination === "md" ? MD_HIGHLIGHT : []) });
+      renderToolbars();
+      scheduleSave();
+    }
+    function updateFmtBar() {
+      const bar = document.getElementById("fmtBar");
+      const sel = view.state.selection.main;
+      if (sel.empty || view.state.sliceDoc(sel.from, sel.to).trim() === "") { bar.classList.remove("show"); return; }
+      buildFmtInto(bar);
+      const c = view.coordsAtPos(sel.from);
+      if (!c) { bar.classList.remove("show"); return; }
+      bar.classList.add("show");
+      const w = bar.offsetWidth;
+      bar.style.left = Math.max(8, Math.min(c.left, window.innerWidth - w - 8)) + "px";
+      bar.style.top = Math.max(80, c.top - 42) + "px";
+    }
+    function hideFmtBar() { document.getElementById("fmtBar").classList.remove("show"); }
+    async function copyNative() {
+      const src = docForShare();
+      if (!src.trim()) { toast("Nothing to copy"); return; }
+      try {
+        if (destination === "gmail") {
+          const marked = (await import("https://esm.sh/marked@12")).marked;
+          marked.setOptions({ gfm: true });
+          const html = marked.parse(src);
+          if (window.ClipboardItem && navigator.clipboard?.write) {
+            await navigator.clipboard.write([new ClipboardItem({ "text/html": new Blob([html], { type: "text/html" }), "text/plain": new Blob([src], { type: "text/plain" }) })]);
+            toast("Copied for Gmail (rich)");
+          } else { fallbackCopy(src); toast("Copied"); }
+          return;
+        }
+        if (navigator.clipboard?.writeText) await navigator.clipboard.writeText(src); else fallbackCopy(src);
+        toast("Copied for " + destination.toUpperCase());
+      } catch { fallbackCopy(src); toast("Copied"); }
+    }
+
+    function listTasks() {
+      const doc = view.state.doc; const out = [];
+      for (let i = 1; i <= doc.lines; i++) {
+        const line = doc.line(i);
+        const m = /^(\s*)[-*+] \[([ xX])\] (.*)$/.exec(line.text);
+        if (m) out.push({ from: line.from, checked: m[2] !== " ", text: m[3], statusPos: line.from + m[1].length + 3 });
+      }
+      return out;
+    }
+    function renderTasksPanel() {
+      const listEl = document.getElementById("tasksList");
+      const tasks = listTasks();
+      const open = tasks.filter(t => !t.checked), done = tasks.filter(t => t.checked);
+      document.getElementById("tasksCount").textContent = open.length + " open" + (done.length ? " · " + done.length + " done" : "");
+      const showDone = document.getElementById("tasksShowDone").checked;
+      const shown = showDone ? tasks : open;
+      listEl.innerHTML = "";
+      if (!shown.length) {
+        const li = document.createElement("li"); li.className = "tk-empty";
+        li.textContent = tasks.length ? "All done 🎉" : "No tasks yet — type /task, or select text and press ⌘↵";
+        listEl.appendChild(li); return;
+      }
+      for (const t of shown) {
+        const li = document.createElement("li");
+        const box = document.createElement("span"); box.className = "task-check" + (t.checked ? " done" : "");
+        box.addEventListener("mousedown", (e) => { e.preventDefault(); toggleTaskStatus(t.statusPos); });
+        const txt = document.createElement("span"); txt.className = "tk-text" + (t.checked ? " done" : ""); txt.textContent = t.text || "(empty task)";
+        txt.addEventListener("click", () => { view.dispatch({ selection: { anchor: t.from }, effects: EditorView.scrollIntoView(t.from, { y: "center" }) }); view.focus(); });
+        li.appendChild(box); li.appendChild(txt); listEl.appendChild(li);
+      }
+    }
+    function toggleTasksPanel() {
+      tasksPanelOpen = !tasksPanelOpen;
+      document.getElementById("tasksPanel").classList.toggle("show", tasksPanelOpen);
+      if (tasksPanelOpen) renderTasksPanel();
+    }
+
+    const editorTheme = EditorView.theme({
+      "&": { fontSize: "16px" },
+      ".cm-content": { lineHeight: "1.7" },
+    });
+
+    const view = new EditorView({
+      parent: document.getElementById("editor"),
+      state: EditorState.create({
+        doc: initialText,
+        extensions: [
+          history(),
+          drawSelection(),
+          markdown(),
+          highlightCompartment.of(MD_HIGHLIGHT),
+          editorTheme,
+          drawField,
+          EditorView.atomicRanges.of(v => v.state.field(drawField)),
+          lintField,
+          taskField,
+          EditorView.atomicRanges.of(v => v.state.field(taskField).atoms),
+          EditorView.lineWrapping,
+          keymap.of([
+            { key: "ArrowDown", run: () => slashOpen ? (moveSlash(1), true) : false },
+            { key: "ArrowUp", run: () => slashOpen ? (moveSlash(-1), true) : false },
+            { key: "Tab", run: () => slashOpen ? (acceptSlash(), true) : false },
+            { key: "Escape", run: () => slashOpen ? (closeSlash(), true) : false },
+            { key: "Enter", run: (v) => slashOpen ? (acceptSlash(), true) : handleSlashCommand(v) },
+            { key: "Mod-Enter", preventDefault: true, run: () => { convertSelectionToTask(); return true; } },
+            { key: "Mod-b", preventDefault: true, run: () => { wrapSel("**", "**"); return true; } },
+            { key: "Mod-i", preventDefault: true, run: () => { wrapSel("*", "*"); return true; } },
+            ...defaultKeymap,
+            ...historyKeymap,
+            { key: "Mod-s", run: () => { saveFile(); return true; } },
+            { key: "Mod-o", preventDefault: true, run: () => { openFile(); return true; } },
+          ]),
+          EditorView.updateListener.of((u) => {
+            if (u.docChanged) { setDirty(true); scheduleSave(); scheduleLint(); hideGramPopover(); }
+            if (u.selectionSet || u.docChanged) updateFmtBar();
+            if (u.selectionSet || u.docChanged) updateSlashMenu();
+            if (u.docChanged && tasksPanelOpen) renderTasksPanel();
+          }),
+          EditorView.contentAttributes.of({ spellcheck: "true", autocapitalize: "sentences", lang: "en" }),
+        ],
+      }),
+    });
+
+    // ---------- insert / delete blocks ----------
+    // Slash command: "/draw" alone on a line + Enter inserts a drawing block here.
+    function handleSlashCommand(cmView) {
+      const sel = cmView.state.selection.main;
+      if (!sel.empty) return false;
+      const line = cmView.state.doc.lineAt(sel.head);
+      // /task ... → a checkbox task line
+      const tm = /^(\s*)\/task\b[ ]?(.*)$/i.exec(line.text);
+      if (tm) {
+        const insert = tm[1] + "- [ ] " + tm[2];
+        cmView.dispatch({ changes: { from: line.from, to: line.to, insert }, selection: { anchor: line.from + insert.length } });
+        scheduleSave();
+        return true;
+      }
+      if (!/^\s*\/draw\s*$/i.test(line.text)) return false;
+      const id = makeId();
+      scenes.set(id, { elements: [], appState: { viewBackgroundColor: "#ffffff" }, files: {} });
+      bump(id);
+      const marker = "⟦draw:" + id + "⟧";
+      cmView.dispatch({
+        changes: { from: line.from, to: line.to, insert: marker + "\n" },
+        selection: { anchor: line.from + marker.length + 1 },
+      });
+      scheduleSave();
+      setTimeout(() => openOverlay(id), 30);
+      return true;
+    }
+
+    function deleteBlock(id) {
+      const doc = view.state.doc;
+      for (let i = 1; i <= doc.lines; i++) {
+        const line = doc.line(i);
+        const m = MARKER.exec(line.text);
+        if (m && m[1] === id) {
+          const from = line.from;
+          let to = line.to;
+          if (to < doc.length) to += 1; // consume trailing newline
+          view.dispatch({ changes: { from, to, insert: "" } });
+          scenes.delete(id);
+          scheduleSave();
+          toast("Drawing deleted");
+          return;
+        }
+      }
+    }
+
+    // ---------- snippets (pure Ghost-style copy; global across all .cat files) ----------
+    const SNIP_KEY = "scribeNext.snippets";
+    const DRAW_RE = /⟦draw:([a-z0-9]+)⟧/g;
+    function loadSnippets() { try { return JSON.parse(localStorage.getItem(SNIP_KEY) || "{}"); } catch { return {}; } }
+    function saveSnippets(o) { try { localStorage.setItem(SNIP_KEY, JSON.stringify(o)); } catch (e) { console.warn("snip save", e); } }
+    function snippetType(s) {
+      const t = s.text || "";
+      if (/⟦draw:[a-z0-9]+⟧/.test(t)) return "drawing";
+      if (/^\s*[-*+] \[[ xX]\] /m.test(t)) return "task";
+      return "text";
+    }
+    const TYPE_META = { text: { ico: "⌨", tag: "Text" }, task: { ico: "✓", tag: "Task" }, drawing: { ico: "✎", tag: "Drawing" }, manage: { ico: "⚙", tag: "Manage" } };
+    function snippetPreview(s) {
+      let t = (s.text || "").replace(DRAW_RE, (m, id) => "🖼 " + ((s.scenes && s.scenes[id] && s.scenes[id].name) || "drawing"));
+      return t.replace(/\s+/g, " ").trim();
+    }
+    function deepScene(src) {
+      return JSON.parse(JSON.stringify({
+        elements: src.elements || [],
+        appState: { viewBackgroundColor: (src.appState && src.appState.viewBackgroundColor) || "#ffffff" },
+        files: src.files || {}, name: src.name || "",
+      }));
+    }
+
+    // Save the current selection (text + any whole drawings inside it) as a named snippet.
+    function captureSnippet() {
+      const sel = view.state.selection.main;
+      if (sel.empty || !view.state.sliceDoc(sel.from, sel.to).trim()) { toast("Select something to save first"); return; }
+      const text = view.state.sliceDoc(sel.from, sel.to);
+      const sceneObj = {};
+      text.replace(DRAW_RE, (m, id) => { const sc = scenes.get(id); if (sc) sceneObj[id] = deepScene(sc); return m; });
+      let nick = prompt("Snippet name — you'll type /name to paste it:", "");
+      if (nick == null) return;
+      nick = nick.trim().toLowerCase().replace(/[^a-z0-9-]/g, "");
+      if (!nick) { toast("Need a name"); return; }
+      if (["draw", "task", "snippet", "snippets"].includes(nick)) { toast('"' + nick + '" is reserved'); return; }
+      const all = loadSnippets();
+      if (all[nick] && !confirm('Replace existing snippet "/' + nick + '"?')) return;
+      all[nick] = { name: nick, text, scenes: sceneObj, created: (all[nick] && all[nick].created) || Date.now(), used: (all[nick] && all[nick].used) || 0, last: Date.now() };
+      saveSnippets(all);
+      toast("Snippet /" + nick + " saved");
+      if (document.getElementById("snipPanel").classList.contains("show")) renderSnipPanel();
+    }
+
+    // Paste a snippet at [from,to], cloning any drawings to fresh ids so they edit independently.
+    function insertSnippet(snip, from, to) {
+      const src = snip.scenes || {};
+      const text = (snip.text || "").replace(DRAW_RE, (m, oldId) => {
+        const sc = src[oldId]; if (!sc) return m;
+        const nid = makeId(); scenes.set(nid, deepScene(sc)); bump(nid);
+        return "⟦draw:" + nid + "⟧";
+      });
+      view.dispatch({ changes: { from, to, insert: text }, selection: { anchor: from + text.length } });
+      view.dispatch({ effects: refreshDraw.of(null) });
+      const all = loadSnippets();
+      if (all[snip.name]) { all[snip.name].used = (all[snip.name].used || 0) + 1; all[snip.name].last = Date.now(); saveSnippets(all); }
+      scheduleSave(); view.focus();
+    }
+
+    // ----- the unified "/" picker (built-ins + snippets) -----
+    const BUILTINS = [
+      { kind: "cmd", nick: "snippet", type: "manage", preview: "open the snippet manager" },
+      { kind: "cmd", nick: "draw", type: "drawing", preview: "insert a drawing block" },
+      { kind: "cmd", nick: "task", type: "task", preview: "a checkbox task" },
+    ];
+    let slashOpen = false, slashItems = [], slashIndex = 0;
+    function currentSlashQuery() {
+      const sel = view.state.selection.main;
+      if (!sel.empty) return null;
+      const line = view.state.doc.lineAt(sel.head);
+      if (sel.head !== line.to) return null; // only when cursor is at end of the line
+      const m = /^(\s*)\/(\S*)$/.exec(line.text);
+      if (!m) return null;
+      return { q: m[2], lineFrom: line.from, lineTo: line.to };
+    }
+    function slashCandidates(q) {
+      q = (q || "").toLowerCase();
+      const all = loadSnippets();
+      const snips = Object.values(all)
+        .filter(s => !q || s.name.toLowerCase().includes(q))
+        .sort((a, b) => (b.last || 0) - (a.last || 0) || (b.used || 0) - (a.used || 0) || a.name.localeCompare(b.name))
+        .map(s => ({ kind: "snip", nick: s.name, type: snippetType(s), preview: snippetPreview(s), snip: s }));
+      const cmds = BUILTINS.filter(c => !q || c.nick.includes(q));
+      return [...snips, ...cmds]; // snippets first (recency), built-ins pinned after
+    }
+    function renderSlashMenu() {
+      const el = document.getElementById("slashMenu");
+      el.innerHTML = "";
+      if (!slashItems.length) {
+        const e = document.createElement("div"); e.className = "sm-empty"; e.textContent = "No match — keep typing, or ⏎ for a new line";
+        el.appendChild(e);
+      }
+      slashItems.forEach((it, i) => {
+        const row = document.createElement("div"); row.className = "sm-row" + (i === slashIndex ? " sel" : "");
+        const meta = TYPE_META[it.type] || TYPE_META.text;
+        row.innerHTML =
+          '<span class="sm-ico">' + meta.ico + '</span>' +
+          '<span class="sm-main"><span class="sm-nick"><span class="sm-slash">/</span>' + esc(it.nick) + '</span>' +
+          '<span class="sm-prev">' + (it.kind === "cmd" ? esc(it.preview) : esc(it.preview) || "(empty)") + '</span></span>' +
+          '<span class="sm-tag">' + (it.kind === "cmd" ? (it.type === "manage" ? "Manage" : "Command") : meta.tag) + '</span>';
+        row.addEventListener("mousedown", (e) => { e.preventDefault(); slashIndex = i; acceptSlash(); });
+        el.appendChild(row);
+      });
+      const foot = document.createElement("div"); foot.className = "sm-foot"; foot.textContent = "⚙ Manage snippets…";
+      foot.addEventListener("mousedown", (e) => { e.preventDefault(); closeSlash(); openSnipPanel(); });
+      el.appendChild(foot);
+    }
+    function positionSlashMenu(headPos) {
+      const el = document.getElementById("slashMenu");
+      const c = view.coordsAtPos(headPos);
+      if (!c) { closeSlash(); return; }
+      const w = el.offsetWidth, h = el.offsetHeight;
+      el.style.left = Math.max(8, Math.min(c.left, window.innerWidth - w - 8)) + "px";
+      el.style.top = (c.bottom + 4 + h > window.innerHeight ? Math.max(8, c.top - h - 4) : c.bottom + 4) + "px";
+    }
+    function updateSlashMenu() {
+      const cs = currentSlashQuery();
+      if (!cs) { closeSlash(); return; }
+      slashItems = slashCandidates(cs.q).slice(0, 8);
+      if (cs.q && !slashItems.length) { closeSlash(); return; } // typed a non-match → stay out of the way
+      if (slashIndex >= slashItems.length) slashIndex = 0;
+      slashOpen = true;
+      const el = document.getElementById("slashMenu");
+      renderSlashMenu();
+      el.classList.add("show");
+      positionSlashMenu(cs.lineTo);
+    }
+    function moveSlash(d) { if (!slashItems.length) return; slashIndex = (slashIndex + d + slashItems.length) % slashItems.length; renderSlashMenu(); }
+    function closeSlash() { slashOpen = false; slashIndex = 0; document.getElementById("slashMenu").classList.remove("show"); }
+    function acceptSlash() {
+      const it = slashItems[slashIndex]; const cs = currentSlashQuery();
+      if (!it || !cs) { closeSlash(); return; }
+      closeSlash();
+      if (it.kind === "cmd") {
+        if (it.type === "manage") { // /snippet → clear the line and open the manager
+          view.dispatch({ changes: { from: cs.lineFrom, to: cs.lineTo, insert: "" } });
+          openSnipPanel();
+          return;
+        }
+        // normalize the line to the canonical command, then run the existing handler
+        view.dispatch({ changes: { from: cs.lineFrom, to: cs.lineTo, insert: "/" + it.nick }, selection: { anchor: cs.lineFrom + 1 + it.nick.length } });
+        handleSlashCommand(view);
+        return;
+      }
+      insertSnippet(it.snip, cs.lineFrom, cs.lineTo);
+    }
+    window.addEventListener("mousedown", (e) => { if (slashOpen && !e.target.closest("#slashMenu") && !e.target.closest(".cm-editor")) closeSlash(); });
+    // clicking anywhere outside the snippet manager tray closes it (the toggle button + the / menu's "Manage…" are excluded)
+    window.addEventListener("mousedown", (e) => {
+      const p = document.getElementById("snipPanel");
+      if (p.classList.contains("show") && !e.target.closest("#snipPanel") && !e.target.closest("#slashMenu") && e.target.id !== "btn-snippets") closeSnipPanel();
+    });
+
+    // ----- the snippet manager panel -----
+    function openSnipPanel() { document.getElementById("snipPanel").classList.add("show"); renderSnipPanel(); }
+    function closeSnipPanel() { document.getElementById("snipPanel").classList.remove("show"); }
+    function toggleSnipPanel() { const p = document.getElementById("snipPanel"); if (p.classList.contains("show")) closeSnipPanel(); else openSnipPanel(); }
+    function renderSnipPanel() {
+      const all = loadSnippets();
+      const names = Object.keys(all).sort((a, b) => (all[b].last || 0) - (all[a].last || 0) || a.localeCompare(b));
+      document.getElementById("snipCount").textContent = names.length ? names.length + (names.length === 1 ? " snippet" : " snippets") : "";
+      const ul = document.getElementById("snipList"); ul.innerHTML = "";
+      if (!names.length) {
+        const li = document.createElement("li"); li.className = "tk-empty";
+        li.innerHTML = "No snippets yet.<br>Select text/tasks/a drawing → tap <b>❏</b> in the format bar to save one.<br>Then type <b>/name</b> in the doc to paste it.";
+        ul.appendChild(li); return;
+      }
+      for (const nm of names) {
+        const s = all[nm], meta = TYPE_META[snippetType(s)] || TYPE_META.text;
+        const li = document.createElement("li");
+        const top = document.createElement("div"); top.className = "sn-top";
+        top.innerHTML = '<span class="sn-nick"><b>/' + esc(nm) + '</b></span><span class="sn-tag">' + meta.ico + " " + meta.tag + '</span>';
+        const prev = document.createElement("div"); prev.className = "sn-prev"; prev.textContent = snippetPreview(s) || "(empty)";
+        const acts = document.createElement("div"); acts.className = "sn-acts";
+        const ins = mkBtn("Insert", () => { const sel = view.state.selection.main; insertSnippet(s, sel.from, sel.to); });
+        const edit = mkBtn("Edit", () => toggleEdit());
+        const ren = mkBtn("Rename", () => renameSnippet(nm));
+        const del = mkBtn("Delete", () => { if (confirm('Delete snippet "/' + nm + '"?')) { const a = loadSnippets(); delete a[nm]; saveSnippets(a); renderSnipPanel(); } });
+        del.style.color = "var(--danger, #c0392b)";
+        acts.append(ins, edit, ren, del);
+        li.append(top, prev, acts);
+        let editing = false, ta = null, saveBtn = null;
+        function toggleEdit() {
+          if (editing) { if (ta) ta.remove(); if (saveBtn) saveBtn.remove(); ta = saveBtn = null; editing = false; edit.textContent = "Edit"; return; }
+          editing = true; edit.textContent = "Cancel";
+          ta = document.createElement("textarea"); ta.value = s.text || "";
+          saveBtn = mkBtn("Save", () => {
+            const a = loadSnippets(); if (a[nm]) { a[nm].text = ta.value; a[nm].last = Date.now(); saveSnippets(a); }
+            toast("Updated /" + nm + " — future pastes use the new text"); renderSnipPanel();
+          });
+          saveBtn.style.marginTop = "6px";
+          li.append(ta, saveBtn); ta.focus();
+        }
+        ul.appendChild(li);
+      }
+    }
+    function renameSnippet(oldName) {
+      let nn = prompt("Rename /" + oldName + " to:", oldName);
+      if (nn == null) return;
+      nn = nn.trim().toLowerCase().replace(/[^a-z0-9-]/g, "");
+      if (!nn || nn === oldName) return;
+      if (["draw", "task", "snippet", "snippets"].includes(nn)) { toast('"' + nn + '" is reserved'); return; }
+      const a = loadSnippets();
+      if (a[nn] && !confirm('"/' + nn + '" exists — overwrite it?')) return;
+      a[nn] = { ...a[oldName], name: nn, last: Date.now() }; delete a[oldName]; saveSnippets(a); renderSnipPanel();
+    }
+    function mkBtn(label, fn) { const b = document.createElement("button"); b.className = "btn"; b.textContent = label; b.addEventListener("click", fn); return b; }
+    function esc(s) { return String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
+
+    // ---------- excalidraw overlay ----------
+    let overlayRoot = null;
+    let overlayApi = null;
+    let overlayId = null;
+    let overlayName = "";
+    const overlayEl = document.getElementById("overlay");
+
+    function openOverlay(id) {
+      overlayId = id;
+      const sc = scenes.get(id) || { elements: [], appState: { viewBackgroundColor: "#ffffff" }, files: {} };
+      overlayName = (sc.name || "").trim();
+      const titleEl = document.getElementById("overlay-ttl");
+      titleEl.textContent = overlayName || "Drawing";
+      titleEl.oninput = () => { overlayName = titleEl.textContent.trim(); };
+      titleEl.onkeydown = (e) => { if (e.key === "Enter") { e.preventDefault(); titleEl.blur(); } };
+      overlayEl.classList.add("show");
+      overlayApi = null;
+      overlayRoot = ReactDOM.createRoot(document.getElementById("overlay-canvas"));
+      overlayRoot.render(React.createElement(Excalidraw.Excalidraw, {
+        theme: currentExcalTheme(),
+        initialData: {
+          elements: sc.elements || [],
+          appState: { viewBackgroundColor: sc.appState?.viewBackgroundColor || "#ffffff" },
+          files: sc.files || {},
+          scrollToContent: true,
+        },
+        excalidrawAPI: (api) => { overlayApi = api; },
+      }));
+    }
+
+    function closeOverlay(save) {
+      if (save && overlayApi && overlayId) {
+        const id = overlayId;
+        const elements = overlayApi.getSceneElements();
+        const appState = overlayApi.getAppState();
+        const files = overlayApi.getFiles();
+        scenes.set(id, {
+          elements: JSON.parse(JSON.stringify(elements)),
+          appState: { viewBackgroundColor: appState.viewBackgroundColor || "#ffffff" },
+          files: files || {},
+          name: overlayName,
+        });
+        bump(id);
+        view.dispatch({ effects: refreshDraw.of(null) }); // re-render the inline thumbnail
+        scheduleSave();
+      }
+      if (overlayRoot) { overlayRoot.unmount(); overlayRoot = null; }
+      overlayApi = null; overlayId = null;
+      overlayEl.classList.remove("show");
+      view.focus();
+    }
+
+    document.getElementById("overlay-done").addEventListener("click", () => closeOverlay(true));
+    document.getElementById("overlay-cancel").addEventListener("click", () => closeOverlay(false));
+
+    // ---------- file save / open ----------
+    const fsaSupported = "showSaveFilePicker" in window;
+    let fileHandle = null;
+    let curName = "untitled.kitten"; // .kitten = newborn/unsaved, .cat = saved
+    function catName(n) { return (n || "untitled").replace(/\.(kitten|cat|scribe|json)$/i, "") + ".cat"; }
+
+    async function saveFile() {
+      const data = JSON.stringify(serialize(), null, 0);
+      try { localStorage.setItem(LS_KEY, data); } catch {}
+      if (!fsaSupported) {
+        const blob = new Blob([data], { type: "application/json" });
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob); a.download = catName(curName); a.click();
+        URL.revokeObjectURL(a.href);
+        curName = catName(curName); document.getElementById("filename").textContent = curName;
+        setDirty(false); toast("Saved 🐈"); return;
+      }
+      try {
+        if (!fileHandle) {
+          fileHandle = await window.showSaveFilePicker({
+            suggestedName: catName(curName),
+            types: [{ description: "Cat note", accept: { "application/json": [".cat"] } }],
+          });
+          curName = fileHandle.name; document.getElementById("filename").textContent = curName;
+        }
+        const w = await fileHandle.createWritable();
+        await w.write(data); await w.close();
+        setDirty(false); toast("Saved");
+      } catch (e) { if (e.name !== "AbortError") toast("Save failed"); }
+    }
+
+    async function openFile() {
+      if (!fsaSupported) { toast("Open needs Chrome/Edge"); return; }
+      try {
+        const [h] = await window.showOpenFilePicker({
+          types: [{ description: "Cat note", accept: { "application/json": [".cat", ".kitten", ".scribe"] } }],
+        });
+        const file = await h.getFile();
+        const data = JSON.parse(await file.text());
+        const text = loadFromData(data);
+        fileHandle = h; curName = h.name;
+        document.getElementById("filename").textContent = curName;
+        view.dispatch({ changes: { from: 0, to: view.state.doc.length, insert: text }, effects: refreshDraw.of(null) });
+        setDirty(false); toast("Opened " + curName);
+      } catch (e) { if (e.name !== "AbortError") { toast("Open failed"); console.warn(e); } }
+    }
+
+    document.getElementById("btn-save").addEventListener("click", saveFile);
+    document.getElementById("btn-open").addEventListener("click", openFile);
+    document.getElementById("btn-theme").addEventListener("click", cycleTheme);
+    document.getElementById("btn-autofix").addEventListener("click", autoFixAll);
+    document.getElementById("fixesClose").addEventListener("click", closeFixesPanel);
+    document.getElementById("fixesUndo").addEventListener("click", undoAutoFix);
+    document.getElementById("grammar-status").addEventListener("click", switchEngine);
+    document.getElementById("btn-fonts").addEventListener("click", (e) => { e.stopPropagation(); toggleFontMenu(); });
+    document.getElementById("btn-dest").addEventListener("click", (e) => { e.stopPropagation(); toggleDestMenu(); });
+    const timerEl = document.getElementById("timer");
+    timerEl.addEventListener("click", (e) => { e.stopPropagation(); onTimerClick(); });
+    timerEl.addEventListener("dblclick", (e) => { e.stopPropagation(); onTimerDblClick(); });
+    const soundEl = document.getElementById("sound");
+    soundEl.addEventListener("click", (e) => { e.stopPropagation(); onSoundClick(); });
+    soundEl.addEventListener("dblclick", (e) => { e.stopPropagation(); onSoundDblClick(); });
+    document.getElementById("btn-share").addEventListener("click", exportPDF);
+    document.getElementById("composeCopy").addEventListener("click", copyNative);
+    document.getElementById("btn-tasks").addEventListener("click", toggleTasksPanel);
+    document.getElementById("tasksClose").addEventListener("click", toggleTasksPanel);
+    document.getElementById("tasksShowDone").addEventListener("change", renderTasksPanel);
+    document.getElementById("btn-snippets").addEventListener("click", toggleSnipPanel);
+    document.getElementById("snipClose").addEventListener("click", closeSnipPanel);
+    document.getElementById("snipNew").addEventListener("click", captureSnippet);
+    // clicking in the document, or pressing Escape, closes the Tasks + Auto-fix side panels
+    function hideGramPopover() { document.getElementById("gramPopover").classList.remove("show"); }
+    function showGramPopoverAt(head) {
+      const el = document.getElementById("gramPopover");
+      const lint = currentLints.find(l => head >= l.from && head <= l.to);
+      if (!lint) { el.classList.remove("show"); return; }
+      const word = view.state.doc.sliceString(lint.from, lint.to);
+      el.innerHTML = "";
+      const msg = document.createElement("div"); msg.className = "gp-msg"; msg.textContent = lint.message; el.appendChild(msg);
+      for (const s of (lint.suggestions || []).slice(0, 4)) {
+        const b = document.createElement("button"); b.innerHTML = "Fix → <b>" + escapeHtml(s) + "</b>";
+        b.addEventListener("mousedown", (e) => { e.preventDefault(); view.dispatch({ changes: { from: lint.from, to: lint.to, insert: s }, selection: { anchor: lint.from + s.length } }); hideGramPopover(); scheduleLint(); view.focus(); });
+        el.appendChild(b);
+      }
+      const add = document.createElement("button"); add.className = "gp-add"; add.textContent = "+ Add “" + word + "” to dictionary";
+      add.addEventListener("mousedown", (e) => { e.preventDefault(); addToDictionary(word); hideGramPopover(); toast("Added “" + word + "” to your dictionary"); view.focus(); });
+      el.appendChild(add);
+      el.classList.add("show");
+      const c = view.coordsAtPos(lint.from);
+      const w = el.offsetWidth;
+      el.style.left = Math.max(8, Math.min((c ? c.left : 60), window.innerWidth - w - 8)) + "px";
+      el.style.top = ((c ? c.bottom : 80) + 6) + "px";
+    }
+    function closeSidePanels() {
+      if (tasksPanelOpen) toggleTasksPanel();
+      if (document.getElementById("fixesPanel").classList.contains("show")) closeFixesPanel();
+      hideGramPopover();
+    }
+    view.contentDOM.addEventListener("mousedown", closeSidePanels);
+    view.contentDOM.addEventListener("click", () => { const sel = view.state.selection.main; if (sel.empty) showGramPopoverAt(sel.head); else hideGramPopover(); });
+    window.addEventListener("keydown", (e) => { if (e.key === "Escape") { closeSidePanels(); closeSnipPanel(); closeSlash(); } });
+
+    function setFont(name) {
+      document.body.dataset.font = name;
+      localStorage.setItem("scribeNext.font", name);
+    }
+    const FONTS = [["mono","Mono"],["serif","Serif"],["lora","Lora"],["newsreader","Newsreader"],["sans","Inter"],["atkinson","Atkinson"],["lexend","Lexend"],["shantell","Shantell"],["caveat","Caveat"]];
+    function roomyOn() { const v = localStorage.getItem("scribeNext.roomy"); return v === null ? true : v === "1"; }
+    function setRoomy(on) { document.body.classList.toggle("roomy", on); localStorage.setItem("scribeNext.roomy", on ? "1" : "0"); }
+    let fontMenuKey = null;
+    function outsideFontMenu(e) { if (!e.target.closest("#fontMenu") && e.target.id !== "btn-fonts") closeFontMenu(); }
+    function closeFontMenu() {
+      document.getElementById("fontMenu").classList.remove("show");
+      if (fontMenuKey) { window.removeEventListener("keydown", fontMenuKey, true); fontMenuKey = null; }
+      document.removeEventListener("mousedown", outsideFontMenu, true);
+    }
+    function openFontMenu() {
+      const el = document.getElementById("fontMenu");
+      const cur = document.body.dataset.font || "mono";
+      el.innerHTML = "";
+      for (const [val, label] of FONTS) {
+        const b = document.createElement("button");
+        b.textContent = label;
+        if (val === cur) b.className = "sel";
+        b.addEventListener("mousedown", (e) => { e.preventDefault(); setFont(val); closeFontMenu(); });
+        el.appendChild(b);
+      }
+      const div = document.createElement("div");
+      div.style.cssText = "border-top:1px solid var(--rule); margin:4px 0;";
+      el.appendChild(div);
+      const sp = document.createElement("button");
+      sp.title = "Wider letter, word & line spacing — easier on the eyes (research-backed)";
+      sp.textContent = (roomyOn() ? "✓ " : "") + "Comfortable spacing";
+      sp.addEventListener("mousedown", (e) => { e.preventDefault(); setRoomy(!roomyOn()); sp.textContent = (roomyOn() ? "✓ " : "") + "Comfortable spacing"; });
+      el.appendChild(sp);
+      el.classList.add("show");
+      const r = document.getElementById("btn-fonts").getBoundingClientRect();
+      el.style.left = Math.max(8, Math.min(r.right - el.offsetWidth, window.innerWidth - el.offsetWidth - 8)) + "px";
+      el.style.top = (r.top - el.offsetHeight - 6) + "px";
+      fontMenuKey = (e) => { if (e.key === "Escape") { e.preventDefault(); closeFontMenu(); } };
+      window.addEventListener("keydown", fontMenuKey, true);
+      setTimeout(() => document.addEventListener("mousedown", outsideFontMenu, true), 0);
+    }
+    function toggleFontMenu() {
+      if (document.getElementById("fontMenu").classList.contains("show")) closeFontMenu(); else openFontMenu();
+    }
+
+    const DESTS = [
+      ["md", "Markdown", "plain writing — copy with ⌘C"],
+      ["whatsapp", "WhatsApp", "*bold*  _italic_  ~strike~"],
+      ["telegram", "Telegram", "**bold**  __italic__  ||spoiler||"],
+      ["gmail", "Gmail (rich)", "formatted paste"],
+    ];
+    let destMenuKey = null;
+    function outsideDestMenu(e) { if (!e.target.closest("#destMenu") && e.target.id !== "btn-dest") closeDestMenu(); }
+    function closeDestMenu() {
+      document.getElementById("destMenu").classList.remove("show");
+      if (destMenuKey) { window.removeEventListener("keydown", destMenuKey, true); destMenuKey = null; }
+      document.removeEventListener("mousedown", outsideDestMenu, true);
+    }
+    function openDestMenu() {
+      const el = document.getElementById("destMenu");
+      el.innerHTML = "";
+      for (const [val, label, hint] of DESTS) {
+        const b = document.createElement("button");
+        b.innerHTML = label + (hint ? "<small>" + hint + "</small>" : "");
+        if (val === destination) b.className = "sel";
+        b.addEventListener("mousedown", (e) => { e.preventDefault(); setDestination(val); closeDestMenu(); });
+        el.appendChild(b);
+      }
+      el.classList.add("show");
+      const r = document.getElementById("btn-dest").getBoundingClientRect();
+      el.style.left = Math.max(8, Math.min(r.right - el.offsetWidth, window.innerWidth - el.offsetWidth - 8)) + "px";
+      el.style.top = (r.top - el.offsetHeight - 6) + "px";
+      destMenuKey = (e) => { if (e.key === "Escape") { e.preventDefault(); closeDestMenu(); } };
+      window.addEventListener("keydown", destMenuKey, true);
+      setTimeout(() => document.addEventListener("mousedown", outsideDestMenu, true), 0);
+    }
+    function toggleDestMenu() {
+      if (document.getElementById("destMenu").classList.contains("show")) closeDestMenu(); else openDestMenu();
+    }
+
+    // ---------- gentle focus / flow timer (opt-in, no buzzer) ----------
+    const timer = { mode: null, running: false, startMs: 0, accMs: 0, durationMs: 0, tickId: null };
+    function fmtClock(ms) { const s = Math.max(0, Math.round(ms / 1000)); return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0"); }
+    function timerElapsed() { return timer.accMs + (timer.running ? (Date.now() - timer.startMs) : 0); }
+    function renderTimer() {
+      const el = document.getElementById("timer");
+      if (!timer.mode) { el.textContent = "⏱"; el.className = "btn ic"; return; }
+      const elapsed = timerElapsed();
+      if (timer.mode === "focus") {
+        const rem = timer.durationMs - elapsed;
+        if (rem <= 0) { endFocus(); return; }
+        el.textContent = fmtClock(rem);
+      } else {
+        el.textContent = fmtClock(elapsed);
+      }
+      el.className = "btn ic" + (timer.running ? " running" : "");
+    }
+    function startTick() { if (!timer.tickId) timer.tickId = setInterval(renderTimer, 250); }
+    function stopTick() { clearInterval(timer.tickId); timer.tickId = null; }
+    function startFlow() { Object.assign(timer, { mode: "flow", durationMs: 0, accMs: 0, startMs: Date.now(), running: true }); startTick(); renderTimer(); }
+    function startFocus(min) { Object.assign(timer, { mode: "focus", durationMs: min * 60000, accMs: 0, startMs: Date.now(), running: true }); startTick(); renderTimer(); }
+    function pauseTimer() { if (!timer.running) return; timer.accMs = timerElapsed(); timer.running = false; renderTimer(); }
+    function resumeTimer() { if (timer.running || !timer.mode) return; timer.startMs = Date.now(); timer.running = true; startTick(); renderTimer(); }
+    function resetTimer() { stopTick(); Object.assign(timer, { mode: null, running: false, accMs: 0, durationMs: 0 }); renderTimer(); }
+    function endFocus() {
+      stopTick(); timer.running = false; timer.accMs = timer.durationMs;
+      const el = document.getElementById("timer"); el.textContent = "0:00"; el.className = "btn ic ended";
+      toast("Time's up — nice work. Take a break 🌿");
+      setTimeout(() => { if (timer.mode === "focus" && !timer.running) resetTimer(); }, 4000);
+    }
+    let timerMenuKey = null;
+    function outsideTimerMenu(e) { if (!e.target.closest("#timerMenu") && e.target.id !== "timer") closeTimerMenu(); }
+    function closeTimerMenu() {
+      document.getElementById("timerMenu").classList.remove("show");
+      if (timerMenuKey) { window.removeEventListener("keydown", timerMenuKey, true); timerMenuKey = null; }
+      document.removeEventListener("mousedown", outsideTimerMenu, true);
+    }
+    function openTimerMenu() {
+      const el = document.getElementById("timerMenu"); el.innerHTML = "";
+      const add = (label, fn) => { const b = document.createElement("button"); b.innerHTML = label; b.addEventListener("mousedown", (e) => { e.preventDefault(); fn(); closeTimerMenu(); }); el.appendChild(b); };
+      if (!timer.mode) {
+        add("▶ Flow <small>count up — no pressure</small>", startFlow);
+        add("▶ Focus 15 min", () => startFocus(15));
+        add("▶ Focus 25 min", () => startFocus(25));
+        add("▶ Focus 50 min", () => startFocus(50));
+      } else {
+        if (timer.running) add("⏸ Pause", pauseTimer); else add("▶ Resume", resumeTimer);
+        add("↺ Reset", resetTimer);
+      }
+      el.classList.add("show");
+      const r = document.getElementById("timer").getBoundingClientRect();
+      el.style.left = Math.max(8, Math.min(r.right - el.offsetWidth, window.innerWidth - el.offsetWidth - 8)) + "px";
+      el.style.top = (r.top - el.offsetHeight - 6) + "px";
+      timerMenuKey = (e) => { if (e.key === "Escape") { e.preventDefault(); closeTimerMenu(); } };
+      window.addEventListener("keydown", timerMenuKey, true);
+      setTimeout(() => document.addEventListener("mousedown", outsideTimerMenu, true), 0);
+    }
+    function toggleTimerMenu() {
+      if (document.getElementById("timerMenu").classList.contains("show")) closeTimerMenu(); else openTimerMenu();
+    }
+    // idle: click opens the start menu. running/paused: single click = pause/resume, double click = reset.
+    let timerPendingSingle = null;
+    function onTimerClick() {
+      if (!timer.mode) { toggleTimerMenu(); return; }
+      if (timerPendingSingle) return; // part of a double-click
+      timerPendingSingle = setTimeout(() => {
+        timerPendingSingle = null;
+        if (timer.running) pauseTimer(); else resumeTimer();
+      }, 260);
+    }
+    function onTimerDblClick() {
+      if (timerPendingSingle) { clearTimeout(timerPendingSingle); timerPendingSingle = null; }
+      if (timer.mode) resetTimer();
+    }
+
+    // ---------- focus noise (white/pink/brown — synthesized offline, no files) ----------
+    let audioCtx = null, noiseSource = null, noiseGain = null;
+    const sound = { track: null, playing: false };
+    function ensureAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); return audioCtx; }
+    function makeNoiseBuffer(ctx, type) {
+      const n = ctx.sampleRate * 2;
+      const buffer = ctx.createBuffer(1, n, ctx.sampleRate);
+      const d = buffer.getChannelData(0);
+      if (type === "pink") {
+        let b0=0,b1=0,b2=0,b3=0,b4=0,b5=0,b6=0;
+        for (let i=0;i<n;i++){ const w=Math.random()*2-1;
+          b0=0.99886*b0+w*0.0555179; b1=0.99332*b1+w*0.0750759; b2=0.96900*b2+w*0.1538520;
+          b3=0.86650*b3+w*0.3104856; b4=0.55000*b4+w*0.5329522; b5=-0.7616*b5-w*0.0168980;
+          d[i]=(b0+b1+b2+b3+b4+b5+b6+w*0.5362)*0.11; b6=w*0.115926; }
+      } else if (type === "brown") {
+        let last=0; for (let i=0;i<n;i++){ const w=Math.random()*2-1; last=(last+0.02*w)/1.02; d[i]=last*3.5; }
+      } else { for (let i=0;i<n;i++) d[i]=Math.random()*2-1; } // white
+      return buffer;
+    }
+    function renderSound() {
+      const el = document.getElementById("sound");
+      el.className = "btn ic" + (sound.playing ? " playing" : "");
+      el.title = sound.track ? (sound.track[0].toUpperCase()+sound.track.slice(1)) + " noise — click to " + (sound.playing?"pause":"resume") + " · double-click to stop"
+        : "Focus noise — click to choose · click to pause · double-click to stop";
+    }
+    function startNoise(type) {
+      stopNoise(true);
+      const ctx = ensureAudio();
+      noiseSource = ctx.createBufferSource(); noiseSource.buffer = makeNoiseBuffer(ctx, type); noiseSource.loop = true;
+      noiseGain = ctx.createGain(); noiseGain.gain.value = 0.12;
+      noiseSource.connect(noiseGain).connect(ctx.destination);
+      noiseSource.start();
+      if (ctx.state === "suspended") ctx.resume();
+      sound.track = type; sound.playing = true; renderSound();
+    }
+    function pauseNoise() { if (audioCtx && sound.playing) { audioCtx.suspend(); sound.playing = false; renderSound(); } }
+    function resumeNoise() { if (audioCtx && sound.track && !sound.playing) { audioCtx.resume(); sound.playing = true; renderSound(); } }
+    function stopNoise(silent) {
+      if (noiseSource) { try { noiseSource.stop(); } catch {} try { noiseSource.disconnect(); } catch {} noiseSource = null; }
+      sound.track = null; sound.playing = false;
+      if (!silent) renderSound();
+    }
+    let soundMenuKey = null;
+    function outsideSoundMenu(e) { if (!e.target.closest("#soundMenu") && e.target.id !== "sound") closeSoundMenu(); }
+    function closeSoundMenu() {
+      document.getElementById("soundMenu").classList.remove("show");
+      if (soundMenuKey) { window.removeEventListener("keydown", soundMenuKey, true); soundMenuKey = null; }
+      document.removeEventListener("mousedown", outsideSoundMenu, true);
+    }
+    function openSoundMenu() {
+      const el = document.getElementById("soundMenu"); el.innerHTML = "";
+      const add = (label, fn) => { const b = document.createElement("button"); b.innerHTML = label; b.addEventListener("mousedown",(e)=>{e.preventDefault();fn();closeSoundMenu();}); el.appendChild(b); };
+      add("White noise <small>strong ADHD evidence</small>", () => startNoise("white"));
+      add("Pink noise <small>strong ADHD evidence</small>", () => startNoise("pink"));
+      add("Brown noise <small>popular · less proven</small>", () => startNoise("brown"));
+      el.classList.add("show");
+      const r = document.getElementById("sound").getBoundingClientRect();
+      el.style.left = Math.max(8, Math.min(r.right - el.offsetWidth, window.innerWidth - el.offsetWidth - 8)) + "px";
+      el.style.top = (r.top - el.offsetHeight - 6) + "px";
+      soundMenuKey = (e) => { if (e.key === "Escape") { e.preventDefault(); closeSoundMenu(); } };
+      window.addEventListener("keydown", soundMenuKey, true);
+      setTimeout(() => document.addEventListener("mousedown", outsideSoundMenu, true), 0);
+    }
+    function toggleSoundMenu() { if (document.getElementById("soundMenu").classList.contains("show")) closeSoundMenu(); else openSoundMenu(); }
+
+    // ---------- share / export ----------
+    function escapeHtml(s) { return s.replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c])); }
+    function docForShare() {
+      const sel = view.state.selection.main;
+      const text = sel.empty ? view.state.doc.toString() : view.state.sliceDoc(sel.from, sel.to);
+      return text.replace(/^[ \t]*⟦draw:([a-z0-9]+)⟧[ \t]*$/gm, (m, id) => { const n = (scenes.get(id)?.name || "").trim(); return "[drawing" + (n ? ": " + n : "") + "]"; });
+    }
+    function fallbackCopy(text) { const ta = document.createElement("textarea"); ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0"; document.body.appendChild(ta); ta.select(); try { document.execCommand("copy"); } catch {} ta.remove(); }
+    async function buildPrintHTML() {
+      const marked = (await import("https://esm.sh/marked@12")).marked;
+      marked.setOptions({ gfm: true });
+      const lines = view.state.doc.toString().split("\n");
+      let html = "", buf = [];
+      const flush = () => { if (buf.length) { html += marked.parse(buf.join("\n")); buf = []; } };
+      for (const line of lines) {
+        const m = /^[ \t]*⟦draw:([a-z0-9]+)⟧[ \t]*$/.exec(line);
+        if (m) {
+          flush();
+          const sc = scenes.get(m[1]);
+          if (sc && (sc.elements || []).length) {
+            try {
+              const svg = await Excalidraw.exportToSvg({ elements: sc.elements, appState: { exportBackground: false }, files: sc.files || {} });
+              const name = (sc.name || "").trim();
+              html += "<figure>" + (name ? "<figcaption>" + escapeHtml(name) + "</figcaption>" : "") + svg.outerHTML + "</figure>";
+            } catch (e) { console.warn("pdf draw", e); }
+          }
+        } else buf.push(line);
+      }
+      flush();
+      return html;
+    }
+    async function exportPDF() {
+      toast("Preparing PDF…");
+      const html = await buildPrintHTML();
+      const printArea = document.getElementById("printArea");
+      printArea.innerHTML = html;
+      window.__lastPrintHTML = html;
+      const prevTitle = document.title;
+      document.title = catName(curName).replace(/\.cat$/i, "") || "scribe";
+      document.body.classList.add("printing");
+      window.print();
+      document.body.classList.remove("printing");
+      document.title = prevTitle;
+    }
+    let soundPendingSingle = null;
+    function onSoundClick() {
+      if (!sound.track) { toggleSoundMenu(); return; }
+      if (soundPendingSingle) return;
+      soundPendingSingle = setTimeout(() => { soundPendingSingle = null; if (sound.playing) pauseNoise(); else resumeNoise(); }, 260);
+    }
+    function onSoundDblClick() { if (soundPendingSingle) { clearTimeout(soundPendingSingle); soundPendingSingle = null; } if (sound.track) stopNoise(); }
+
+    // ---------- paste an image: OCR to text, or insert as an annotatable drawing ----------
+    let ocrWorker = null;
+    async function getOcrWorker() {
+      if (ocrWorker) return ocrWorker;
+      toast("Loading OCR engine…");
+      const tess = await import("https://esm.sh/tesseract.js@5");
+      ocrWorker = await tess.createWorker("eng");
+      return ocrWorker;
+    }
+    function blobToDataURL(blob) { return new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsDataURL(blob); }); }
+    function imageDims(src) { return new Promise((res) => { const img = new Image(); img.onload = () => res({ w: img.naturalWidth || 400, h: img.naturalHeight || 300 }); img.onerror = () => res({ w: 400, h: 300 }); img.src = src; }); }
+    function loadImg(src) { return new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = src; }); }
+    // Shrink huge pastes + re-encode to WebP (high quality), keeping the original only if it's already smaller.
+    async function optimizeImage(blob) {
+      const origURL = await blobToDataURL(blob);
+      try {
+        const img = await loadImg(origURL);
+        const maxDim = 1800;
+        let w = img.naturalWidth, h = img.naturalHeight;
+        if (Math.max(w, h) > maxDim) { const s = maxDim / Math.max(w, h); w = Math.round(w * s); h = Math.round(h * s); }
+        const canvas = document.createElement("canvas"); canvas.width = w; canvas.height = h;
+        canvas.getContext("2d").drawImage(img, 0, 0, w, h);
+        let out = canvas.toDataURL("image/webp", 0.85);
+        if (!out.startsWith("data:image/webp")) out = canvas.toDataURL("image/png");
+        if (out.length < origURL.length) return { dataURL: out, w, h, mime: out.slice(5, out.indexOf(";")) };
+        return { dataURL: origURL, w: img.naturalWidth, h: img.naturalHeight, mime: blob.type || "image/png" };
+      } catch { return { dataURL: origURL, w: 400, h: 300, mime: blob.type || "image/png" }; }
+    }
+
+    async function ocrPaste(blob) {
+      toast("Reading image…");
+      try {
+        const worker = await getOcrWorker();
+        const { data } = await worker.recognize(blob);
+        const text = (data.text || "").trim();
+        if (!text) { toast("No text found in image"); return; }
+        const sel = view.state.selection.main;
+        view.dispatch({ changes: { from: sel.from, to: sel.to, insert: text }, selection: { anchor: sel.from + text.length } });
+        const wc = (text.match(/\S+/g) || []).length;
+        toast("OCR: pasted " + wc + " word" + (wc === 1 ? "" : "s"));
+      } catch (err) { console.error("OCR", err); toast("OCR failed: " + (err?.message || "?")); }
+    }
+
+    async function imagePaste(blob) {
+      try {
+        const opt = await optimizeImage(blob);
+        const id = makeId();
+        const fileId = "f" + makeId();
+        const now = Date.now();
+        const imgEl = { type: "image", id: "img" + makeId(), x: 0, y: 0, width: opt.w, height: opt.h, angle: 0,
+          strokeColor: "transparent", backgroundColor: "transparent", fillStyle: "solid", strokeWidth: 1, strokeStyle: "solid",
+          roughness: 1, opacity: 100, groupIds: [], frameId: null, roundness: null, seed: 1, version: 1, versionNonce: 1,
+          isDeleted: false, boundElements: null, updated: now, link: null, locked: false, status: "saved", fileId, scale: [1, 1] };
+        scenes.set(id, { elements: [imgEl], appState: { viewBackgroundColor: "#ffffff" },
+          files: { [fileId]: { mimeType: opt.mime, id: fileId, dataURL: opt.dataURL, created: now } } });
+        bump(id);
+        const line = view.state.doc.lineAt(view.state.selection.main.head);
+        const ins = (line.text.trim() === "" ? "" : "\n") + "⟦draw:" + id + "⟧\n";
+        view.dispatch({ changes: { from: line.to, insert: ins }, selection: { anchor: line.to + ins.length } });
+        scheduleSave();
+        toast("Image added — click E to annotate");
+      } catch (e) { console.error("image paste", e); toast("Couldn't insert image"); }
+    }
+
+    let pasteKeyHandler = null, pasteCountdownIv = null;
+    function endPasteCountdown() {
+      clearInterval(pasteCountdownIv); pasteCountdownIv = null;
+      const el = document.getElementById("pasteChooser");
+      el.classList.remove("show"); el.onmousedown = null;
+      if (pasteKeyHandler) { window.removeEventListener("keydown", pasteKeyHandler, true); pasteKeyHandler = null; }
+      view.focus();
+    }
+    function startPasteCountdown(blob) {
+      let remaining = 3;
+      const el = document.getElementById("pasteChooser");
+      const render = () => { el.innerHTML =
+        '<div class="pc-count">Pasting image in <b>' + remaining + '</b>s…</div>' +
+        '<div class="pc-hint"><b>Enter</b> = extract text · <b>Esc</b> = cancel · click = paste now</div>'; };
+      render();
+      el.onmousedown = (e) => { e.preventDefault(); endPasteCountdown(); imagePaste(blob); };
+      const c = view.coordsAtPos(view.state.selection.main.head);
+      el.style.left = Math.max(8, Math.min((c ? c.left : 60), window.innerWidth - 280)) + "px";
+      el.style.top = ((c ? c.bottom : 60) + 6) + "px";
+      el.classList.add("show");
+      pasteCountdownIv = setInterval(() => {
+        remaining--;
+        if (remaining <= 0) { endPasteCountdown(); imagePaste(blob); }
+        else render();
+      }, 1000);
+      pasteKeyHandler = (e) => {
+        if (e.key === "Enter") { e.preventDefault(); endPasteCountdown(); ocrPaste(blob); }
+        else if (e.key === "Escape") { e.preventDefault(); endPasteCountdown(); toast("Paste cancelled"); }
+      };
+      window.addEventListener("keydown", pasteKeyHandler, true);
+    }
+
+    view.contentDOM.addEventListener("paste", (e) => {
+      const items = e.clipboardData?.items;
+      if (!items) return;
+      let imageItem = null, hasText = false;
+      for (const it of items) {
+        if (it.kind === "string" && it.type === "text/plain") hasText = true;
+        if (it.kind === "file" && it.type.startsWith("image/")) imageItem = it;
+      }
+      if (!imageItem || hasText) return; // normal text paste → let CodeMirror handle it
+      e.preventDefault(); e.stopPropagation();
+      const blob = imageItem.getAsFile();
+      if (!blob) { toast("No image data"); return; }
+      startPasteCountdown(blob);
+    });
+
+    // ---------- misc ----------
+    function setDirty(d) { document.getElementById("dirty").textContent = d ? "·" : ""; }
+    let toastTimer = null;
+    function toast(msg) {
+      const el = document.getElementById("toast");
+      el.textContent = msg; el.classList.add("show");
+      clearTimeout(toastTimer); toastTimer = setTimeout(() => el.classList.remove("show"), 1600);
+    }
+
+    window.__scribeReady = true;
+    window.__scribeView = view;
+    setTheme(localStorage.getItem("scribeNext.theme") || "light");
+    setDestination(destination);
+    document.body.dataset.font = localStorage.getItem("scribeNext.font") || "lexend";
+    if (roomyOn()) document.body.classList.add("roomy");
+    initGrammar();
+    view.focus();
+  } catch (err) {
+    showBootError((err && err.stack) ? err.stack : String(err));
+    console.error(err);
+  }
+  </script>
+  <script>
+    // PWA: register the service worker (no-ops on file:// — only works over https/localhost)
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("service-worker.js").catch((e) => console.warn("SW registration skipped:", e.message));
+      });
+    }
+  </script>
+</body>
+</html>
