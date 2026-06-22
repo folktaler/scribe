@@ -34,6 +34,11 @@
   .row { display: flex; align-items: center; gap: 10px; }
   #filename { color: var(--fg); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   #topleft { flex: 1; min-width: 0; }
+  #fileBtn { display: inline-flex; align-items: center; gap: 5px; max-width: 100%; background: none; border: 0; border-radius: 5px;
+    padding: 3px 7px; margin: 0; font: inherit; color: var(--muted); cursor: pointer; }
+  #fileBtn:hover { background: var(--rule); }
+  #fileBtn .caret { font-size: 9px; color: var(--muted); flex-shrink: 0; }
+  #fileMenu .fm-sub { float: right; color: var(--muted); font-size: 11px; margin-left: 16px; }
   #topright { flex-shrink: 0; gap: 7px; }
   .btn.ic { min-width: 28px; padding: 4px 6px; text-align: center; }
   #bottomstrip { position: fixed; bottom: 0; left: 0; right: 0; height: 30px; z-index: 5;
@@ -163,9 +168,9 @@
   #read-status.over #rd-grade { color: #e54848; }
   .read-hard { background: color-mix(in srgb, #d4a35a 22%, transparent); border-radius: 2px; }
   .read-veryhard { background: color-mix(in srgb, #e54848 22%, transparent); border-radius: 2px; }
-  #readMenu .rd-head { padding: 6px 11px 3px; font-size: 11px; color: var(--muted); }
-  #readMenu .rd-sub { color: var(--muted); font-size: 11px; }
-  #readMenu .rd-toggle { border-top: 1px solid var(--rule); margin-top: 4px; }
+  #fileMenu .rd-head { padding: 6px 11px 3px; font-size: 11px; color: var(--muted); }
+  #fileMenu .rd-sub { color: var(--muted); font-size: 11px; }
+  #fileMenu .rd-toggle { border-top: 1px solid var(--rule); margin-top: 4px; }
   /* sheet block (inline mini-spreadsheet) */
   .sheetblock { border: 1px solid var(--rule); border-radius: 8px; margin: 10px 0; background: var(--card-bg); overflow-x: auto; }
   .sheetblock-bar { display: flex; align-items: center; justify-content: space-between; padding: 4px 8px; border-bottom: 1px solid var(--rule); }
@@ -297,12 +302,12 @@
   #readPanel .rd-targets button.sel { background: var(--accent); color: #fff; border-color: var(--accent); }
   #readPanel #readHL { width: 100%; font-size: 12px; }
   #readPanel #readHL.on { color: var(--accent); border-color: var(--accent); }
-  #pasteChooser, #fontMenu, #timerMenu, #soundMenu, #shareMenu, #destMenu, #readMenu, #gramPopover { position: fixed; z-index: 40; min-width: 230px; background: var(--card-bg);
+  #pasteChooser, #fontMenu, #timerMenu, #soundMenu, #shareMenu, #destMenu, #fileMenu, #gramPopover { position: fixed; z-index: 40; min-width: 230px; background: var(--card-bg);
     border: 1px solid var(--rule); border-radius: 8px; box-shadow: var(--shadow); padding: 5px; display: none; }
-  #pasteChooser.show, #fontMenu.show, #timerMenu.show, #soundMenu.show, #shareMenu.show, #destMenu.show, #readMenu.show, #gramPopover.show { display: block; }
-  #pasteChooser button, #fontMenu button, #timerMenu button, #soundMenu button, #shareMenu button, #destMenu button, #readMenu button, #gramPopover button { display: block; width: 100%; text-align: left; background: none; border: 0;
+  #pasteChooser.show, #fontMenu.show, #timerMenu.show, #soundMenu.show, #shareMenu.show, #destMenu.show, #fileMenu.show, #gramPopover.show { display: block; }
+  #pasteChooser button, #fontMenu button, #timerMenu button, #soundMenu button, #shareMenu button, #destMenu button, #fileMenu button, #gramPopover button { display: block; width: 100%; text-align: left; background: none; border: 0;
     padding: 7px 11px; border-radius: 5px; color: var(--fg); font-family: inherit; font-size: 13px; cursor: pointer; }
-  #pasteChooser button:hover, #pasteChooser button.sel, #fontMenu button:hover, #fontMenu button.sel, #timerMenu button:hover, #soundMenu button:hover, #shareMenu button:hover, #destMenu button:hover, #destMenu button.sel, #readMenu button:hover, #readMenu button.sel, #gramPopover button:hover { background: var(--rule); }
+  #pasteChooser button:hover, #pasteChooser button.sel, #fontMenu button:hover, #fontMenu button.sel, #timerMenu button:hover, #soundMenu button:hover, #shareMenu button:hover, #destMenu button:hover, #destMenu button.sel, #fileMenu button:hover, #fileMenu button.sel, #gramPopover button:hover { background: var(--rule); }
   #gramPopover .gp-msg { padding: 7px 11px 4px; font-size: 12px; color: var(--muted); max-width: 280px; }
   #gramPopover button b { color: var(--accent); font-weight: 500; }
   #gramPopover .gp-add { color: var(--accent); border-top: 1px solid var(--rule); margin-top: 3px; }
@@ -349,16 +354,17 @@
 </head>
 <body>
   <div id="topbar">
-    <div class="row" id="topleft"><span id="filename">untitled.kitten</span><span id="dirty"></span></div>
+    <div class="row" id="topleft">
+      <button id="fileBtn" title="File &amp; settings — Save, Open, Export, Theme, Font"><span id="filename">untitled.kitten</span><span id="dirty"></span><span class="caret">▾</span></button>
+    </div>
     <div class="row" id="topright">
       <span class="gram-group">
         <span id="grammar-status" title="Grammar — click to switch engine (blue = Harper offline, green = LanguageTool)"><span class="gram-dot"></span><span id="gram-count"></span></span>
         <button class="btn ic" id="btn-autofix" title="Auto-fix grammar (also flags table calculation errors)">AF</button>
       </span>
       <span id="read-status" title="Readability — click to set audience level"><span class="rd-ico">Aa</span><span id="rd-grade"></span></span>
-      <button class="btn ic" id="btn-save" title="Save (⌘S)">S</button>
-      <button class="btn ic" id="btn-open" title="Open (⌘O)">O</button>
-      <button class="btn ic" id="btn-theme" title="Theme (light / dark / sepia)">☀</button>
+      <button class="btn ic" id="timer" title="Timer — click to start · click to pause · double-click to reset">⏱</button>
+      <button class="btn ic" id="sound" title="Focus noise — click to choose · click to pause · double-click to stop">♪</button>
     </div>
   </div>
   <div id="composeBar">
@@ -370,13 +376,9 @@
   <div id="bottomstrip">
     <span id="drawhint">type <b>/</b> for snippets · <b>/draw</b> · <b>/task</b></span>
     <div class="row" style="gap:8px">
-      <button class="btn ic" id="timer" title="Timer — click to start · click to pause · double-click to reset">⏱</button>
-      <button class="btn ic" id="sound" title="Focus noise — click to choose · click to pause · double-click to stop">♪</button>
       <button class="btn ic" id="btn-snippets" title="Snippets — manage &amp; insert (type / in the doc)">❏</button>
       <button class="btn ic" id="btn-tasks" title="All tasks (T)">T</button>
-      <button class="btn ic" id="btn-fonts" title="Editor font (F)">F</button>
       <button class="btn ic" id="btn-dest" title="Compose for an app — WhatsApp / Telegram / Gmail">MD</button>
-      <button class="btn ic" id="btn-share" title="Export to PDF">⬇</button>
     </div>
   </div>
 
@@ -418,6 +420,7 @@
   </div>
   <div id="pasteChooser"></div>
   <div id="slashMenu"></div>
+  <div id="fileMenu"></div>
   <div id="fontMenu"></div>
   <div id="timerMenu"></div>
   <div id="destMenu"></div>
@@ -1964,9 +1967,7 @@
       } catch (e) { if (e.name !== "AbortError") { toast("Open failed"); console.warn(e); } }
     }
 
-    document.getElementById("btn-save").addEventListener("click", saveFile);
-    document.getElementById("btn-open").addEventListener("click", openFile);
-    document.getElementById("btn-theme").addEventListener("click", cycleTheme);
+    document.getElementById("fileBtn").addEventListener("click", (e) => { e.stopPropagation(); toggleFileMenu(); });
     document.getElementById("btn-autofix").addEventListener("click", autoFixAll);
     document.getElementById("fixesClose").addEventListener("click", closeFixesPanel);
     document.getElementById("fixesUndo").addEventListener("click", undoAutoFix);
@@ -1974,7 +1975,6 @@
     document.getElementById("read-status").addEventListener("click", toggleReadPanel);
     document.getElementById("readClose").addEventListener("click", closeReadPanel);
     document.getElementById("readHL").addEventListener("click", () => { localStorage.setItem("scribeNext.readHighlight", readHighlightOn() ? "0" : "1"); computeReadability(); });
-    document.getElementById("btn-fonts").addEventListener("click", (e) => { e.stopPropagation(); toggleFontMenu(); });
     document.getElementById("btn-dest").addEventListener("click", (e) => { e.stopPropagation(); toggleDestMenu(); });
     const timerEl = document.getElementById("timer");
     timerEl.addEventListener("click", (e) => { e.stopPropagation(); onTimerClick(); });
@@ -1982,7 +1982,6 @@
     const soundEl = document.getElementById("sound");
     soundEl.addEventListener("click", (e) => { e.stopPropagation(); onSoundClick(); });
     soundEl.addEventListener("dblclick", (e) => { e.stopPropagation(); onSoundDblClick(); });
-    document.getElementById("btn-share").addEventListener("click", exportPDF);
     document.getElementById("composeCopy").addEventListener("click", copyNative);
     document.getElementById("btn-tasks").addEventListener("click", toggleTasksPanel);
     document.getElementById("tasksClose").addEventListener("click", toggleTasksPanel);
@@ -2031,7 +2030,7 @@
     function roomyOn() { const v = localStorage.getItem("scribeNext.roomy"); return v === null ? true : v === "1"; }
     function setRoomy(on) { document.body.classList.toggle("roomy", on); localStorage.setItem("scribeNext.roomy", on ? "1" : "0"); }
     let fontMenuKey = null;
-    function outsideFontMenu(e) { if (!e.target.closest("#fontMenu") && e.target.id !== "btn-fonts") closeFontMenu(); }
+    function outsideFontMenu(e) { if (!e.target.closest("#fontMenu")) closeFontMenu(); }
     function closeFontMenu() {
       document.getElementById("fontMenu").classList.remove("show");
       if (fontMenuKey) { window.removeEventListener("keydown", fontMenuKey, true); fontMenuKey = null; }
@@ -2057,15 +2056,54 @@
       sp.addEventListener("mousedown", (e) => { e.preventDefault(); setRoomy(!roomyOn()); sp.textContent = (roomyOn() ? "✓ " : "") + "Comfortable spacing"; });
       el.appendChild(sp);
       el.classList.add("show");
-      const r = document.getElementById("btn-fonts").getBoundingClientRect();
-      el.style.left = Math.max(8, Math.min(r.right - el.offsetWidth, window.innerWidth - el.offsetWidth - 8)) + "px";
-      el.style.top = (r.top - el.offsetHeight - 6) + "px";
+      const r = document.getElementById("fileBtn").getBoundingClientRect();
+      el.style.left = Math.max(8, Math.min(r.left, window.innerWidth - el.offsetWidth - 8)) + "px";
+      el.style.top = (r.bottom + 6) + "px";
       fontMenuKey = (e) => { if (e.key === "Escape") { e.preventDefault(); closeFontMenu(); } };
       window.addEventListener("keydown", fontMenuKey, true);
       setTimeout(() => document.addEventListener("mousedown", outsideFontMenu, true), 0);
     }
     function toggleFontMenu() {
       if (document.getElementById("fontMenu").classList.contains("show")) closeFontMenu(); else openFontMenu();
+    }
+
+    // ----- File & settings menu (under the filename) -----
+    let fileMenuKey = null;
+    function outsideFileMenu(e) { if (!e.target.closest("#fileMenu") && !e.target.closest("#fileBtn")) closeFileMenu(); }
+    function closeFileMenu() {
+      document.getElementById("fileMenu").classList.remove("show");
+      if (fileMenuKey) { window.removeEventListener("keydown", fileMenuKey, true); fileMenuKey = null; }
+      document.removeEventListener("mousedown", outsideFileMenu, true);
+    }
+    function renderFileMenu() {
+      const el = document.getElementById("fileMenu"); el.innerHTML = "";
+      const item = (label, sub, fn) => {
+        const b = document.createElement("button");
+        b.innerHTML = esc(label) + (sub ? ' <span class="fm-sub">' + esc(sub) + "</span>" : "");
+        b.addEventListener("mousedown", (e) => { e.preventDefault(); fn(); });
+        el.appendChild(b);
+      };
+      item("Save", "⌘S", () => { closeFileMenu(); saveFile(); });
+      item("Open", "⌘O", () => { closeFileMenu(); openFile(); });
+      item("Export / Share", "PDF", () => { closeFileMenu(); exportPDF(); });
+      const div = document.createElement("div"); div.style.cssText = "border-top:1px solid var(--rule); margin:4px 0;"; el.appendChild(div);
+      const themeName = { light: "☀ Light", dark: "☾ Dark", sepia: "☕ Sepia" }[document.body.dataset.theme || "light"];
+      item("Theme", themeName, () => { cycleTheme(); renderFileMenu(); });
+      const fontName = (FONTS.find(f => f[0] === (document.body.dataset.font || "lexend")) || [null, "Lexend"])[1];
+      item("Font", fontName, () => { closeFileMenu(); openFontMenu(); });
+    }
+    function openFileMenu() {
+      renderFileMenu();
+      const el = document.getElementById("fileMenu"); el.classList.add("show");
+      const r = document.getElementById("fileBtn").getBoundingClientRect();
+      el.style.left = Math.max(8, r.left) + "px";
+      el.style.top = (r.bottom + 6) + "px";
+      fileMenuKey = (e) => { if (e.key === "Escape") { e.preventDefault(); closeFileMenu(); } };
+      window.addEventListener("keydown", fileMenuKey, true);
+      setTimeout(() => document.addEventListener("mousedown", outsideFileMenu, true), 0);
+    }
+    function toggleFileMenu() {
+      if (document.getElementById("fileMenu").classList.contains("show")) closeFileMenu(); else openFileMenu();
     }
 
     // ----- readability: Flesch–Kincaid grade (the same formula Hemingway/textstat use) -----
@@ -2261,7 +2299,7 @@
       el.classList.add("show");
       const r = document.getElementById("timer").getBoundingClientRect();
       el.style.left = Math.max(8, Math.min(r.right - el.offsetWidth, window.innerWidth - el.offsetWidth - 8)) + "px";
-      el.style.top = (r.top - el.offsetHeight - 6) + "px";
+      el.style.top = (r.bottom + 6) + "px";
       timerMenuKey = (e) => { if (e.key === "Escape") { e.preventDefault(); closeTimerMenu(); } };
       window.addEventListener("keydown", timerMenuKey, true);
       setTimeout(() => document.addEventListener("mousedown", outsideTimerMenu, true), 0);
@@ -2342,7 +2380,7 @@
       el.classList.add("show");
       const r = document.getElementById("sound").getBoundingClientRect();
       el.style.left = Math.max(8, Math.min(r.right - el.offsetWidth, window.innerWidth - el.offsetWidth - 8)) + "px";
-      el.style.top = (r.top - el.offsetHeight - 6) + "px";
+      el.style.top = (r.bottom + 6) + "px";
       soundMenuKey = (e) => { if (e.key === "Escape") { e.preventDefault(); closeSoundMenu(); } };
       window.addEventListener("keydown", soundMenuKey, true);
       setTimeout(() => document.addEventListener("mousedown", outsideSoundMenu, true), 0);
@@ -2586,7 +2624,7 @@
     });
     // Update awareness: compare the running build against the published one, show the banner when newer.
     (function () {
-      const APP_BUILD = "9bfc7cef272e"; // replaced with the build hash at deploy; stays the token on local file://
+      const APP_BUILD = "96e5b885db85"; // replaced with the build hash at deploy; stays the token on local file://
       if (APP_BUILD === "__" + "BUILD__") return; // not deployed (local/dev) → no update checks
       let notified = false;
       async function checkUpdate() {
