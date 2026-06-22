@@ -68,9 +68,11 @@
   .btn.accent:hover { opacity: .9; background: var(--accent); }
   #editor { position: absolute; top: 76px; bottom: 30px; left: 0; right: 0; overflow: auto; }
   /* preview (rendered "final" markdown) — read-only */
-  #previewArea { position: absolute; top: 42px; bottom: 0; left: 0; right: 0; overflow: auto; display: none; background: var(--bg); }
-  body.previewing #editor, body.previewing #composeBar, body.previewing #bottomstrip { display: none; }
+  #previewArea { position: absolute; top: 76px; bottom: 0; left: 0; right: 0; overflow: auto; display: none; background: var(--bg); }
+  body.previewing #editor, body.previewing #bottomstrip, body.previewing #composeLabel, body.previewing #composeFmt { display: none; }
+  body.previewing #composePreview { margin-left: auto; }
   body.previewing #previewArea { display: block; }
+  #composePreview { flex-shrink: 0; font-size: 12px; padding: 4px 9px; }
   #previewArea .pv-doc { max-width: 70ch; margin: 0 auto; padding: 40px 24px 90px; color: var(--fg); line-height: 1.7; }
   #previewArea .pv-loading { padding: 40px; text-align: center; color: var(--muted); }
   #previewArea h1 { font-size: 1.7em; } #previewArea h2 { font-size: 1.4em; } #previewArea h3 { font-size: 1.2em; }
@@ -400,6 +402,7 @@
   <div id="composeBar">
     <span id="composeLabel"></span>
     <div id="composeFmt"></div>
+    <button class="btn" id="composePreview" title="Preview ⇄ Edit (rendered view)">Preview</button>
     <button class="btn ic" id="composeCopy" title="Copy for this destination">⧉</button>
   </div>
   <div id="editor"></div>
@@ -2015,6 +2018,7 @@
     soundEl.addEventListener("click", (e) => { e.stopPropagation(); onSoundClick(); });
     soundEl.addEventListener("dblclick", (e) => { e.stopPropagation(); onSoundDblClick(); });
     document.getElementById("composeCopy").addEventListener("click", copyNative);
+    document.getElementById("composePreview").addEventListener("click", togglePreview);
     document.getElementById("btn-tasks").addEventListener("click", toggleTasksPanel);
     document.getElementById("tasksClose").addEventListener("click", toggleTasksPanel);
     document.getElementById("tasksShowDone").addEventListener("change", renderTasksPanel);
@@ -2115,8 +2119,6 @@
         b.addEventListener("mousedown", (e) => { e.preventDefault(); fn(); });
         el.appendChild(b);
       };
-      item(previewing() ? "Edit" : "Preview", previewing() ? "← back" : "rendered", () => { closeFileMenu(); togglePreview(); });
-      const div1 = document.createElement("div"); div1.style.cssText = "border-top:1px solid var(--rule); margin:4px 0;"; el.appendChild(div1);
       item("Save", "⌘S", () => { closeFileMenu(); saveFile(); });
       item("Open", "⌘O", () => { closeFileMenu(); openFile(); });
       item("Export / Share", "PDF", () => { closeFileMenu(); exportPDF(); });
@@ -2144,13 +2146,14 @@
     function previewing() { return document.body.classList.contains("previewing"); }
     async function enterPreview() {
       document.body.classList.add("previewing");
+      document.getElementById("composePreview").textContent = "✎ Edit";
       const pa = document.getElementById("previewArea");
       pa.innerHTML = '<div class="pv-loading">rendering…</div>';
       try { pa.innerHTML = '<div class="pv-doc">' + (await buildPrintHTML()) + "</div>"; }
       catch (e) { pa.innerHTML = '<div class="pv-loading">Preview failed.</div>'; console.warn("preview", e); }
       pa.scrollTop = 0;
     }
-    function exitPreview() { document.body.classList.remove("previewing"); view.focus(); }
+    function exitPreview() { document.body.classList.remove("previewing"); document.getElementById("composePreview").textContent = "Preview"; view.focus(); }
     function togglePreview() { if (previewing()) exitPreview(); else enterPreview(); }
 
     // ----- readability: Flesch–Kincaid grade (the same formula Hemingway/textstat use) -----
@@ -2740,7 +2743,7 @@
     });
     // Update awareness: compare the running build against the published one, show the banner when newer.
     (function () {
-      const APP_BUILD = "3d6bf25eab24"; // replaced with the build hash at deploy; stays the token on local file://
+      const APP_BUILD = "66857e9352b1"; // replaced with the build hash at deploy; stays the token on local file://
       if (APP_BUILD === "__" + "BUILD__") return; // not deployed (local/dev) → no update checks
       let notified = false;
       async function checkUpdate() {
