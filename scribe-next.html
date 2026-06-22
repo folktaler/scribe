@@ -2199,6 +2199,7 @@
       if (btn) { btn.textContent = on ? "Draft" : "Review"; btn.classList.toggle("on", on); }
       if (on) view.dispatch({ effects: [setLints.of([]), setReadDecos.of([])] }); // clear all underlines/highlights
       else { scheduleLint(); computeReadability(); }                              // bring feedback back
+      updateCatMood();
     }
     function toggleDraftMode() { setDraftMode(!draftMode()); }
 
@@ -2417,8 +2418,18 @@
     const timer = { mode: null, running: false, startMs: 0, accMs: 0, durationMs: 0, tickId: null };
     function fmtClock(ms) { const s = Math.max(0, Math.round(ms / 1000)); return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0"); }
     function timerElapsed() { return timer.accMs + (timer.running ? (Date.now() - timer.startMs) : 0); }
+    // The cat reacts to what you're doing — just for fun 🐱
+    function catAccessory() {
+      if (sound.playing) return "🎧";   // focus noise on → headphones
+      if (timer.running) return "👓";    // timer running → specs (heads-down)
+      if (draftMode()) return "✏️";      // Draft mode → pencil (writing freely)
+      return "🔍";                       // Review (default) → magnifying glass (examining)
+    }
+    function updateCatMood() { const b = document.getElementById("fileBtn"); if (b) b.textContent = "🐱" + catAccessory(); }
+
     function renderTimer() {
       const el = document.getElementById("timer");
+      updateCatMood();
       if (!timer.mode) { el.textContent = "🕐"; el.className = "btn ic"; return; }
       const elapsed = timerElapsed();
       if (timer.mode === "focus") {
@@ -2512,6 +2523,7 @@
       el.className = "btn ic" + (sound.playing ? " playing" : "");
       el.title = sound.track ? (sound.track[0].toUpperCase()+sound.track.slice(1)) + " noise — click to " + (sound.playing?"pause":"resume") + " · double-click to stop"
         : "Focus noise — click to choose · click to pause · double-click to stop";
+      updateCatMood();
     }
     function startNoise(type) {
       stopNoise(true);
@@ -2769,6 +2781,7 @@
     initGrammar();
     computeReadability();
     if (draftMode()) setDraftMode(true);
+    updateCatMood();
     view.focus();
   } catch (err) {
     showBootError((err && err.stack) ? err.stack : String(err));
@@ -2791,7 +2804,7 @@
     });
     // Update awareness: compare the running build against the published one, show the banner when newer.
     (function () {
-      const APP_BUILD = "9fe1fee18ad1"; // replaced with the build hash at deploy; stays the token on local file://
+      const APP_BUILD = "fc7902abb9fc"; // replaced with the build hash at deploy; stays the token on local file://
       if (APP_BUILD === "__" + "BUILD__") return; // not deployed (local/dev) → no update checks
       let notified = false;
       async function checkUpdate() {
