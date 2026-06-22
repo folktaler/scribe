@@ -168,6 +168,7 @@
   #read-status.over #rd-grade { color: #e54848; }
   .read-hard { background: color-mix(in srgb, #d4a35a 22%, transparent); border-radius: 2px; }
   .read-veryhard { background: color-mix(in srgb, #e54848 22%, transparent); border-radius: 2px; }
+  .claude-vague { text-decoration: underline wavy #d4a35a; text-decoration-skip-ink: none; text-underline-offset: 3px; }
   #fileMenu .rd-head { padding: 6px 11px 3px; font-size: 11px; color: var(--muted); }
   #fileMenu .rd-sub { color: var(--muted); font-size: 11px; }
   #fileMenu .rd-toggle { border-top: 1px solid var(--rule); margin-top: 4px; }
@@ -288,7 +289,15 @@
   #readPanel.show { display: flex; }
   #readPanel .tk-head { display: flex; align-items: center; justify-content: space-between; padding: 9px 12px; border-bottom: 1px solid var(--rule); font-size: 13px; color: var(--fg); }
   #readPanel .tk-head small { color: var(--muted); margin-left: 6px; }
+  #readPanel .rd-modes { display: flex; gap: 4px; padding: 7px 12px; border-bottom: 1px solid var(--rule); }
+  #readPanel .rd-modes button { flex: 1; font-size: 11px; padding: 4px 8px; background: none; border: 1px solid var(--rule); border-radius: 5px; color: var(--fg); cursor: pointer; font-family: inherit; }
+  #readPanel .rd-modes button.sel { background: var(--accent); color: #fff; border-color: var(--accent); }
   #readPanel .rd-grade-line { padding: 6px 12px; font-size: 11px; color: var(--muted); border-bottom: 1px solid var(--rule); }
+  #readList li.rd-check { cursor: default; }
+  #readList .rd-mark { flex-shrink: 0; width: 16px; text-align: center; font-weight: 700; }
+  #readList .rd-mark.ok { color: #3cba54; }
+  #readList .rd-mark.warn { color: #d4a35a; }
+  #readList .rd-mark.bad { color: #e54848; }
   #readList { list-style: none; margin: 0; padding: 4px 0; overflow: auto; flex: 1; }
   #readList li { display: flex; gap: 8px; align-items: flex-start; padding: 8px 12px; font-size: 13px; line-height: 1.45; cursor: pointer; border-bottom: 1px solid var(--rule); }
   #readList li:hover { background: var(--rule); }
@@ -410,7 +419,8 @@
     <div class="tk-foot"><button class="btn" id="snipNew" title="Save the current selection as a snippet">＋ New from selection</button></div>
   </div>
   <div id="readPanel">
-    <div class="tk-head"><span>Hard sentences <small id="readCount"></small></span><button class="btn ic" id="readClose" title="Close">✕</button></div>
+    <div class="tk-head"><span><span class="rd-title">Hard sentences</span> <small id="readCount"></small></span><button class="btn ic" id="readClose" title="Close">✕</button></div>
+    <div class="rd-modes" id="readModeToggle"></div>
     <div class="rd-grade-line" id="readGrade"></div>
     <ul id="readList"></ul>
     <div class="tk-foot">
@@ -2165,26 +2175,97 @@
       return { overall, hard, lvl, doc };
     }
     let readPanelOpen = false;
+    function readMode() { return localStorage.getItem("scribeNext.readMode") === "claude" ? "claude" : "human"; }
+
+    // --- Claude prompt-lint: heuristic "is this a clear prompt?" checks (offline; NOT an AI verdict) ---
+    const VAGUE_RE = /\b(things?|stuff|etc\.?|somehow|someway|kind of|sort of|good|nice|better|maybe|basically|whatever|and so on|cleaner?|simple|a lot|lots)\b/gi;
+    function computeClaudeLint() {
+      const doc = view.state.doc.toString();
+      const text = doc.replace(/⟦(?:draw|sheet):[a-z0-9]+⟧/g, " ");
+      const wc = (text.match(/[A-Za-z][A-Za-z'-]*/g) || []).length;
+      const long = wc >= 40;
+      const hasAsk = /\?|\b(please|can you|could you|i (?:want|need|'?d like)|write|build|create|make|fix|explain|summari[sz]e|generate|review|refactor|implement|add|remove|update|design|help me|give me|list|find|debug|optimi[sz]e|convert|turn)\b/i.test(text);
+      const hasStructure = /^#{1,6}\s/m.test(text) || /^\s*(?:[-*+]|\d+[.)])\s/m.test(text) || /```/.test(text) || text.split(/\n\s*\n/).filter(p => p.trim()).length >= 2;
+      const specificity = (text.match(/\b\d+\b/g) || []).length + (text.match(/`[^`]+`/g) || []).length + (text.match(/\b[\w-]+\.[a-z]{1,4}\b|\/[\w./-]+/g) || []).length + (text.match(/\b[a-z]+[A-Z]\w*|\b\w+_\w+\b/g) || []).length;
+      const hasContext = /\b(because|so that|so it|must|should|don'?t|do not|avoid|constraint|requirement|only|without|instead|make sure|ensure|note that|goal|context)\b/i.test(text);
+      const hasExample = /\b(e\.?g\.?|for example|for instance|such as|like this|example)\b/i.test(text) || /```/.test(text);
+      const vague = []; let m; VAGUE_RE.lastIndex = 0;
+      while ((m = VAGUE_RE.exec(doc)) !== null) vague.push({ from: m.index, to: m.index + m[0].length });
+      const checks = [
+        { ok: hasAsk, label: "States a clear ask", weight: 35 },
+        { ok: !long || hasStructure, label: "Has structure (headings / lists / code)", weight: 15 },
+        { ok: !long || specificity >= 1, label: "Includes specifics (names, numbers, paths)", weight: 15 },
+        { ok: !long || hasContext, label: "Gives context or constraints", weight: 10 },
+        { ok: !long || hasExample, label: "Shows an example", weight: 5 },
+        { ok: vague.length === 0, warn: vague.length > 0, label: vague.length ? (vague.length + " vague word" + (vague.length === 1 ? "" : "s") + " to sharpen") : "No vague words", weight: Math.min(20, vague.length * 4) },
+      ];
+      let score = 100; for (const c of checks) if (!c.ok) score -= c.weight;
+      return { score: Math.max(0, Math.round(score)), checks, vague, issues: checks.filter(c => !c.ok).length, empty: wc < 3 };
+    }
     function computeReadability() {
+      if (readMode() === "claude") {
+        const c = computeClaudeLint();
+        updateReadIndicatorClaude(c);
+        view.dispatch({ effects: setReadDecos.of(readHighlightOn() ? c.vague.map(v => ({ from: v.from, to: v.to, cls: "claude-vague" })) : []) });
+        if (readPanelOpen) renderReadPanel();
+        return;
+      }
       const r = computeReadHard();
       updateReadIndicator(r);
       view.dispatch({ effects: setReadDecos.of(readHighlightOn() ? r.hard.map(h => ({ from: h.from, to: h.to, cls: h.grade > r.lvl.grade + 4 ? "read-veryhard" : "read-hard" })) : []) });
-      if (readPanelOpen) renderReadPanel(r);
+      if (readPanelOpen) renderReadPanel();
     }
     function updateReadIndicator(r) {
       const wrap = document.getElementById("read-status");
+      document.querySelector("#read-status .rd-ico").textContent = "Aa";
       const g = document.getElementById("rd-grade");
       const n = r.hard.length, veryHard = r.hard.some(h => h.grade > r.lvl.grade + 4);
       g.textContent = n === 0 ? "✓" : String(n);
       wrap.className = n === 0 ? "ok" : (veryHard ? "over" : "warn");
       const gr = r.overall == null ? "?" : gradeLabel(Math.max(1, Math.round(r.overall)));
-      wrap.title = "Readability — reads at ~" + gr + " · target " + r.lvl.label + " · " + (n ? n + " hard sentence" + (n === 1 ? "" : "s") : "all within target") + " · click for details";
+      wrap.title = "Readability (human) — reads at ~" + gr + " · target " + r.lvl.label + " · " + (n ? n + " hard sentence" + (n === 1 ? "" : "s") : "all within target") + " · click for details";
     }
-    function renderReadPanel(r) {
-      r = r || computeReadHard();
-      document.getElementById("readGrade").textContent = r.overall == null ? "—" : "Reads at about " + gradeLabel(Math.max(1, Math.round(r.overall))) + " · target " + r.lvl.label;
-      document.getElementById("readCount").textContent = r.hard.length ? (r.hard.length + (r.hard.length === 1 ? " hard" : " hard")) : "";
+    function updateReadIndicatorClaude(c) {
+      const wrap = document.getElementById("read-status");
+      document.querySelector("#read-status .rd-ico").textContent = "✦";
+      const g = document.getElementById("rd-grade");
+      if (c.empty) { g.textContent = ""; wrap.className = ""; wrap.title = "Claude-readiness — write a prompt to check it"; return; }
+      g.textContent = c.issues === 0 ? "✓" : String(c.issues);
+      wrap.className = c.score >= 85 ? "ok" : c.score >= 60 ? "warn" : "over";
+      wrap.title = "Claude-readiness: " + c.score + "/100 · " + (c.issues ? c.issues + " to improve" : "looks clear") + " · click for the checklist";
+    }
+    function renderReadModeToggle() {
+      const el = document.getElementById("readModeToggle"); el.innerHTML = "";
+      [["human", "Human"], ["claude", "✦ Claude"]].forEach(([mk, label]) => {
+        const b = document.createElement("button"); b.textContent = label;
+        if (readMode() === mk) b.className = "sel";
+        b.addEventListener("click", () => { localStorage.setItem("scribeNext.readMode", mk); computeReadability(); renderReadPanel(); });
+        el.appendChild(b);
+      });
+    }
+    function renderReadPanel() {
+      renderReadModeToggle();
+      const claude = readMode() === "claude";
+      document.querySelector("#readPanel .rd-title").textContent = claude ? "Claude-readiness" : "Hard sentences";
+      document.getElementById("readTargets").style.display = claude ? "none" : "";
       const ul = document.getElementById("readList"); ul.innerHTML = "";
+      const hl = document.getElementById("readHL");
+      if (claude) {
+        const c = computeClaudeLint();
+        document.getElementById("readGrade").textContent = c.empty ? "Write a prompt, then check how clear it is for Claude." : ("Claude-ready score: " + c.score + " / 100");
+        document.getElementById("readCount").textContent = c.empty ? "" : (c.issues ? c.issues + " to improve" : "clear ✓");
+        if (!c.empty) for (const ck of c.checks) {
+          const li = document.createElement("li"); li.className = "rd-check";
+          const mark = document.createElement("span"); mark.className = "rd-mark " + (ck.ok ? "ok" : ck.warn ? "warn" : "bad"); mark.textContent = ck.ok ? "✓" : ck.warn ? "!" : "✗";
+          const lbl = document.createElement("span"); lbl.className = "rd-sent"; lbl.textContent = ck.label;
+          li.append(mark, lbl); ul.appendChild(li);
+        }
+        hl.textContent = (readHighlightOn() ? "✓ " : "") + "Highlight vague words"; hl.classList.toggle("on", readHighlightOn());
+        return;
+      }
+      const r = computeReadHard();
+      document.getElementById("readGrade").textContent = r.overall == null ? "—" : "Reads at about " + gradeLabel(Math.max(1, Math.round(r.overall))) + " · target " + r.lvl.label;
+      document.getElementById("readCount").textContent = r.hard.length ? (r.hard.length + " hard") : "";
       if (!r.hard.length) {
         const li = document.createElement("li"); li.className = "tk-empty"; li.textContent = "Nothing above your target — clean read 🎉"; ul.appendChild(li);
       } else for (const h of r.hard) {
@@ -2204,9 +2285,7 @@
         b.addEventListener("click", () => { localStorage.setItem("scribeNext.readTarget", lvl.key); computeReadability(); });
         tsel.appendChild(b);
       }
-      const hl = document.getElementById("readHL");
-      hl.textContent = (readHighlightOn() ? "✓ " : "") + "Highlight in text";
-      hl.classList.toggle("on", readHighlightOn());
+      hl.textContent = (readHighlightOn() ? "✓ " : "") + "Highlight in text"; hl.classList.toggle("on", readHighlightOn());
     }
     function openReadPanel() { readPanelOpen = true; document.getElementById("readPanel").classList.add("show"); renderReadPanel(); }
     function closeReadPanel() { readPanelOpen = false; document.getElementById("readPanel").classList.remove("show"); }
@@ -2624,7 +2703,7 @@
     });
     // Update awareness: compare the running build against the published one, show the banner when newer.
     (function () {
-      const APP_BUILD = "96e5b885db85"; // replaced with the build hash at deploy; stays the token on local file://
+      const APP_BUILD = "d06da01f1427"; // replaced with the build hash at deploy; stays the token on local file://
       if (APP_BUILD === "__" + "BUILD__") return; // not deployed (local/dev) → no update checks
       let notified = false;
       async function checkUpdate() {
