@@ -67,6 +67,27 @@
   .btn.accent { background: var(--accent); color: #fff; border-color: var(--accent); }
   .btn.accent:hover { opacity: .9; background: var(--accent); }
   #editor { position: absolute; top: 76px; bottom: 30px; left: 0; right: 0; overflow: auto; }
+  /* preview (rendered "final" markdown) — read-only */
+  #previewArea { position: absolute; top: 42px; bottom: 0; left: 0; right: 0; overflow: auto; display: none; background: var(--bg); }
+  body.previewing #editor, body.previewing #composeBar, body.previewing #bottomstrip { display: none; }
+  body.previewing #previewArea { display: block; }
+  #previewArea .pv-doc { max-width: 70ch; margin: 0 auto; padding: 40px 24px 90px; color: var(--fg); line-height: 1.7; }
+  #previewArea .pv-loading { padding: 40px; text-align: center; color: var(--muted); }
+  #previewArea h1 { font-size: 1.7em; } #previewArea h2 { font-size: 1.4em; } #previewArea h3 { font-size: 1.2em; }
+  #previewArea h1, #previewArea h2, #previewArea h3, #previewArea h4 { font-weight: 700; line-height: 1.25; margin: 1.1em 0 .4em; }
+  #previewArea p { margin: .8em 0; } #previewArea ul, #previewArea ol { padding-left: 1.5em; margin: .6em 0; } #previewArea li { margin: .2em 0; }
+  #previewArea a { color: var(--accent); }
+  #previewArea strong { font-weight: 700; } #previewArea em { font-style: italic; } #previewArea del { text-decoration: line-through; color: var(--muted); }
+  #previewArea code { background: color-mix(in srgb, var(--rule) 60%, transparent); padding: 1px 5px; border-radius: 4px; font-size: .9em; }
+  #previewArea pre { background: color-mix(in srgb, var(--rule) 50%, transparent); padding: 11px 13px; border-radius: 7px; overflow: auto; } #previewArea pre code { background: none; padding: 0; }
+  #previewArea blockquote { border-left: 3px solid var(--rule); padding-left: 13px; margin: .8em 0; color: var(--muted); }
+  #previewArea li:has(> input[type=checkbox]) { list-style: none; margin-left: -1.3em; } #previewArea input[type=checkbox] { margin-right: 7px; accent-color: var(--accent); }
+  #previewArea figure { margin: 1.3em 0; text-align: center; } #previewArea figure svg { max-width: 100%; height: auto; }
+  #previewArea figcaption { color: var(--muted); font-size: .85em; font-style: italic; margin-bottom: 6px; }
+  body[data-theme="dark"] #previewArea figure svg { filter: invert(.9) hue-rotate(180deg); }
+  #previewArea table.print-sheet { border-collapse: collapse; margin: 1em 0; font-size: .95em; }
+  #previewArea .print-sheet th, #previewArea .print-sheet td { border: 1px solid var(--rule); padding: 4px 10px; }
+  #previewArea .print-sheet th { background: color-mix(in srgb, var(--rule) 50%, transparent); text-align: left; }
   #btn-dest.on { color: var(--accent); border-color: var(--accent); }
   #composeBar { position: fixed; top: 42px; left: 0; right: 0; height: 34px; z-index: 5;
     display: flex; align-items: center; gap: 8px; padding: 0 10px;
@@ -382,6 +403,7 @@
     <button class="btn ic" id="composeCopy" title="Copy for this destination">⧉</button>
   </div>
   <div id="editor"></div>
+  <div id="previewArea"></div>
   <div id="bottomstrip">
     <span id="drawhint">type <b>/</b> for snippets · <b>/draw</b> · <b>/task</b></span>
     <div class="row" style="gap:8px">
@@ -2030,7 +2052,7 @@
     }
     view.contentDOM.addEventListener("mousedown", closeSidePanels);
     view.contentDOM.addEventListener("click", () => { const sel = view.state.selection.main; if (sel.empty) showGramPopoverAt(sel.head); else hideGramPopover(); });
-    window.addEventListener("keydown", (e) => { if (e.key === "Escape") { closeSidePanels(); closeSnipPanel(); closeSlash(); } });
+    window.addEventListener("keydown", (e) => { if (e.key === "Escape") { if (previewing()) exitPreview(); closeSidePanels(); closeSnipPanel(); closeSlash(); } });
 
     function setFont(name) {
       document.body.dataset.font = name;
@@ -2093,6 +2115,8 @@
         b.addEventListener("mousedown", (e) => { e.preventDefault(); fn(); });
         el.appendChild(b);
       };
+      item(previewing() ? "Edit" : "Preview", previewing() ? "← back" : "rendered", () => { closeFileMenu(); togglePreview(); });
+      const div1 = document.createElement("div"); div1.style.cssText = "border-top:1px solid var(--rule); margin:4px 0;"; el.appendChild(div1);
       item("Save", "⌘S", () => { closeFileMenu(); saveFile(); });
       item("Open", "⌘O", () => { closeFileMenu(); openFile(); });
       item("Export / Share", "PDF", () => { closeFileMenu(); exportPDF(); });
@@ -2115,6 +2139,19 @@
     function toggleFileMenu() {
       if (document.getElementById("fileMenu").classList.contains("show")) closeFileMenu(); else openFileMenu();
     }
+
+    // ----- Preview (rendered, read-only "final" markdown view) -----
+    function previewing() { return document.body.classList.contains("previewing"); }
+    async function enterPreview() {
+      document.body.classList.add("previewing");
+      const pa = document.getElementById("previewArea");
+      pa.innerHTML = '<div class="pv-loading">rendering…</div>';
+      try { pa.innerHTML = '<div class="pv-doc">' + (await buildPrintHTML()) + "</div>"; }
+      catch (e) { pa.innerHTML = '<div class="pv-loading">Preview failed.</div>'; console.warn("preview", e); }
+      pa.scrollTop = 0;
+    }
+    function exitPreview() { document.body.classList.remove("previewing"); view.focus(); }
+    function togglePreview() { if (previewing()) exitPreview(); else enterPreview(); }
 
     // ----- readability: Flesch–Kincaid grade (the same formula Hemingway/textstat use) -----
     function countSyllables(w) {
@@ -2703,7 +2740,7 @@
     });
     // Update awareness: compare the running build against the published one, show the banner when newer.
     (function () {
-      const APP_BUILD = "d06da01f1427"; // replaced with the build hash at deploy; stays the token on local file://
+      const APP_BUILD = "3d6bf25eab24"; // replaced with the build hash at deploy; stays the token on local file://
       if (APP_BUILD === "__" + "BUILD__") return; // not deployed (local/dev) → no update checks
       let notified = false;
       async function checkUpdate() {
