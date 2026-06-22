@@ -403,7 +403,7 @@
       <span id="filename">untitled.kitten</span><span id="dirty"></span>
     </div>
     <div class="row" id="topright">
-      <button class="btn" id="btn-draftmode" title="Draft = write freely, all checking silenced · Review = bring feedback back">👓 Review</button>
+      <button class="btn" id="btn-draftmode" title="Draft = write freely, all checking silenced · Review = bring feedback back">Review</button>
       <span class="gram-group">
         <span id="grammar-status" title="Grammar — click to switch engine (blue = Harper offline, green = LanguageTool)"><span class="gram-dot"></span><span id="gram-count"></span></span>
         <button class="btn ic" id="btn-autofix" title="Auto-fix grammar (also flags table calculation errors)">AF</button>
@@ -2196,7 +2196,7 @@
       document.body.classList.toggle("draft", on);
       view.contentDOM.setAttribute("spellcheck", on ? "false" : "true");
       const btn = document.getElementById("btn-draftmode");
-      if (btn) { btn.textContent = on ? "✍ Draft" : "👓 Review"; btn.classList.toggle("on", on); }
+      if (btn) { btn.textContent = on ? "Draft" : "Review"; btn.classList.toggle("on", on); }
       if (on) view.dispatch({ effects: [setLints.of([]), setReadDecos.of([])] }); // clear all underlines/highlights
       else { scheduleLint(); computeReadability(); }                              // bring feedback back
     }
@@ -2791,7 +2791,7 @@
     });
     // Update awareness: compare the running build against the published one, show the banner when newer.
     (function () {
-      const APP_BUILD = "f1eec88eada9"; // replaced with the build hash at deploy; stays the token on local file://
+      const APP_BUILD = "12f2647e66ed"; // replaced with the build hash at deploy; stays the token on local file://
       if (APP_BUILD === "__" + "BUILD__") return; // not deployed (local/dev) → no update checks
       let notified = false;
       async function checkUpdate() {
