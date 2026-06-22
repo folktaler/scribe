@@ -184,6 +184,10 @@
   .gram-dot.error { background: #e54848; }
   @keyframes gpulse { 0%,100% { opacity: .4; } 50% { opacity: .9; } }
   /* readability (offline, formula-based — no AI) */
+  /* Draft mode: silence all feedback so you can write without judging (evidence: separate generating from editing) */
+  #btn-draftmode { font-size: 11px; padding: 4px 8px; }
+  #btn-draftmode.on { color: var(--accent); border-color: var(--accent); }
+  body.draft .gram-group, body.draft #read-status { display: none; }
   /* grammar + auto-fix joined into one pill (so AF reads as part of grammar, not readability) */
   .gram-group { display: inline-flex; align-items: center; border: 1px solid var(--rule); border-radius: 5px; overflow: hidden; }
   .gram-group #grammar-status { border-radius: 0; padding: 3px 7px; }
@@ -399,6 +403,7 @@
       <span id="filename">untitled.kitten</span><span id="dirty"></span>
     </div>
     <div class="row" id="topright">
+      <button class="btn" id="btn-draftmode" title="Draft = write freely, all checking silenced · Review = bring feedback back">👓 Review</button>
       <span class="gram-group">
         <span id="grammar-status" title="Grammar — click to switch engine (blue = Harper offline, green = LanguageTool)"><span class="gram-dot"></span><span id="gram-count"></span></span>
         <button class="btn ic" id="btn-autofix" title="Auto-fix grammar (also flags table calculation errors)">AF</button>
@@ -1198,6 +1203,7 @@
     }
 
     async function runLint() {
+      if (draftMode()) { view.dispatch({ effects: setLints.of([]) }); return; } // Draft mode: no grammar checking
       const text = view.state.doc.toString();
       const seq = ++lintSeq;
       let raw;
@@ -2016,6 +2022,7 @@
     document.getElementById("fixesClose").addEventListener("click", closeFixesPanel);
     document.getElementById("fixesUndo").addEventListener("click", undoAutoFix);
     document.getElementById("grammar-status").addEventListener("click", switchEngine);
+    document.getElementById("btn-draftmode").addEventListener("click", toggleDraftMode);
     document.getElementById("read-status").addEventListener("click", toggleReadPanel);
     document.getElementById("readClose").addEventListener("click", closeReadPanel);
     document.getElementById("readHL").addEventListener("click", () => { localStorage.setItem("scribeNext.readHighlight", readHighlightOn() ? "0" : "1"); computeReadability(); });
@@ -2182,6 +2189,19 @@
     function exitPreview() { document.body.classList.remove("previewing"); document.getElementById("composePreview").textContent = "👁"; view.focus(); }
     function togglePreview() { if (previewing()) exitPreview(); else enterPreview(); }
 
+    // ----- Draft ⇄ Review: Draft silences all checking (grammar, readability, spellcheck, badges) so you write without judging -----
+    function draftMode() { return localStorage.getItem("scribeNext.draftMode") === "1"; }
+    function setDraftMode(on) {
+      localStorage.setItem("scribeNext.draftMode", on ? "1" : "0");
+      document.body.classList.toggle("draft", on);
+      view.contentDOM.setAttribute("spellcheck", on ? "false" : "true");
+      const btn = document.getElementById("btn-draftmode");
+      if (btn) { btn.textContent = on ? "✍ Draft" : "👓 Review"; btn.classList.toggle("on", on); }
+      if (on) view.dispatch({ effects: [setLints.of([]), setReadDecos.of([])] }); // clear all underlines/highlights
+      else { scheduleLint(); computeReadability(); }                              // bring feedback back
+    }
+    function toggleDraftMode() { setDraftMode(!draftMode()); }
+
     // ----- readability: Flesch–Kincaid grade (the same formula Hemingway/textstat use) -----
     function countSyllables(w) {
       w = w.toLowerCase().replace(/[^a-z]/g, "");
@@ -2269,6 +2289,7 @@
       return { score: Math.max(0, Math.round(score)), checks, vague, issues: checks.filter(c => !c.ok).length, empty: wc < 3 };
     }
     function computeReadability() {
+      if (draftMode()) { view.dispatch({ effects: setReadDecos.of([]) }); return; } // Draft mode: no readability checking
       if (readMode() === "claude") {
         const c = computeClaudeLint();
         updateReadIndicatorClaude(c);
@@ -2747,6 +2768,7 @@
     if (roomyOn()) document.body.classList.add("roomy");
     initGrammar();
     computeReadability();
+    if (draftMode()) setDraftMode(true);
     view.focus();
   } catch (err) {
     showBootError((err && err.stack) ? err.stack : String(err));
@@ -2769,7 +2791,7 @@
     });
     // Update awareness: compare the running build against the published one, show the banner when newer.
     (function () {
-      const APP_BUILD = "ed5e59a728c2"; // replaced with the build hash at deploy; stays the token on local file://
+      const APP_BUILD = "f1eec88eada9"; // replaced with the build hash at deploy; stays the token on local file://
       if (APP_BUILD === "__" + "BUILD__") return; // not deployed (local/dev) → no update checks
       let notified = false;
       async function checkUpdate() {
