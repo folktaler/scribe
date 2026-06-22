@@ -409,8 +409,8 @@
         <button class="btn ic" id="btn-autofix" title="Auto-fix grammar (also flags table calculation errors)">AF</button>
       </span>
       <span id="read-status" title="Readability — click to set audience level"><span class="rd-ico">Aa</span><span id="rd-grade"></span></span>
-      <button class="btn ic" id="timer" title="Timer — click to start · click to pause · double-click to reset">⏱</button>
-      <button class="btn ic" id="sound" title="Focus noise — click to choose · click to pause · double-click to stop">♪</button>
+      <button class="btn ic" id="timer" title="Timer — click to start · click to pause · double-click to reset">🕐</button>
+      <button class="btn ic" id="sound" title="Focus noise — click to choose · click to pause · double-click to stop">🎧</button>
     </div>
   </div>
   <div id="composeBar">
@@ -2419,7 +2419,7 @@
     function timerElapsed() { return timer.accMs + (timer.running ? (Date.now() - timer.startMs) : 0); }
     function renderTimer() {
       const el = document.getElementById("timer");
-      if (!timer.mode) { el.textContent = "⏱"; el.className = "btn ic"; return; }
+      if (!timer.mode) { el.textContent = "🕐"; el.className = "btn ic"; return; }
       const elapsed = timerElapsed();
       if (timer.mode === "focus") {
         const rem = timer.durationMs - elapsed;
@@ -2791,7 +2791,7 @@
     });
     // Update awareness: compare the running build against the published one, show the banner when newer.
     (function () {
-      const APP_BUILD = "12f2647e66ed"; // replaced with the build hash at deploy; stays the token on local file://
+      const APP_BUILD = "4fbf71d30cff"; // replaced with the build hash at deploy; stays the token on local file://
       if (APP_BUILD === "__" + "BUILD__") return; // not deployed (local/dev) → no update checks
       let notified = false;
       async function checkUpdate() {
