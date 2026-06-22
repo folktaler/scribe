@@ -159,6 +159,27 @@
   #readMenu .rd-head { padding: 6px 11px 3px; font-size: 11px; color: var(--muted); }
   #readMenu .rd-sub { color: var(--muted); font-size: 11px; }
   #readMenu .rd-toggle { border-top: 1px solid var(--rule); margin-top: 4px; }
+  /* sheet block (inline mini-spreadsheet) */
+  .sheetblock { border: 1px solid var(--rule); border-radius: 8px; margin: 10px 0; background: var(--card-bg); overflow-x: auto; }
+  .sheetblock-bar { display: flex; align-items: center; justify-content: space-between; padding: 4px 8px; border-bottom: 1px solid var(--rule); }
+  .sheetblock-bar .ttl { display: flex; align-items: center; gap: 6px; min-width: 0; font-size: 12px; }
+  .sheetblock-grip { color: var(--muted); }
+  .sheetblock-name { color: var(--fg); outline: none; }
+  .sheetblock-bar .acts button { background: none; border: 1px solid var(--rule); border-radius: 4px; color: var(--fg); font-size: 11px; padding: 2px 8px; cursor: pointer; font-family: inherit; }
+  .sheetblock-bar .acts button:hover { background: var(--rule); }
+  .sheetblock-bar .acts button.del { color: #c0392b; }
+  .sheetgrid { border-collapse: collapse; font-size: 13px; font-variant-numeric: tabular-nums; }
+  .sheetgrid th { background: color-mix(in srgb, var(--rule) 45%, transparent); color: var(--muted); font-weight: 500; font-size: 11px; text-align: center; border: 1px solid var(--rule); padding: 2px 6px; min-width: 22px; user-select: none; }
+  .sheetgrid td { border: 1px solid var(--rule); padding: 0; }
+  .sheetgrid input { width: 90px; box-sizing: border-box; border: 0; background: transparent; color: var(--fg); font-family: inherit; font-size: 13px; padding: 3px 6px; outline: none; }
+  .sheetgrid input:focus { background: color-mix(in srgb, var(--accent) 12%, transparent); box-shadow: inset 0 0 0 2px var(--accent); }
+  .sheetblock-add { display: flex; gap: 6px; padding: 5px 8px; border-top: 1px solid var(--rule); }
+  .sheetblock-add button { background: none; border: 1px solid var(--rule); border-radius: 4px; color: var(--muted); font-size: 11px; padding: 2px 9px; cursor: pointer; font-family: inherit; }
+  .sheetblock-add button:hover { background: var(--rule); color: var(--fg); }
+  .sheetblock-fmt { display: flex; gap: 5px; padding: 4px 8px; border-bottom: 1px solid var(--rule); }
+  .sheetblock-fmt button { min-width: 30px; background: none; border: 1px solid var(--rule); border-radius: 4px; color: var(--fg); font-size: 11px; padding: 2px 7px; cursor: pointer; font-family: inherit; }
+  .sheetblock-fmt button:hover { background: var(--rule); }
+  .sheetblock-fmt button.on { background: var(--accent); color: #fff; border-color: var(--accent); }
   .task-check { display: inline-block; width: 17px; height: 17px; box-sizing: border-box; flex-shrink: 0;
     border: 2px solid var(--muted); border-radius: 4px; vertical-align: -4px; margin-right: 7px;
     cursor: pointer; user-select: none; position: relative; transition: border-color .12s; }
@@ -264,6 +285,9 @@
     #printArea h1, #printArea h2, #printArea h3 { color: #111; }
     #printArea a { color: #1a5fb4; }
     #printArea code, #printArea pre { background: #f3f3f3; }
+    #printArea table.print-sheet { border-collapse: collapse; margin: 1em 0; font-family: sans-serif; font-size: .9em; }
+    #printArea .print-sheet th, #printArea .print-sheet td { border: 1px solid #999; padding: 3px 9px; }
+    #printArea .print-sheet th { background: #f0f0f0; text-align: left; }
   }
   #fontMenu, #timerMenu, #destMenu { min-width: 170px; }
   #timer, #sound { font-variant-numeric: tabular-nums; user-select: none; }
@@ -446,6 +470,10 @@
     function makeId() { return "dr" + Date.now().toString(36) + Math.random().toString(36).slice(2, 5); }
 
     const MARKER = /^⟦draw:([a-z0-9]+)⟧$/; // ⟦draw:ID⟧ on its own line
+    const SHEET_MARKER = /^⟦sheet:([a-z0-9]+)⟧$/; // ⟦sheet:ID⟧ on its own line
+    const sheets = new Map(); // id -> { name, rows, cols, cells:[[...]] }
+    function makeSheetId() { return "sh" + Date.now().toString(36) + Math.random().toString(36).slice(2, 5); }
+    function newSheet() { const rows = 4, cols = 3; return { name: "", rows, cols, cells: Array.from({ length: rows }, () => Array(cols).fill("")), formats: {} }; }
 
     // ---------- persistence ----------
     const LS_KEY = "scribeNext.doc";
@@ -460,7 +488,9 @@
           name: sc.name || "",
         };
       }
-      return { version: 1, text: view.state.doc.toString(), scenes: s, destination };
+      const sh = {};
+      for (const id of docSheetIds()) { const s = sheets.get(id); if (s) sh[id] = { name: s.name || "", rows: s.rows, cols: s.cols, cells: s.cells, formats: s.formats || {} }; }
+      return { version: 1, text: view.state.doc.toString(), scenes: s, sheets: sh, destination };
     }
     let saveTimer = null;
     function scheduleSave() { clearTimeout(saveTimer); saveTimer = setTimeout(() => {
@@ -470,6 +500,12 @@
     function loadFromData(data) {
       scenes.clear();
       if (data?.scenes) for (const id of Object.keys(data.scenes)) { scenes.set(id, data.scenes[id]); bump(id); }
+      sheets.clear();
+      if (data?.sheets) for (const id of Object.keys(data.sheets)) {
+        const s = data.sheets[id];
+        const cells = s.cells || [];
+        sheets.set(id, { name: s.name || "", rows: s.rows || cells.length || 4, cols: s.cols || (cells[0] ? cells[0].length : 3), cells, formats: s.formats || {} });
+      }
       destination = data?.destination || "md";
       return data?.text ?? "";
     }
@@ -666,6 +702,252 @@
       return b.finish();
     }
 
+    // ---------- sheet block (inline mini-spreadsheet — offline, no deps) ----------
+    const refreshSheet = StateEffect.define();
+    function colIdx(letters) { let n = 0; for (const ch of letters.toUpperCase()) n = n * 26 + (ch.charCodeAt(0) - 64); return n - 1; }
+    function fmtNum(n) { if (typeof n !== "number") return String(n); if (!isFinite(n)) return "#DIV/0!"; return String(Math.round(n * 1e10) / 1e10); }
+    // tolerant numeric parse so formatted values (1,000 · ₹500 · $5 · 50% · " 500 ") still count in calculations
+    function toNum(x) {
+      if (typeof x === "number") return x;
+      if (x == null) return NaN;
+      let s = String(x).trim().replace(/[₹$,\s]/g, "");
+      let pct = false; if (s.endsWith("%")) { pct = true; s = s.slice(0, -1); }
+      if (s === "") return NaN;
+      const n = Number(s); return isNaN(n) ? NaN : (pct ? n / 100 : n);
+    }
+    // Evaluate a sheet → 2D array of display strings. Supports cell refs, ranges, + - * / %, and
+    // SUM / AVERAGE(AVG) / MIN / MAX / COUNT / PRODUCT / ROUND / ABS. Detects circular refs.
+    function computeSheet(sheet) {
+      const { rows, cols, cells } = sheet;
+      const memo = new Map(); const CIRC = Symbol("circ");
+      const raw = (r, c) => (cells[r] && cells[r][c] != null ? String(cells[r][c]) : "");
+      function cellVal(r, c, vis) {
+        if (r < 0 || c < 0 || r >= rows || c >= cols) return 0;
+        const key = r + ":" + c;
+        if (memo.has(key)) { const m = memo.get(key); if (m === CIRC) throw new Error("circ"); return m; }
+        const s = raw(r, c).trim();
+        if (s === "") { memo.set(key, ""); return ""; }
+        if (s[0] === "=") {
+          if (vis.has(key)) { memo.set(key, CIRC); throw new Error("circ"); }
+          vis.add(key);
+          let out; try { out = evalFormula(s.slice(1), vis); } finally { vis.delete(key); }
+          memo.set(key, out); return out;
+        }
+        const n = Number(s); const v = !isNaN(n) ? n : s; memo.set(key, v); return v;
+      }
+      function cellNum(r, c, vis) { const v = cellVal(r, c, vis); if (v === "") return 0; const n = toNum(v); if (isNaN(n)) throw new Error("num"); return n; }
+      function evalFormula(src, vis) {
+        const toks = []; const re = /\s*([0-9]*\.?[0-9]+|[A-Za-z]+[0-9]*|[-+*/(),:%])/g; let m;
+        while ((m = re.exec(src)) !== null) toks.push(m[1]);
+        let p = 0; const peek = () => toks[p], nextT = () => toks[p++];
+        function parseExpr() { let v = parseTerm(); while (peek() === "+" || peek() === "-") { const op = nextT(); v = op === "+" ? v + parseTerm() : v - parseTerm(); } return v; }
+        function parseTerm() { let v = parseFactor(); while (peek() === "*" || peek() === "/") { const op = nextT(); v = op === "*" ? v * parseFactor() : v / parseFactor(); } return v; }
+        function parseFactor() { let sign = 1; while (peek() === "-" || peek() === "+") { if (nextT() === "-") sign = -sign; } let v = parsePrimary(); while (peek() === "%") { nextT(); v = v / 100; } return sign * v; }
+        function parsePrimary() {
+          const t = peek();
+          if (t === "(") { nextT(); const v = parseExpr(); if (peek() === ")") nextT(); return v; }
+          if (/^[0-9]*\.?[0-9]+$/.test(t)) { nextT(); return Number(t); }
+          if (/^[A-Za-z]+[0-9]*$/.test(t)) {
+            if (toks[p + 1] === "(") return parseFunc();
+            const cm = /^([A-Za-z]+)([0-9]+)$/.exec(t);
+            if (cm) { nextT(); return cellNum(parseInt(cm[2], 10) - 1, colIdx(cm[1]), vis); }
+            throw new Error("name");
+          }
+          throw new Error("parse");
+        }
+        function rangeVals(a, b) {
+          const am = /^([A-Za-z]+)([0-9]+)$/.exec(a), bm = /^([A-Za-z]+)([0-9]+)$/.exec(b);
+          if (!am || !bm) throw new Error("range");
+          let r1 = +am[2] - 1, c1 = colIdx(am[1]), r2 = +bm[2] - 1, c2 = colIdx(bm[1]);
+          if (r1 > r2) [r1, r2] = [r2, r1]; if (c1 > c2) [c1, c2] = [c2, c1];
+          const out = [];
+          for (let r = r1; r <= r2; r++) for (let c = c1; c <= c2; c++) { const n = toNum(cellVal(r, c, vis)); if (!isNaN(n)) out.push(n); }
+          return out;
+        }
+        function parseFunc() {
+          const name = nextT().toUpperCase(); nextT(); // '('
+          const args = [];
+          if (peek() !== ")") do {
+            if (/^[A-Za-z]+[0-9]+$/.test(peek()) && toks[p + 1] === ":") { const a = nextT(); nextT(); const b = nextT(); args.push({ range: rangeVals(a, b) }); }
+            else args.push({ val: parseExpr() });
+          } while (peek() === "," && nextT());
+          if (peek() === ")") nextT();
+          const nums = args.flatMap(a => a.range != null ? a.range : [a.val]).filter(x => typeof x === "number" && isFinite(x));
+          switch (name) {
+            case "SUM": return nums.reduce((s, x) => s + x, 0);
+            case "AVERAGE": case "AVG": return nums.length ? nums.reduce((s, x) => s + x, 0) / nums.length : 0;
+            case "MIN": return nums.length ? Math.min(...nums) : 0;
+            case "MAX": return nums.length ? Math.max(...nums) : 0;
+            case "COUNT": return nums.length;
+            case "PRODUCT": return nums.reduce((s, x) => s * x, 1);
+            case "ROUND": { const x = args[0] && args[0].val != null ? args[0].val : 0; const d = args[1] && args[1].val != null ? args[1].val : 0; const f = Math.pow(10, d); return Math.round(x * f) / f; }
+            case "ABS": return Math.abs(args[0] && args[0].val != null ? args[0].val : 0);
+            default: throw new Error("func");
+          }
+        }
+        const result = parseExpr();
+        if (p < toks.length) throw new Error("trailing");
+        return result;
+      }
+      const vals = [];
+      for (let r = 0; r < rows; r++) { vals[r] = []; for (let c = 0; c < cols; c++) {
+        const s = raw(r, c).trim();
+        if (s === "") { vals[r][c] = ""; continue; }
+        if (s[0] === "=") { try { vals[r][c] = cellVal(r, c, new Set()); } catch (e) { vals[r][c] = e.message === "circ" ? "#CIRC" : "#ERR"; } }
+        else { const n = Number(s); vals[r][c] = !isNaN(n) ? n : raw(r, c); }
+      } }
+      return vals;
+    }
+    // apply a cell's number format to a computed value → display string
+    function fmtCell(sheet, r, c, val) {
+      if (val === "" || val == null) return "";
+      if (typeof val !== "number") return String(val); // text, #ERR, #CIRC
+      const f = (sheet.formats && sheet.formats[r + ":" + c]) || {};
+      switch (f.fmt) {
+        case "num": return val.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        case "cur": return val.toLocaleString("en-IN", { style: "currency", currency: "INR" }); // ₹ with lakh/crore grouping
+        case "pct": return String(Math.round(val * 10000) / 100) + "%";
+        default: return fmtNum(val);
+      }
+    }
+    function displaySheet(sheet) {
+      const vals = computeSheet(sheet);
+      return vals.map((row, r) => row.map((v, c) => fmtCell(sheet, r, c, v)));
+    }
+    // trim trailing all-empty rows/columns for clean export; returns null if entirely empty
+    function trimGrid(disp) {
+      let maxR = -1, maxC = -1;
+      for (let r = 0; r < disp.length; r++) for (let c = 0; c < disp[r].length; c++) if (disp[r][c] !== "") { if (r > maxR) maxR = r; if (c > maxC) maxC = c; }
+      if (maxR < 0) return null;
+      return disp.slice(0, maxR + 1).map(row => row.slice(0, maxC + 1));
+    }
+
+    class SheetWidget extends WidgetType {
+      constructor(id) { super(); this.id = id; }
+      eq(other) { return other.id === this.id; } // stable → CM keeps the live grid across prose edits
+      ignoreEvent() { return true; }
+      toDOM() {
+        const id = this.id;
+        let sheet = sheets.get(id); if (!sheet) { sheet = newSheet(); sheets.set(id, sheet); }
+        const wrap = document.createElement("div"); wrap.className = "sheetblock"; wrap.contentEditable = "false";
+        // shield CodeMirror from grid keystrokes
+        ["keydown", "keyup", "keypress"].forEach(ev => wrap.addEventListener(ev, (e) => e.stopPropagation()));
+
+        const bar = document.createElement("div"); bar.className = "sheetblock-bar";
+        const ttl = document.createElement("div"); ttl.className = "ttl";
+        const grip = document.createElement("span"); grip.className = "sheetblock-grip"; grip.textContent = "▦";
+        const nameEl = document.createElement("span"); nameEl.className = "sheetblock-name"; nameEl.contentEditable = "true"; nameEl.spellcheck = false;
+        nameEl.textContent = (sheet.name || "").trim() || "sheet";
+        nameEl.addEventListener("input", () => { sheet.name = nameEl.textContent.trim(); scheduleSave(); });
+        nameEl.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); nameEl.blur(); } });
+        nameEl.addEventListener("blur", () => { if (!nameEl.textContent.trim()) nameEl.textContent = "sheet"; });
+        ttl.appendChild(grip); ttl.appendChild(nameEl);
+        const acts = document.createElement("div"); acts.className = "acts";
+        const delBtn = document.createElement("button"); delBtn.className = "del"; delBtn.textContent = "Delete"; delBtn.title = "Delete sheet";
+        delBtn.addEventListener("mousedown", (e) => { e.preventDefault(); deleteSheet(id); });
+        acts.appendChild(delBtn); bar.appendChild(ttl); bar.appendChild(acts); wrap.appendChild(bar);
+
+        // format toolbar — applies to the last-focused cell
+        let lastCell = null;
+        const fmtbar = document.createElement("div"); fmtbar.className = "sheetblock-fmt";
+        const FMT_CYCLE = ["gen", "num", "cur", "pct"], FMT_LABEL = { gen: "123", num: "0.00", cur: "₹", pct: "%" };
+        function applyFmt(mut) {
+          if (!lastCell) return;
+          const key = lastCell.r + ":" + lastCell.c;
+          sheet.formats = sheet.formats || {};
+          const f = sheet.formats[key] || {}; mut(f); sheet.formats[key] = f;
+          scheduleSave(); recompute(); updateFmtBtns();
+        }
+        function updateFmtBtns() {
+          const f = lastCell ? ((sheet.formats && sheet.formats[lastCell.r + ":" + lastCell.c]) || {}) : {};
+          boldBtn.classList.toggle("on", !!f.b); hlBtn.classList.toggle("on", !!f.hl);
+          numBtn.textContent = FMT_LABEL[f.fmt || "gen"];
+        }
+        const boldBtn = document.createElement("button"); boldBtn.textContent = "B"; boldBtn.style.fontWeight = "700"; boldBtn.title = "Bold cell";
+        boldBtn.addEventListener("mousedown", (e) => { e.preventDefault(); applyFmt(f => { f.b = !f.b; }); });
+        const numBtn = document.createElement("button"); numBtn.textContent = "123"; numBtn.title = "Number format (General → 0.00 → $ → %)";
+        numBtn.addEventListener("mousedown", (e) => { e.preventDefault(); applyFmt(f => { const i = FMT_CYCLE.indexOf(f.fmt || "gen"); f.fmt = FMT_CYCLE[(i + 1) % FMT_CYCLE.length]; }); });
+        const hlBtn = document.createElement("button"); hlBtn.textContent = "▦"; hlBtn.title = "Highlight cell";
+        hlBtn.addEventListener("mousedown", (e) => { e.preventDefault(); applyFmt(f => { f.hl = !f.hl; }); });
+        fmtbar.appendChild(boldBtn); fmtbar.appendChild(numBtn); fmtbar.appendChild(hlBtn);
+        wrap.appendChild(fmtbar);
+
+        const table = document.createElement("table"); table.className = "sheetgrid";
+        const inputs = [];
+        function recompute() {
+          const vals = computeSheet(sheet);
+          for (let r = 0; r < sheet.rows; r++) for (let c = 0; c < sheet.cols; c++) {
+            const inp = inputs[r] && inputs[r][c]; if (!inp) continue;
+            const f = (sheet.formats && sheet.formats[r + ":" + c]) || {};
+            const d = fmtCell(sheet, r, c, vals[r][c]);
+            const isErr = /^#(ERR|CIRC|DIV)/.test(d);
+            inp.style.fontWeight = f.b ? "700" : "";          // styles apply even to the focused cell
+            inp.style.color = isErr ? "#c0392b" : "";
+            inp.parentElement.style.background = isErr ? "color-mix(in srgb, #e54848 16%, transparent)" : (f.hl ? "color-mix(in srgb, var(--accent) 14%, transparent)" : "");
+            if (document.activeElement === inp) continue;       // don't clobber the value being edited
+            inp.value = d;
+            inp.style.textAlign = (!isErr && typeof vals[r][c] === "number") ? "right" : "left";
+          }
+        }
+        function focusCell(r, c) { if (inputs[r] && inputs[r][c]) inputs[r][c].focus(); }
+        function commit(r, c, val) { if (sheet.cells[r][c] !== val) { sheet.cells[r][c] = val; scheduleSave(); } recompute(); }
+        function buildGrid() {
+          table.innerHTML = ""; inputs.length = 0;
+          const head = document.createElement("tr"); head.appendChild(document.createElement("th"));
+          for (let c = 0; c < sheet.cols; c++) { const th = document.createElement("th"); th.textContent = String.fromCharCode(65 + c); head.appendChild(th); }
+          table.appendChild(head);
+          for (let r = 0; r < sheet.rows; r++) {
+            const tr = document.createElement("tr"); const rh = document.createElement("th"); rh.textContent = String(r + 1); tr.appendChild(rh);
+            inputs[r] = [];
+            for (let c = 0; c < sheet.cols; c++) {
+              const td = document.createElement("td"); const inp = document.createElement("input"); inp.type = "text";
+              inp.addEventListener("focus", () => { lastCell = { r, c }; inp.value = sheet.cells[r][c] || ""; inp.style.textAlign = "left"; updateFmtBtns(); });
+              inp.addEventListener("blur", () => commit(r, c, inp.value));
+              inp.addEventListener("keydown", (e) => {
+                if (e.key === "Enter") { e.preventDefault(); commit(r, c, inp.value); focusCell(r + 1, c); }
+                else if (e.key === "Tab") { e.preventDefault(); commit(r, c, inp.value); focusCell(r, c + 1 < sheet.cols ? c + 1 : 0); }
+              });
+              td.appendChild(inp); tr.appendChild(td); inputs[r][c] = inp;
+            }
+            table.appendChild(tr);
+          }
+          recompute();
+        }
+        buildGrid(); wrap.appendChild(table);
+
+        const add = document.createElement("div"); add.className = "sheetblock-add";
+        const addRow = document.createElement("button"); addRow.textContent = "+ Row";
+        addRow.addEventListener("mousedown", (e) => { e.preventDefault(); sheet.cells.push(Array(sheet.cols).fill("")); sheet.rows++; scheduleSave(); buildGrid(); });
+        const addCol = document.createElement("button"); addCol.textContent = "+ Col";
+        addCol.addEventListener("mousedown", (e) => { e.preventDefault(); if (sheet.cols >= 12) return; sheet.cells.forEach(row => row.push("")); sheet.cols++; scheduleSave(); buildGrid(); });
+        add.appendChild(addRow); add.appendChild(addCol); wrap.appendChild(add);
+        return wrap;
+      }
+    }
+    const sheetField = StateField.define({
+      create(state) { return buildSheetDeco(state); },
+      update(deco, tr) {
+        if (tr.docChanged || tr.effects.some(e => e.is(refreshSheet))) return buildSheetDeco(tr.state);
+        return deco.map(tr.changes);
+      },
+      provide: f => EditorView.decorations.from(f),
+    });
+    function buildSheetDeco(state) {
+      const b = new RangeSetBuilder();
+      for (let i = 1; i <= state.doc.lines; i++) {
+        const line = state.doc.line(i); const m = SHEET_MARKER.exec(line.text);
+        if (m) { const id = m[1]; if (!sheets.has(id)) sheets.set(id, newSheet()); b.add(line.from, line.to, Decoration.replace({ widget: new SheetWidget(id), block: true })); }
+      }
+      return b.finish();
+    }
+    function deleteSheet(id) {
+      const doc = view.state.doc;
+      for (let i = 1; i <= doc.lines; i++) {
+        const line = doc.line(i); const m = SHEET_MARKER.exec(line.text);
+        if (m && m[1] === id) { let from = line.from, to = line.to; if (to < doc.length) to += 1; view.dispatch({ changes: { from, to, insert: "" } }); sheets.delete(id); scheduleSave(); toast("Sheet deleted"); return; }
+      }
+    }
+
     // ---------- editor ----------
     // ---------- grammar (Harper — offline, in-browser, auto-starts with the app) ----------
     let harperLinter = null, harperReady = false, lintSeq = 0;
@@ -807,10 +1089,26 @@
       setGrammarIndicator("ready", mapped.length);
     }
 
+    // count cells showing a calculation error across all sheets (we flag, never silently rewrite the math)
+    function docSheetIds() {
+      const ids = new Set(); const doc = view.state.doc.toString(); let m; const re = /⟦sheet:([a-z0-9]+)⟧/g;
+      while ((m = re.exec(doc))) ids.add(m[1]);
+      return ids;
+    }
+    function countSheetErrors() {
+      let n = 0;
+      for (const id of docSheetIds()) { const s = sheets.get(id); if (!s) continue; const disp = displaySheet(s); for (const row of disp) for (const d of row) if (/^#(ERR|CIRC|DIV)/.test(d)) n++; }
+      return n;
+    }
+    function calcIssueMsg(n) { return n + " calculation issue" + (n === 1 ? "" : "s") + " in your tables — shown in red"; }
     let lastAutoFix = [];
     function autoFixAll() {
       const fixable = currentLints.filter(l => l.suggestions.length).slice().sort((a, b) => b.from - a.from);
-      if (!fixable.length) { toast("Nothing to auto-fix"); return; }
+      const sheetErr = countSheetErrors();
+      if (!fixable.length) {
+        toast(sheetErr ? calcIssueMsg(sheetErr) : "Nothing to auto-fix");
+        return;
+      }
       const changes = []; let lastFrom = Infinity; const applied = [];
       for (const l of fixable) {
         if (l.to > lastFrom) continue; // skip overlapping fixes
@@ -823,7 +1121,9 @@
       view.dispatch({ changes });
       applied.reverse(); // back to document order
       lastAutoFix = applied;
-      toast("Auto-fixed " + applied.length + (applied.length === 1 ? " issue" : " issues"));
+      let msg = "Auto-fixed " + applied.length + (applied.length === 1 ? " issue" : " issues");
+      if (sheetErr) msg += " · " + calcIssueMsg(sheetErr);
+      toast(msg);
       scheduleLint();
       openFixesPanel();
     }
@@ -1150,6 +1450,8 @@
           editorTheme,
           drawField,
           EditorView.atomicRanges.of(v => v.state.field(drawField)),
+          sheetField,
+          EditorView.atomicRanges.of(v => v.state.field(sheetField)),
           lintField,
           readField,
           taskField,
@@ -1158,7 +1460,8 @@
           keymap.of([
             { key: "ArrowDown", run: () => slashOpen ? (moveSlash(1), true) : false },
             { key: "ArrowUp", run: () => slashOpen ? (moveSlash(-1), true) : false },
-            { key: "Tab", run: () => slashOpen ? (acceptSlash(), true) : false },
+            { key: "Tab", run: (v) => slashOpen ? (acceptSlash(), true) : indentLines(v, false) },
+            { key: "Shift-Tab", run: (v) => indentLines(v, true) },
             { key: "Escape", run: () => slashOpen ? (closeSlash(), true) : false },
             { key: "Enter", run: (v) => slashOpen ? (acceptSlash(), true) : handleSlashCommand(v) },
             { key: "Mod-Enter", preventDefault: true, run: () => { convertSelectionToTask(); return true; } },
@@ -1182,6 +1485,27 @@
 
     // ---------- insert / delete blocks ----------
     // Slash command: "/draw" alone on a line + Enter inserts a drawing block here.
+    // Tab / Shift-Tab indentation — adds/removes 2 leading spaces on the current line(s).
+    // Works uniformly for prose, lists, and tasks (nested checkboxes render from the leading space).
+    function indentLines(cmView, outdent) {
+      const { state } = cmView;
+      const sel = state.selection.main;
+      const startLn = state.doc.lineAt(sel.from).number, endLn = state.doc.lineAt(sel.to).number;
+      const changes = [];
+      for (let i = startLn; i <= endLn; i++) {
+        const line = state.doc.line(i);
+        if (outdent) {
+          const m = /^( {1,2}|\t)/.exec(line.text);
+          if (m) changes.push({ from: line.from, to: line.from + m[0].length, insert: "" });
+        } else {
+          changes.push({ from: line.from, insert: "  " });
+        }
+      }
+      if (!changes.length) return outdent; // nothing to outdent → let default Tab pass only on indent
+      cmView.dispatch({ changes });
+      scheduleSave();
+      return true;
+    }
     function handleSlashCommand(cmView) {
       const sel = cmView.state.selection.main;
       if (!sel.empty) return false;
@@ -1191,6 +1515,13 @@
       if (tm) {
         const insert = tm[1] + "- [ ] " + tm[2];
         cmView.dispatch({ changes: { from: line.from, to: line.to, insert }, selection: { anchor: line.from + insert.length } });
+        scheduleSave();
+        return true;
+      }
+      if (/^\s*\/sheet\s*$/i.test(line.text)) {
+        const sid = makeSheetId(); sheets.set(sid, newSheet());
+        const marker = "⟦sheet:" + sid + "⟧";
+        cmView.dispatch({ changes: { from: line.from, to: line.to, insert: marker + "\n" }, selection: { anchor: line.from + marker.length + 1 } });
         scheduleSave();
         return true;
       }
@@ -1237,7 +1568,7 @@
       if (/^\s*[-*+] \[[ xX]\] /m.test(t)) return "task";
       return "text";
     }
-    const TYPE_META = { text: { ico: "⌨", tag: "Text" }, task: { ico: "✓", tag: "Task" }, drawing: { ico: "✎", tag: "Drawing" }, manage: { ico: "⚙", tag: "Manage" } };
+    const TYPE_META = { text: { ico: "⌨", tag: "Text" }, task: { ico: "✓", tag: "Task" }, drawing: { ico: "✎", tag: "Drawing" }, sheet: { ico: "▦", tag: "Sheet" }, manage: { ico: "⚙", tag: "Manage" } };
     function snippetPreview(s) {
       let t = (s.text || "").replace(DRAW_RE, (m, id) => "🖼 " + ((s.scenes && s.scenes[id] && s.scenes[id].name) || "drawing"));
       return t.replace(/\s+/g, " ").trim();
@@ -1289,6 +1620,7 @@
     const BUILTINS = [
       { kind: "cmd", nick: "snippet", type: "manage", preview: "open the snippet manager" },
       { kind: "cmd", nick: "draw", type: "drawing", preview: "insert a drawing block" },
+      { kind: "cmd", nick: "sheet", type: "sheet", preview: "a calculating table / mini-sheet" },
       { kind: "cmd", nick: "task", type: "task", preview: "a checkbox task" },
     ];
     let slashOpen = false, slashItems = [], slashIndex = 0;
@@ -1923,12 +2255,42 @@
 
     // ---------- share / export ----------
     function escapeHtml(s) { return s.replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c])); }
+    function sheetToMarkdown(sheet) {
+      const disp = trimGrid(displaySheet(sheet));
+      if (!disp || !disp[0].length) return "";
+      const esc = (v) => String(v).replace(/\|/g, "\\|").replace(/\n/g, " ");
+      const header = disp[0].map(esc);
+      const sep = header.map(() => "---");
+      const rows = disp.slice(1).map(r => "| " + r.map(esc).join(" | ") + " |");
+      return ["| " + header.join(" | ") + " |", "| " + sep.join(" | ") + " |", ...rows].join("\n");
+    }
     function docForShare() {
       const sel = view.state.selection.main;
-      const text = sel.empty ? view.state.doc.toString() : view.state.sliceDoc(sel.from, sel.to);
-      return text.replace(/^[ \t]*⟦draw:([a-z0-9]+)⟧[ \t]*$/gm, (m, id) => { const n = (scenes.get(id)?.name || "").trim(); return "[drawing" + (n ? ": " + n : "") + "]"; });
+      let text = sel.empty ? view.state.doc.toString() : view.state.sliceDoc(sel.from, sel.to);
+      text = text.replace(/^[ \t]*⟦draw:([a-z0-9]+)⟧[ \t]*$/gm, (m, id) => { const n = (scenes.get(id)?.name || "").trim(); return "[drawing" + (n ? ": " + n : "") + "]"; });
+      text = text.replace(/^[ \t]*⟦sheet:([a-z0-9]+)⟧[ \t]*$/gm, (m, id) => { const s = sheets.get(id); return s ? "\n" + sheetToMarkdown(s) + "\n" : ""; });
+      return text;
     }
     function fallbackCopy(text) { const ta = document.createElement("textarea"); ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0"; document.body.appendChild(ta); ta.select(); try { document.execCommand("copy"); } catch {} ta.remove(); }
+    function sheetToPrintHTML(sheet) {
+      const disp = trimGrid(displaySheet(sheet));
+      if (!disp) return "";
+      const name = (sheet.name || "").trim();
+      const numRe = /^-?[₹$]?[\d,]+\.?\d*%?$/;
+      let rows = "";
+      disp.forEach((row, r) => {
+        rows += "<tr>" + row.map((v, c) => {
+          const f = (sheet.formats && sheet.formats[r + ":" + c]) || {};
+          const tag = r === 0 ? "th" : "td";
+          let style = "";
+          if (f.b && r !== 0) style += "font-weight:700;";
+          if (v !== "" && numRe.test(v)) style += "text-align:right;";
+          return "<" + tag + (style ? ' style="' + style + '"' : "") + ">" + escapeHtml(v) + "</" + tag + ">";
+        }).join("") + "</tr>";
+      });
+      const table = '<table class="print-sheet">' + rows + "</table>";
+      return (name && name !== "sheet") ? "<figure><figcaption>" + escapeHtml(name) + "</figcaption>" + table + "</figure>" : table;
+    }
     async function buildPrintHTML() {
       const marked = (await import("https://esm.sh/marked@12")).marked;
       marked.setOptions({ gfm: true });
@@ -1937,6 +2299,7 @@
       const flush = () => { if (buf.length) { html += marked.parse(buf.join("\n")); buf = []; } };
       for (const line of lines) {
         const m = /^[ \t]*⟦draw:([a-z0-9]+)⟧[ \t]*$/.exec(line);
+        const ms = /^[ \t]*⟦sheet:([a-z0-9]+)⟧[ \t]*$/.exec(line);
         if (m) {
           flush();
           const sc = scenes.get(m[1]);
@@ -1947,6 +2310,10 @@
               html += "<figure>" + (name ? "<figcaption>" + escapeHtml(name) + "</figcaption>" : "") + svg.outerHTML + "</figure>";
             } catch (e) { console.warn("pdf draw", e); }
           }
+        } else if (ms) {
+          flush();
+          const s = sheets.get(ms[1]);
+          if (s) html += sheetToPrintHTML(s);
         } else buf.push(line);
       }
       flush();
@@ -2123,7 +2490,7 @@
     });
     // Update awareness: compare the running build against the published one, show the banner when newer.
     (function () {
-      const APP_BUILD = "ecb47d218939"; // replaced with the build hash at deploy; stays the token on local file://
+      const APP_BUILD = "3334fdcc624c"; // replaced with the build hash at deploy; stays the token on local file://
       if (APP_BUILD === "__" + "BUILD__") return; // not deployed (local/dev) → no update checks
       let notified = false;
       async function checkUpdate() {
