@@ -277,6 +277,11 @@
     border: 1px solid var(--rule); box-shadow: var(--shadow); font-size: 13px; z-index: 60;
     opacity: 0; transition: opacity .2s; pointer-events: none; }
   #toast.show { opacity: 1; }
+  #updateBanner { position: fixed; left: 50%; transform: translateX(-50%); bottom: 42px; z-index: 70;
+    display: none; align-items: center; gap: 10px; background: var(--card-bg); color: var(--fg);
+    border: 1px solid var(--rule); border-radius: 9px; box-shadow: var(--shadow); padding: 8px 9px 8px 14px; font-size: 13px; }
+  #updateBanner.show { display: flex; }
+  #updateBanner .btn { font-size: 12px; }
   #bootError { display: none; position: fixed; inset: 40px; padding: 20px; background: #fff;
     color: #900; border: 2px solid #900; border-radius: 8px; font-family: monospace;
     font-size: 13px; white-space: pre-wrap; overflow: auto; z-index: 9999; }
@@ -350,6 +355,11 @@
   <div id="gramPopover"></div>
   <div id="printArea"></div>
   <div id="toast"></div>
+  <div id="updateBanner">
+    <span>✨ New version available</span>
+    <button class="btn accent" id="updateReload">Reload</button>
+    <button class="btn ic" id="updateDismiss" title="Dismiss">✕</button>
+  </div>
   <div id="bootError"></div>
 
   <script>
@@ -2104,6 +2114,33 @@
         navigator.serviceWorker.register("service-worker.js").catch((e) => console.warn("SW registration skipped:", e.message));
       });
     }
+    // Update banner: wire the buttons always (cheap); the version check below only runs when deployed.
+    window.addEventListener("load", () => {
+      const r = document.getElementById("updateReload");
+      const d = document.getElementById("updateDismiss");
+      if (r) r.addEventListener("click", () => location.reload());
+      if (d) d.addEventListener("click", () => document.getElementById("updateBanner").classList.remove("show"));
+    });
+    // Update awareness: compare the running build against the published one, show the banner when newer.
+    (function () {
+      const APP_BUILD = "ecb47d218939"; // replaced with the build hash at deploy; stays the token on local file://
+      if (APP_BUILD === "__" + "BUILD__") return; // not deployed (local/dev) → no update checks
+      let notified = false;
+      async function checkUpdate() {
+        if (notified) return;
+        try {
+          const r = await fetch("version.json", { cache: "no-store" });
+          if (!r.ok) return;
+          const v = await r.json();
+          if (v && v.build && v.build !== APP_BUILD) {
+            notified = true;
+            document.getElementById("updateBanner").classList.add("show");
+          }
+        } catch (e) { /* offline or no version file — ignore */ }
+      }
+      window.addEventListener("load", checkUpdate);
+      window.addEventListener("focus", checkUpdate);
+    })();
   </script>
 </body>
 </html>
