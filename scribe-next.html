@@ -4,6 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Scribe</title>
+<link rel="icon" type="image/svg+xml" href="scribe-icon.svg" />
 <link rel="manifest" href="manifest.webmanifest" />
 <meta name="theme-color" content="#7c5cff" />
 <link rel="apple-touch-icon" href="scribe-icon-192.png" />
@@ -276,6 +277,26 @@
   #snipPanel .tk-empty { color: var(--muted); padding: 18px 14px; text-align: center; line-height: 1.6; }
   #snipPanel .tk-foot { padding: 8px 12px; border-top: 1px solid var(--rule); }
   #snipPanel .tk-foot .btn { width: 100%; }
+  /* readability tray */
+  #readPanel { position: fixed; top: 42px; bottom: 30px; right: 0; width: min(340px, 86vw); z-index: 12;
+    background: var(--card-bg); border-left: 1px solid var(--rule); box-shadow: var(--shadow); display: none; flex-direction: column; }
+  #readPanel.show { display: flex; }
+  #readPanel .tk-head { display: flex; align-items: center; justify-content: space-between; padding: 9px 12px; border-bottom: 1px solid var(--rule); font-size: 13px; color: var(--fg); }
+  #readPanel .tk-head small { color: var(--muted); margin-left: 6px; }
+  #readPanel .rd-grade-line { padding: 6px 12px; font-size: 11px; color: var(--muted); border-bottom: 1px solid var(--rule); }
+  #readList { list-style: none; margin: 0; padding: 4px 0; overflow: auto; flex: 1; }
+  #readList li { display: flex; gap: 8px; align-items: flex-start; padding: 8px 12px; font-size: 13px; line-height: 1.45; cursor: pointer; border-bottom: 1px solid var(--rule); }
+  #readList li:hover { background: var(--rule); }
+  #readList li.tk-empty { color: var(--muted); justify-content: center; cursor: default; }
+  #readList .rd-badge { flex-shrink: 0; font-size: 10px; font-weight: 700; color: #fff; background: #d4a35a; border-radius: 4px; padding: 1px 5px; margin-top: 1px; }
+  #readList .rd-badge.vh { background: #e54848; }
+  #readList .rd-sent { color: var(--fg); word-break: break-word; }
+  #readPanel .tk-foot { padding: 8px 12px; border-top: 1px solid var(--rule); display: flex; flex-direction: column; gap: 7px; }
+  #readPanel .rd-targets { display: flex; flex-wrap: wrap; gap: 4px; }
+  #readPanel .rd-targets button { font-size: 11px; padding: 3px 8px; background: none; border: 1px solid var(--rule); border-radius: 4px; color: var(--fg); cursor: pointer; font-family: inherit; }
+  #readPanel .rd-targets button.sel { background: var(--accent); color: #fff; border-color: var(--accent); }
+  #readPanel #readHL { width: 100%; font-size: 12px; }
+  #readPanel #readHL.on { color: var(--accent); border-color: var(--accent); }
   #pasteChooser, #fontMenu, #timerMenu, #soundMenu, #shareMenu, #destMenu, #readMenu, #gramPopover { position: fixed; z-index: 40; min-width: 230px; background: var(--card-bg);
     border: 1px solid var(--rule); border-radius: 8px; box-shadow: var(--shadow); padding: 5px; display: none; }
   #pasteChooser.show, #fontMenu.show, #timerMenu.show, #soundMenu.show, #shareMenu.show, #destMenu.show, #readMenu.show, #gramPopover.show { display: block; }
@@ -386,12 +407,20 @@
     <ul id="snipList"></ul>
     <div class="tk-foot"><button class="btn" id="snipNew" title="Save the current selection as a snippet">＋ New from selection</button></div>
   </div>
+  <div id="readPanel">
+    <div class="tk-head"><span>Hard sentences <small id="readCount"></small></span><button class="btn ic" id="readClose" title="Close">✕</button></div>
+    <div class="rd-grade-line" id="readGrade"></div>
+    <ul id="readList"></ul>
+    <div class="tk-foot">
+      <div class="rd-targets" id="readTargets"></div>
+      <button class="btn" id="readHL"></button>
+    </div>
+  </div>
   <div id="pasteChooser"></div>
   <div id="slashMenu"></div>
   <div id="fontMenu"></div>
   <div id="timerMenu"></div>
   <div id="destMenu"></div>
-  <div id="readMenu"></div>
   <div id="soundMenu"></div>
   <div id="gramPopover"></div>
   <div id="printArea"></div>
@@ -1081,7 +1110,7 @@
       { key: "pg", label: "Postgraduate", grade: 18 },
     ];
     function readLevel() { return READ_LEVELS.find(l => l.key === (localStorage.getItem("scribeNext.readTarget") || "g10")) || READ_LEVELS[1]; }
-    function readHighlightOn() { return localStorage.getItem("scribeNext.readHighlight") === "1"; }
+    function readHighlightOn() { const v = localStorage.getItem("scribeNext.readHighlight"); return v === null ? true : v === "1"; }
     const setReadDecos = StateEffect.define();
     const readField = StateField.define({
       create() { return Decoration.none; },
@@ -1942,7 +1971,9 @@
     document.getElementById("fixesClose").addEventListener("click", closeFixesPanel);
     document.getElementById("fixesUndo").addEventListener("click", undoAutoFix);
     document.getElementById("grammar-status").addEventListener("click", switchEngine);
-    document.getElementById("read-status").addEventListener("click", toggleReadMenu);
+    document.getElementById("read-status").addEventListener("click", toggleReadPanel);
+    document.getElementById("readClose").addEventListener("click", closeReadPanel);
+    document.getElementById("readHL").addEventListener("click", () => { localStorage.setItem("scribeNext.readHighlight", readHighlightOn() ? "0" : "1"); computeReadability(); });
     document.getElementById("btn-fonts").addEventListener("click", (e) => { e.stopPropagation(); toggleFontMenu(); });
     document.getElementById("btn-dest").addEventListener("click", (e) => { e.stopPropagation(); toggleDestMenu(); });
     const timerEl = document.getElementById("timer");
@@ -1985,6 +2016,7 @@
     function closeSidePanels() {
       if (tasksPanelOpen) toggleTasksPanel();
       if (document.getElementById("fixesPanel").classList.contains("show")) closeFixesPanel();
+      if (readPanelOpen) closeReadPanel();
       hideGramPopover();
     }
     view.contentDOM.addEventListener("mousedown", closeSidePanels);
@@ -2080,69 +2112,67 @@
     function gradeLabel(g) { return g >= 17 ? "PG" : g >= 13 ? "UG" : "G" + g; }
     let readTimer = null;
     function scheduleRead() { clearTimeout(readTimer); readTimer = setTimeout(computeReadability, 450); }
-    function computeReadability() {
+    function computeReadHard() {
       const doc = view.state.doc.toString();
-      const prose = doc.replace(/^[ \t]*⟦draw:[a-z0-9]+⟧[ \t]*$/gm, "");
+      const prose = doc.replace(/^[ \t]*⟦(?:draw|sheet):[a-z0-9]+⟧[ \t]*$/gm, "");
       const lvl = readLevel();
-      updateReadIndicator(fkGrade(prose), lvl);
-      if (!readHighlightOn()) { view.dispatch({ effects: setReadDecos.of([]) }); return; }
-      const decos = [];
+      const overall = fkGrade(prose);
+      const hard = [];
       for (const [from, to] of segmentSentences(doc)) {
         const t = doc.slice(from, to);
-        if (/⟦draw:[a-z0-9]+⟧/.test(t) || readWords(t).length < 5) continue;
+        if (/⟦(?:draw|sheet):[a-z0-9]+⟧/.test(t) || readWords(t).length < 5) continue;
         const g = fkGrade(t);
-        if (g == null) continue;
-        if (g > lvl.grade + 4) decos.push({ from, to, cls: "read-veryhard" });
-        else if (g > lvl.grade) decos.push({ from, to, cls: "read-hard" });
+        if (g != null && g > lvl.grade) hard.push({ from, to, grade: g });
       }
-      view.dispatch({ effects: setReadDecos.of(decos) });
+      return { overall, hard, lvl, doc };
     }
-    function updateReadIndicator(grade, lvl) {
+    let readPanelOpen = false;
+    function computeReadability() {
+      const r = computeReadHard();
+      updateReadIndicator(r);
+      view.dispatch({ effects: setReadDecos.of(readHighlightOn() ? r.hard.map(h => ({ from: h.from, to: h.to, cls: h.grade > r.lvl.grade + 4 ? "read-veryhard" : "read-hard" })) : []) });
+      if (readPanelOpen) renderReadPanel(r);
+    }
+    function updateReadIndicator(r) {
       const wrap = document.getElementById("read-status");
       const g = document.getElementById("rd-grade");
-      if (grade == null) { g.textContent = "–"; wrap.className = ""; wrap.title = "Readability — click to set audience level"; return; }
-      const gr = Math.max(1, Math.round(grade));
-      g.textContent = gradeLabel(gr);
-      wrap.className = grade > lvl.grade + 2 ? "over" : grade > lvl.grade ? "warn" : "ok";
-      wrap.title = "Reads at ~" + gradeLabel(gr) + " · target " + lvl.label + (readHighlightOn() ? " · highlighting on" : "") + " · click to change";
+      const n = r.hard.length, veryHard = r.hard.some(h => h.grade > r.lvl.grade + 4);
+      g.textContent = n === 0 ? "✓" : String(n);
+      wrap.className = n === 0 ? "ok" : (veryHard ? "over" : "warn");
+      const gr = r.overall == null ? "?" : gradeLabel(Math.max(1, Math.round(r.overall)));
+      wrap.title = "Readability — reads at ~" + gr + " · target " + r.lvl.label + " · " + (n ? n + " hard sentence" + (n === 1 ? "" : "s") : "all within target") + " · click for details";
     }
-    let readMenuKey = null;
-    function outsideReadMenu(e) { if (!e.target.closest("#readMenu") && !e.target.closest("#read-status")) closeReadMenu(); }
-    function closeReadMenu() {
-      document.getElementById("readMenu").classList.remove("show");
-      if (readMenuKey) { window.removeEventListener("keydown", readMenuKey, true); readMenuKey = null; }
-      document.removeEventListener("mousedown", outsideReadMenu, true);
-    }
-    function renderReadMenu() {
-      const el = document.getElementById("readMenu"); el.innerHTML = "";
-      const cur = readLevel().key;
-      const head = document.createElement("div"); head.className = "rd-head"; head.textContent = "Target audience"; el.appendChild(head);
-      for (const lvl of READ_LEVELS) {
-        const b = document.createElement("button");
-        b.innerHTML = esc(lvl.label) + ' <span class="rd-sub">~ grade ' + lvl.grade + '</span>';
-        if (lvl.key === cur) b.className = "sel";
-        b.addEventListener("mousedown", (e) => { e.preventDefault(); localStorage.setItem("scribeNext.readTarget", lvl.key); computeReadability(); renderReadMenu(); });
-        el.appendChild(b);
+    function renderReadPanel(r) {
+      r = r || computeReadHard();
+      document.getElementById("readGrade").textContent = r.overall == null ? "—" : "Reads at about " + gradeLabel(Math.max(1, Math.round(r.overall))) + " · target " + r.lvl.label;
+      document.getElementById("readCount").textContent = r.hard.length ? (r.hard.length + (r.hard.length === 1 ? " hard" : " hard")) : "";
+      const ul = document.getElementById("readList"); ul.innerHTML = "";
+      if (!r.hard.length) {
+        const li = document.createElement("li"); li.className = "tk-empty"; li.textContent = "Nothing above your target — clean read 🎉"; ul.appendChild(li);
+      } else for (const h of r.hard) {
+        const li = document.createElement("li");
+        const veryHard = h.grade > r.lvl.grade + 4;
+        const badge = document.createElement("span"); badge.className = "rd-badge" + (veryHard ? " vh" : ""); badge.textContent = gradeLabel(Math.round(h.grade));
+        const sent = document.createElement("span"); sent.className = "rd-sent"; sent.textContent = r.doc.slice(h.from, h.to).replace(/\s+/g, " ").trim().slice(0, 90);
+        li.append(badge, sent);
+        li.addEventListener("click", () => { view.dispatch({ selection: { anchor: h.from }, effects: EditorView.scrollIntoView(h.from, { y: "center" }) }); view.focus(); });
+        ul.appendChild(li);
       }
-      const tog = document.createElement("button"); tog.className = "rd-toggle";
-      tog.textContent = (readHighlightOn() ? "✓ " : "") + "Highlight hard sentences";
-      tog.addEventListener("mousedown", (e) => { e.preventDefault(); localStorage.setItem("scribeNext.readHighlight", readHighlightOn() ? "0" : "1"); computeReadability(); renderReadMenu(); });
-      el.appendChild(tog);
+      const tsel = document.getElementById("readTargets"); tsel.innerHTML = "";
+      const cur = readLevel().key;
+      for (const lvl of READ_LEVELS) {
+        const b = document.createElement("button"); b.textContent = lvl.label.replace("Undergraduate", "UG").replace("Postgraduate", "PG").replace("Grade ", "G");
+        if (lvl.key === cur) b.className = "sel";
+        b.addEventListener("click", () => { localStorage.setItem("scribeNext.readTarget", lvl.key); computeReadability(); });
+        tsel.appendChild(b);
+      }
+      const hl = document.getElementById("readHL");
+      hl.textContent = (readHighlightOn() ? "✓ " : "") + "Highlight in text";
+      hl.classList.toggle("on", readHighlightOn());
     }
-    function openReadMenu() {
-      renderReadMenu();
-      const el = document.getElementById("readMenu");
-      el.classList.add("show");
-      const r = document.getElementById("read-status").getBoundingClientRect();
-      el.style.left = Math.max(8, Math.min(r.left, window.innerWidth - el.offsetWidth - 8)) + "px";
-      el.style.top = (r.bottom + 6) + "px";
-      readMenuKey = (e) => { if (e.key === "Escape") { e.preventDefault(); closeReadMenu(); } };
-      window.addEventListener("keydown", readMenuKey, true);
-      setTimeout(() => document.addEventListener("mousedown", outsideReadMenu, true), 0);
-    }
-    function toggleReadMenu() {
-      if (document.getElementById("readMenu").classList.contains("show")) closeReadMenu(); else openReadMenu();
-    }
+    function openReadPanel() { readPanelOpen = true; document.getElementById("readPanel").classList.add("show"); renderReadPanel(); }
+    function closeReadPanel() { readPanelOpen = false; document.getElementById("readPanel").classList.remove("show"); }
+    function toggleReadPanel() { if (readPanelOpen) closeReadPanel(); else openReadPanel(); }
 
     const DESTS = [
       ["md", "Markdown", "plain writing — copy with ⌘C"],
@@ -2556,7 +2586,7 @@
     });
     // Update awareness: compare the running build against the published one, show the banner when newer.
     (function () {
-      const APP_BUILD = "a2739d642693"; // replaced with the build hash at deploy; stays the token on local file://
+      const APP_BUILD = "9bfc7cef272e"; // replaced with the build hash at deploy; stays the token on local file://
       if (APP_BUILD === "__" + "BUILD__") return; // not deployed (local/dev) → no update checks
       let notified = false;
       async function checkUpdate() {
