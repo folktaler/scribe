@@ -102,7 +102,10 @@
   #composeBar { position: fixed; top: 42px; left: 0; right: 0; height: 34px; z-index: 5;
     display: flex; align-items: center; gap: 8px; padding: 0 10px;
     background: var(--bg); border-bottom: 1px solid var(--rule); }
-  #composeLabel { flex-shrink: 0; font-size: 11px; color: var(--accent); font-weight: 600; letter-spacing: .02em; }
+  #composeLabel { flex-shrink: 0; font-size: 11px; color: var(--accent); font-weight: 600; letter-spacing: .02em;
+    cursor: pointer; border-radius: 5px; padding: 3px 6px; display: inline-flex; align-items: center; gap: 3px; }
+  #composeLabel:hover { background: var(--rule); }
+  #composeLabel .cl-caret { font-size: 9px; opacity: .7; }
   #composeFmt { flex: 1; min-width: 0; display: flex; align-items: center; gap: 1px; overflow-x: auto;
     scrollbar-width: thin; scrollbar-color: var(--rule) transparent; }
   #composeFmt::-webkit-scrollbar { height: 6px; }
@@ -414,7 +417,7 @@
     </div>
   </div>
   <div id="composeBar">
-    <span id="composeLabel"></span>
+    <span id="composeLabel" title="Composing for — click to change format (Markdown / WhatsApp / Telegram / Gmail)"></span>
     <div id="composeFmt"></div>
     <button class="btn ic" id="composePreview" title="Preview ⇄ Edit (rendered view)">👁</button>
     <button class="btn ic" id="composeCopy" title="Copy for this destination">⧉</button>
@@ -426,7 +429,6 @@
     <div class="row" style="gap:8px">
       <button class="btn ic" id="btn-snippets" title="Snippets — manage &amp; insert (type / in the doc)">❏</button>
       <button class="btn ic" id="btn-tasks" title="All tasks (T)">T</button>
-      <button class="btn ic" id="btn-dest" title="Compose for an app — WhatsApp / Telegram / Gmail">MD</button>
     </div>
   </div>
 
@@ -1503,9 +1505,7 @@
     function setDestination(dest) {
       destination = FORMAT_SETS[dest] ? dest : "md";
       const label = document.getElementById("composeLabel");
-      if (label) label.textContent = DEST_NAME[destination] || "";
-      const chip = document.getElementById("btn-dest");
-      if (chip) { chip.textContent = DEST_CODE[destination] || "MD"; chip.classList.toggle("on", destination !== "md"); }
+      if (label) label.innerHTML = esc(DEST_NAME[destination] || "Markdown") + ' <span class="cl-caret">▾</span>';
       view.dispatch({ effects: highlightCompartment.reconfigure(destination === "md" ? MD_HIGHLIGHT : []) });
       renderToolbars();
       scheduleSave();
@@ -2026,7 +2026,7 @@
     document.getElementById("read-status").addEventListener("click", toggleReadPanel);
     document.getElementById("readClose").addEventListener("click", closeReadPanel);
     document.getElementById("readHL").addEventListener("click", () => { localStorage.setItem("scribeNext.readHighlight", readHighlightOn() ? "0" : "1"); computeReadability(); });
-    document.getElementById("btn-dest").addEventListener("click", (e) => { e.stopPropagation(); toggleDestMenu(); });
+    document.getElementById("composeLabel").addEventListener("click", (e) => { e.stopPropagation(); toggleDestMenu(); });
     const timerEl = document.getElementById("timer");
     timerEl.addEventListener("click", (e) => { e.stopPropagation(); onTimerClick(); });
     timerEl.addEventListener("dblclick", (e) => { e.stopPropagation(); onTimerDblClick(); });
@@ -2385,7 +2385,7 @@
       ["gmail", "Gmail (rich)", "formatted paste"],
     ];
     let destMenuKey = null;
-    function outsideDestMenu(e) { if (!e.target.closest("#destMenu") && e.target.id !== "btn-dest") closeDestMenu(); }
+    function outsideDestMenu(e) { if (!e.target.closest("#destMenu") && !e.target.closest("#composeLabel")) closeDestMenu(); }
     function closeDestMenu() {
       document.getElementById("destMenu").classList.remove("show");
       if (destMenuKey) { window.removeEventListener("keydown", destMenuKey, true); destMenuKey = null; }
@@ -2402,9 +2402,9 @@
         el.appendChild(b);
       }
       el.classList.add("show");
-      const r = document.getElementById("btn-dest").getBoundingClientRect();
-      el.style.left = Math.max(8, Math.min(r.right - el.offsetWidth, window.innerWidth - el.offsetWidth - 8)) + "px";
-      el.style.top = (r.top - el.offsetHeight - 6) + "px";
+      const r = document.getElementById("composeLabel").getBoundingClientRect();
+      el.style.left = Math.max(8, Math.min(r.left, window.innerWidth - el.offsetWidth - 8)) + "px";
+      el.style.top = (r.bottom + 6) + "px";
       destMenuKey = (e) => { if (e.key === "Escape") { e.preventDefault(); closeDestMenu(); } };
       window.addEventListener("keydown", destMenuKey, true);
       setTimeout(() => document.addEventListener("mousedown", outsideDestMenu, true), 0);
@@ -2791,7 +2791,7 @@
     });
     // Update awareness: compare the running build against the published one, show the banner when newer.
     (function () {
-      const APP_BUILD = "4fbf71d30cff"; // replaced with the build hash at deploy; stays the token on local file://
+      const APP_BUILD = "9fe1fee18ad1"; // replaced with the build hash at deploy; stays the token on local file://
       if (APP_BUILD === "__" + "BUILD__") return; // not deployed (local/dev) → no update checks
       let notified = false;
       async function checkUpdate() {
