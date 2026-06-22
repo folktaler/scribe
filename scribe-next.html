@@ -34,11 +34,19 @@
   .row { display: flex; align-items: center; gap: 10px; }
   #filename { color: var(--fg); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   #topleft { flex: 1; min-width: 0; }
-  #fileBtn { display: inline-flex; align-items: center; gap: 5px; max-width: 100%; background: none; border: 0; border-radius: 5px;
-    padding: 3px 7px; margin: 0; font: inherit; color: var(--muted); cursor: pointer; }
+  #topleft { gap: 7px; }
+  #fileBtn { background: none; border: 0; border-radius: 7px; padding: 1px 5px; margin: 0; font-size: 17px; line-height: 1; cursor: pointer; }
   #fileBtn:hover { background: var(--rule); }
-  #fileBtn .caret { font-size: 9px; color: var(--muted); flex-shrink: 0; }
   #fileMenu .fm-sub { float: right; color: var(--muted); font-size: 11px; margin-left: 16px; }
+  /* cascading submenus (Theme / Font) — flyout to the right */
+  #fileMenu .fm-sub-item { position: relative; }
+  #fileMenu .fm-label { display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 7px 11px; border-radius: 5px; font-size: 13px; color: var(--fg); cursor: default; }
+  #fileMenu .fm-sub-item:hover > .fm-label { background: var(--rule); }
+  #fileMenu .fm-arrow { color: var(--muted); font-size: 10px; }
+  #fileMenu .fm-flyout { position: absolute; left: 100%; top: -5px; min-width: 150px; background: var(--card-bg); border: 1px solid var(--rule); border-radius: 8px; box-shadow: var(--shadow); padding: 5px; display: none; z-index: 41; }
+  #fileMenu .fm-sub-item:hover > .fm-flyout { display: block; }
+  #fileMenu .fm-flyout button { display: block; width: 100%; text-align: left; background: none; border: 0; padding: 7px 11px; border-radius: 5px; color: var(--fg); font-family: inherit; font-size: 13px; cursor: pointer; }
+  #fileMenu .fm-flyout button:hover, #fileMenu .fm-flyout button.sel { background: var(--rule); }
   #topright { flex-shrink: 0; gap: 7px; }
   .btn.ic { min-width: 28px; padding: 4px 6px; text-align: center; }
   #bottomstrip { position: fixed; bottom: 0; left: 0; right: 0; height: 30px; z-index: 5;
@@ -387,7 +395,8 @@
 <body>
   <div id="topbar">
     <div class="row" id="topleft">
-      <button id="fileBtn" title="File &amp; settings — Save, Open, Export, Theme, Font"><span id="filename">untitled.kitten</span><span id="dirty"></span><span class="caret">▾</span></button>
+      <button id="fileBtn" title="File &amp; settings">🐱</button>
+      <span id="filename">untitled.kitten</span><span id="dirty"></span>
     </div>
     <div class="row" id="topright">
       <span class="gram-group">
@@ -2119,14 +2128,31 @@
         b.addEventListener("mousedown", (e) => { e.preventDefault(); fn(); });
         el.appendChild(b);
       };
+      const subItem = (label, build) => {
+        const wrap = document.createElement("div"); wrap.className = "fm-sub-item";
+        const lab = document.createElement("div"); lab.className = "fm-label"; lab.innerHTML = esc(label) + '<span class="fm-arrow">▸</span>';
+        const fly = document.createElement("div"); fly.className = "fm-flyout"; build(fly);
+        wrap.append(lab, fly); el.appendChild(wrap);
+      };
+      const flyBtn = (fly, label, sel, fn) => {
+        const b = document.createElement("button"); b.textContent = label; if (sel) b.className = "sel";
+        b.addEventListener("mousedown", (e) => { e.preventDefault(); fn(); });
+        fly.appendChild(b); return b;
+      };
       item("Save", "⌘S", () => { closeFileMenu(); saveFile(); });
       item("Open", "⌘O", () => { closeFileMenu(); openFile(); });
       item("Export / Share", "PDF", () => { closeFileMenu(); exportPDF(); });
       const div = document.createElement("div"); div.style.cssText = "border-top:1px solid var(--rule); margin:4px 0;"; el.appendChild(div);
-      const themeName = { light: "☀ Light", dark: "☾ Dark", sepia: "☕ Sepia" }[document.body.dataset.theme || "light"];
-      item("Theme", themeName, () => { cycleTheme(); renderFileMenu(); });
-      const fontName = (FONTS.find(f => f[0] === (document.body.dataset.font || "lexend")) || [null, "Lexend"])[1];
-      item("Font", fontName, () => { closeFileMenu(); openFontMenu(); });
+      subItem("Theme", (fly) => {
+        const cur = document.body.dataset.theme || "light";
+        [["light", "☀ Light"], ["dark", "☾ Dark"], ["sepia", "☕ Sepia"]].forEach(([t, lbl]) => flyBtn(fly, lbl, t === cur, () => { setTheme(t); closeFileMenu(); }));
+      });
+      subItem("Font", (fly) => {
+        const cur = document.body.dataset.font || "lexend";
+        for (const [val, label] of FONTS) flyBtn(fly, label, val === cur, () => { setFont(val); closeFileMenu(); });
+        const d = document.createElement("div"); d.style.cssText = "border-top:1px solid var(--rule); margin:4px 0;"; fly.appendChild(d);
+        const sp = flyBtn(fly, (roomyOn() ? "✓ " : "") + "Comfortable spacing", false, () => { setRoomy(!roomyOn()); sp.textContent = (roomyOn() ? "✓ " : "") + "Comfortable spacing"; });
+      });
     }
     function openFileMenu() {
       renderFileMenu();
@@ -2743,7 +2769,7 @@
     });
     // Update awareness: compare the running build against the published one, show the banner when newer.
     (function () {
-      const APP_BUILD = "fc275df2b50b"; // replaced with the build hash at deploy; stays the token on local file://
+      const APP_BUILD = "ed5e59a728c2"; // replaced with the build hash at deploy; stays the token on local file://
       if (APP_BUILD === "__" + "BUILD__") return; // not deployed (local/dev) → no update checks
       let notified = false;
       async function checkUpdate() {
