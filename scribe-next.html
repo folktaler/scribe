@@ -146,6 +146,19 @@
   .gram-dot.lt { background: #3cba54; }        /* green = LanguageTool */
   .gram-dot.error { background: #e54848; }
   @keyframes gpulse { 0%,100% { opacity: .4; } 50% { opacity: .9; } }
+  /* readability (offline, formula-based — no AI) */
+  #read-status { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; color: var(--muted);
+    cursor: pointer; border-radius: 4px; padding: 2px 5px; }
+  #read-status:hover { background: var(--rule); }
+  #read-status .rd-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--muted); }
+  #read-status.ok .rd-dot { background: #3cba54; }
+  #read-status.warn .rd-dot { background: #d4a35a; }
+  #read-status.over .rd-dot { background: #e54848; }
+  .read-hard { background: color-mix(in srgb, #d4a35a 22%, transparent); border-radius: 2px; }
+  .read-veryhard { background: color-mix(in srgb, #e54848 22%, transparent); border-radius: 2px; }
+  #readMenu .rd-head { padding: 6px 11px 3px; font-size: 11px; color: var(--muted); }
+  #readMenu .rd-sub { color: var(--muted); font-size: 11px; }
+  #readMenu .rd-toggle { border-top: 1px solid var(--rule); margin-top: 4px; }
   .task-check { display: inline-block; width: 17px; height: 17px; box-sizing: border-box; flex-shrink: 0;
     border: 2px solid var(--muted); border-radius: 4px; vertical-align: -4px; margin-right: 7px;
     cursor: pointer; user-select: none; position: relative; transition: border-color .12s; }
@@ -227,12 +240,12 @@
   #snipPanel .tk-empty { color: var(--muted); padding: 18px 14px; text-align: center; line-height: 1.6; }
   #snipPanel .tk-foot { padding: 8px 12px; border-top: 1px solid var(--rule); }
   #snipPanel .tk-foot .btn { width: 100%; }
-  #pasteChooser, #fontMenu, #timerMenu, #soundMenu, #shareMenu, #destMenu, #gramPopover { position: fixed; z-index: 40; min-width: 230px; background: var(--card-bg);
+  #pasteChooser, #fontMenu, #timerMenu, #soundMenu, #shareMenu, #destMenu, #readMenu, #gramPopover { position: fixed; z-index: 40; min-width: 230px; background: var(--card-bg);
     border: 1px solid var(--rule); border-radius: 8px; box-shadow: var(--shadow); padding: 5px; display: none; }
-  #pasteChooser.show, #fontMenu.show, #timerMenu.show, #soundMenu.show, #shareMenu.show, #destMenu.show, #gramPopover.show { display: block; }
-  #pasteChooser button, #fontMenu button, #timerMenu button, #soundMenu button, #shareMenu button, #destMenu button, #gramPopover button { display: block; width: 100%; text-align: left; background: none; border: 0;
+  #pasteChooser.show, #fontMenu.show, #timerMenu.show, #soundMenu.show, #shareMenu.show, #destMenu.show, #readMenu.show, #gramPopover.show { display: block; }
+  #pasteChooser button, #fontMenu button, #timerMenu button, #soundMenu button, #shareMenu button, #destMenu button, #readMenu button, #gramPopover button { display: block; width: 100%; text-align: left; background: none; border: 0;
     padding: 7px 11px; border-radius: 5px; color: var(--fg); font-family: inherit; font-size: 13px; cursor: pointer; }
-  #pasteChooser button:hover, #pasteChooser button.sel, #fontMenu button:hover, #fontMenu button.sel, #timerMenu button:hover, #soundMenu button:hover, #shareMenu button:hover, #destMenu button:hover, #destMenu button.sel, #gramPopover button:hover { background: var(--rule); }
+  #pasteChooser button:hover, #pasteChooser button.sel, #fontMenu button:hover, #fontMenu button.sel, #timerMenu button:hover, #soundMenu button:hover, #shareMenu button:hover, #destMenu button:hover, #destMenu button.sel, #readMenu button:hover, #readMenu button.sel, #gramPopover button:hover { background: var(--rule); }
   #gramPopover .gp-msg { padding: 7px 11px 4px; font-size: 12px; color: var(--muted); max-width: 280px; }
   #gramPopover button b { color: var(--accent); font-weight: 500; }
   #gramPopover .gp-add { color: var(--accent); border-top: 1px solid var(--rule); margin-top: 3px; }
@@ -274,6 +287,7 @@
     <div class="row" id="topleft"><span id="filename">untitled.kitten</span><span id="dirty"></span></div>
     <div class="row" id="topright">
       <span id="grammar-status" title="Grammar — click to switch engine (blue = Harper offline, green = LanguageTool)"><span class="gram-dot"></span><span id="gram-count"></span></span>
+      <span id="read-status" title="Readability — click to set audience level"><span class="rd-dot"></span><span id="rd-grade"></span></span>
       <button class="btn ic" id="btn-autofix" title="Auto-fix all issues">AF</button>
       <button class="btn ic" id="btn-save" title="Save (⌘S)">S</button>
       <button class="btn ic" id="btn-open" title="Open (⌘O)">O</button>
@@ -331,6 +345,7 @@
   <div id="fontMenu"></div>
   <div id="timerMenu"></div>
   <div id="destMenu"></div>
+  <div id="readMenu"></div>
   <div id="soundMenu"></div>
   <div id="gramPopover"></div>
   <div id="printArea"></div>
@@ -700,6 +715,31 @@
       if (engine === "harper" && !harperReady) return;
       clearTimeout(lintTimer); lintTimer = setTimeout(runLint, 500);
     }
+
+    // ---------- readability (offline, formula-based — no AI) ----------
+    const READ_LEVELS = [
+      { key: "g8", label: "Grade 8", grade: 8 },
+      { key: "g10", label: "Grade 10", grade: 10 },
+      { key: "g12", label: "Grade 12", grade: 12 },
+      { key: "ug", label: "Undergraduate", grade: 15 },
+      { key: "pg", label: "Postgraduate", grade: 18 },
+    ];
+    function readLevel() { return READ_LEVELS.find(l => l.key === (localStorage.getItem("scribeNext.readTarget") || "g10")) || READ_LEVELS[1]; }
+    function readHighlightOn() { return localStorage.getItem("scribeNext.readHighlight") === "1"; }
+    const setReadDecos = StateEffect.define();
+    const readField = StateField.define({
+      create() { return Decoration.none; },
+      update(deco, tr) {
+        deco = deco.map(tr.changes);
+        for (const e of tr.effects) if (e.is(setReadDecos)) {
+          const b = new RangeSetBuilder();
+          for (const r of e.value) b.add(r.from, r.to, Decoration.mark({ class: r.cls }));
+          deco = b.finish();
+        }
+        return deco;
+      },
+      provide: f => EditorView.decorations.from(f),
+    });
 
     function harperToCommon(l) {
       try {
@@ -1101,6 +1141,7 @@
           drawField,
           EditorView.atomicRanges.of(v => v.state.field(drawField)),
           lintField,
+          readField,
           taskField,
           EditorView.atomicRanges.of(v => v.state.field(taskField).atoms),
           EditorView.lineWrapping,
@@ -1119,7 +1160,7 @@
             { key: "Mod-o", preventDefault: true, run: () => { openFile(); return true; } },
           ]),
           EditorView.updateListener.of((u) => {
-            if (u.docChanged) { setDirty(true); scheduleSave(); scheduleLint(); hideGramPopover(); }
+            if (u.docChanged) { setDirty(true); scheduleSave(); scheduleLint(); scheduleRead(); hideGramPopover(); }
             if (u.selectionSet || u.docChanged) updateFmtBar();
             if (u.selectionSet || u.docChanged) updateSlashMenu();
             if (u.docChanged && tasksPanelOpen) renderTasksPanel();
@@ -1493,6 +1534,7 @@
     document.getElementById("fixesClose").addEventListener("click", closeFixesPanel);
     document.getElementById("fixesUndo").addEventListener("click", undoAutoFix);
     document.getElementById("grammar-status").addEventListener("click", switchEngine);
+    document.getElementById("read-status").addEventListener("click", toggleReadMenu);
     document.getElementById("btn-fonts").addEventListener("click", (e) => { e.stopPropagation(); toggleFontMenu(); });
     document.getElementById("btn-dest").addEventListener("click", (e) => { e.stopPropagation(); toggleDestMenu(); });
     const timerEl = document.getElementById("timer");
@@ -1584,6 +1626,114 @@
     }
     function toggleFontMenu() {
       if (document.getElementById("fontMenu").classList.contains("show")) closeFontMenu(); else openFontMenu();
+    }
+
+    // ----- readability: Flesch–Kincaid grade (the same formula Hemingway/textstat use) -----
+    function countSyllables(w) {
+      w = w.toLowerCase().replace(/[^a-z]/g, "");
+      if (!w) return 0;
+      if (w.length <= 3) return 1;
+      w = w.replace(/(?:[^laeiouy]es|ed|[^laeiouy]e)$/, "").replace(/^y/, "");
+      const m = w.match(/[aeiouy]{1,2}/g);
+      return m ? m.length : 1;
+    }
+    function readWords(text) { return text.match(/[A-Za-z][A-Za-z'’]*/g) || []; }
+    function fkGrade(text) {
+      const words = readWords(text);
+      const wc = words.length;
+      if (wc < 1) return null;
+      const sents = Math.max(1, (text.match(/[.!?]+(?=\s|$)/g) || []).length);
+      const syll = words.reduce((s, w) => s + countSyllables(w), 0);
+      return 0.39 * (wc / sents) + 11.8 * (syll / wc) - 15.59;
+    }
+    function segmentSentences(text) {
+      const out = []; let i = 0, start = 0;
+      const term = (c) => c === "." || c === "!" || c === "?";
+      while (i < text.length) {
+        const c = text[i];
+        if (term(c)) {
+          let j = i + 1; while (j < text.length && term(text[j])) j++;
+          if (j >= text.length || /\s/.test(text[j])) {
+            out.push([start, j]);
+            while (j < text.length && /\s/.test(text[j])) j++;
+            start = j; i = j; continue;
+          }
+        }
+        if (c === "\n" && text[i + 1] === "\n") {
+          if (text.slice(start, i).trim()) out.push([start, i]);
+          let j = i; while (j < text.length && /\s/.test(text[j])) j++;
+          start = j; i = j; continue;
+        }
+        i++;
+      }
+      if (start < text.length && text.slice(start).trim()) out.push([start, text.length]);
+      return out;
+    }
+    function gradeLabel(g) { return g >= 17 ? "PG" : g >= 13 ? "UG" : "G" + g; }
+    let readTimer = null;
+    function scheduleRead() { clearTimeout(readTimer); readTimer = setTimeout(computeReadability, 450); }
+    function computeReadability() {
+      const doc = view.state.doc.toString();
+      const prose = doc.replace(/^[ \t]*⟦draw:[a-z0-9]+⟧[ \t]*$/gm, "");
+      const lvl = readLevel();
+      updateReadIndicator(fkGrade(prose), lvl);
+      if (!readHighlightOn()) { view.dispatch({ effects: setReadDecos.of([]) }); return; }
+      const decos = [];
+      for (const [from, to] of segmentSentences(doc)) {
+        const t = doc.slice(from, to);
+        if (/⟦draw:[a-z0-9]+⟧/.test(t) || readWords(t).length < 5) continue;
+        const g = fkGrade(t);
+        if (g == null) continue;
+        if (g > lvl.grade + 4) decos.push({ from, to, cls: "read-veryhard" });
+        else if (g > lvl.grade) decos.push({ from, to, cls: "read-hard" });
+      }
+      view.dispatch({ effects: setReadDecos.of(decos) });
+    }
+    function updateReadIndicator(grade, lvl) {
+      const wrap = document.getElementById("read-status");
+      const g = document.getElementById("rd-grade");
+      if (grade == null) { g.textContent = "–"; wrap.className = ""; wrap.title = "Readability — click to set audience level"; return; }
+      const gr = Math.max(1, Math.round(grade));
+      g.textContent = gradeLabel(gr);
+      wrap.className = grade > lvl.grade + 2 ? "over" : grade > lvl.grade ? "warn" : "ok";
+      wrap.title = "Reads at ~" + gradeLabel(gr) + " · target " + lvl.label + (readHighlightOn() ? " · highlighting on" : "") + " · click to change";
+    }
+    let readMenuKey = null;
+    function outsideReadMenu(e) { if (!e.target.closest("#readMenu") && !e.target.closest("#read-status")) closeReadMenu(); }
+    function closeReadMenu() {
+      document.getElementById("readMenu").classList.remove("show");
+      if (readMenuKey) { window.removeEventListener("keydown", readMenuKey, true); readMenuKey = null; }
+      document.removeEventListener("mousedown", outsideReadMenu, true);
+    }
+    function renderReadMenu() {
+      const el = document.getElementById("readMenu"); el.innerHTML = "";
+      const cur = readLevel().key;
+      const head = document.createElement("div"); head.className = "rd-head"; head.textContent = "Target audience"; el.appendChild(head);
+      for (const lvl of READ_LEVELS) {
+        const b = document.createElement("button");
+        b.innerHTML = esc(lvl.label) + ' <span class="rd-sub">~ grade ' + lvl.grade + '</span>';
+        if (lvl.key === cur) b.className = "sel";
+        b.addEventListener("mousedown", (e) => { e.preventDefault(); localStorage.setItem("scribeNext.readTarget", lvl.key); computeReadability(); renderReadMenu(); });
+        el.appendChild(b);
+      }
+      const tog = document.createElement("button"); tog.className = "rd-toggle";
+      tog.textContent = (readHighlightOn() ? "✓ " : "") + "Highlight hard sentences";
+      tog.addEventListener("mousedown", (e) => { e.preventDefault(); localStorage.setItem("scribeNext.readHighlight", readHighlightOn() ? "0" : "1"); computeReadability(); renderReadMenu(); });
+      el.appendChild(tog);
+    }
+    function openReadMenu() {
+      renderReadMenu();
+      const el = document.getElementById("readMenu");
+      el.classList.add("show");
+      const r = document.getElementById("read-status").getBoundingClientRect();
+      el.style.left = Math.max(8, Math.min(r.left, window.innerWidth - el.offsetWidth - 8)) + "px";
+      el.style.top = (r.bottom + 6) + "px";
+      readMenuKey = (e) => { if (e.key === "Escape") { e.preventDefault(); closeReadMenu(); } };
+      window.addEventListener("keydown", readMenuKey, true);
+      setTimeout(() => document.addEventListener("mousedown", outsideReadMenu, true), 0);
+    }
+    function toggleReadMenu() {
+      if (document.getElementById("readMenu").classList.contains("show")) closeReadMenu(); else openReadMenu();
     }
 
     const DESTS = [
@@ -1940,6 +2090,7 @@
     document.body.dataset.font = localStorage.getItem("scribeNext.font") || "lexend";
     if (roomyOn()) document.body.classList.add("roomy");
     initGrammar();
+    computeReadability();
     view.focus();
   } catch (err) {
     showBootError((err && err.stack) ? err.stack : String(err));
