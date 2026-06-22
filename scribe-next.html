@@ -147,13 +147,19 @@
   .gram-dot.error { background: #e54848; }
   @keyframes gpulse { 0%,100% { opacity: .4; } 50% { opacity: .9; } }
   /* readability (offline, formula-based — no AI) */
-  #read-status { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; color: var(--muted);
-    cursor: pointer; border-radius: 4px; padding: 2px 5px; }
+  /* grammar + auto-fix joined into one pill (so AF reads as part of grammar, not readability) */
+  .gram-group { display: inline-flex; align-items: center; border: 1px solid var(--rule); border-radius: 5px; overflow: hidden; }
+  .gram-group #grammar-status { border-radius: 0; padding: 3px 7px; }
+  .gram-group #btn-autofix { border: 0; border-left: 1px solid var(--rule); border-radius: 0; }
+  /* readability: deliberately different from grammar — an "Aa" mark + colour-coded grade, no dot */
+  #read-status { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; color: var(--muted);
+    cursor: pointer; border-radius: 4px; padding: 2px 6px; }
   #read-status:hover { background: var(--rule); }
-  #read-status .rd-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--muted); }
-  #read-status.ok .rd-dot { background: #3cba54; }
-  #read-status.warn .rd-dot { background: #d4a35a; }
-  #read-status.over .rd-dot { background: #e54848; }
+  #read-status .rd-ico { font-size: 10px; font-weight: 700; letter-spacing: -.5px; opacity: .6; }
+  #read-status #rd-grade { font-weight: 600; }
+  #read-status.ok #rd-grade { color: #3cba54; }
+  #read-status.warn #rd-grade { color: #d4a35a; }
+  #read-status.over #rd-grade { color: #e54848; }
   .read-hard { background: color-mix(in srgb, #d4a35a 22%, transparent); border-radius: 2px; }
   .read-veryhard { background: color-mix(in srgb, #e54848 22%, transparent); border-radius: 2px; }
   #readMenu .rd-head { padding: 6px 11px 3px; font-size: 11px; color: var(--muted); }
@@ -168,11 +174,20 @@
   .sheetblock-bar .acts button { background: none; border: 1px solid var(--rule); border-radius: 4px; color: var(--fg); font-size: 11px; padding: 2px 8px; cursor: pointer; font-family: inherit; }
   .sheetblock-bar .acts button:hover { background: var(--rule); }
   .sheetblock-bar .acts button.del { color: #c0392b; }
-  .sheetgrid { border-collapse: collapse; font-size: 13px; font-variant-numeric: tabular-nums; }
-  .sheetgrid th { background: color-mix(in srgb, var(--rule) 45%, transparent); color: var(--muted); font-weight: 500; font-size: 11px; text-align: center; border: 1px solid var(--rule); padding: 2px 6px; min-width: 22px; user-select: none; }
-  .sheetgrid td { border: 1px solid var(--rule); padding: 0; }
-  .sheetgrid input { width: 90px; box-sizing: border-box; border: 0; background: transparent; color: var(--fg); font-family: inherit; font-size: 13px; padding: 3px 6px; outline: none; }
+  .sheetgrid { border-collapse: collapse; table-layout: fixed; font-size: 13px; font-variant-numeric: tabular-nums; }
+  .sheetgrid th { position: relative; background: color-mix(in srgb, var(--rule) 45%, transparent); color: var(--muted); font-weight: 500; font-size: 11px; text-align: center; border: 1px solid var(--rule); padding: 2px 6px; user-select: none; }
+  .sheetgrid td { border: 1px solid var(--rule); padding: 0; overflow: hidden; }
+  .sheetgrid input { width: 100%; box-sizing: border-box; border: 0; background: transparent; color: var(--fg); font-family: inherit; font-size: 13px; padding: 3px 6px; outline: none; }
   .sheetgrid input:focus { background: color-mix(in srgb, var(--accent) 12%, transparent); box-shadow: inset 0 0 0 2px var(--accent); }
+  .sheetgrid .col-resizer { position: absolute; top: 0; right: -3px; width: 7px; height: 100%; cursor: col-resize; z-index: 2; }
+  /* at rest: a plain table — no edit chrome, not editable, click to edit */
+  .sheetblock:not(.editing) { cursor: pointer; }
+  .sheetblock:not(.editing) .sheetblock-bar,
+  .sheetblock:not(.editing) .sheetblock-fmt,
+  .sheetblock:not(.editing) .sheetblock-add { display: none; }
+  .sheetblock:not(.editing) .sheetgrid th { display: none; }
+  .sheetblock:not(.editing) .sheetgrid input { pointer-events: none; }
+  .sheetblock:not(.editing) .sheetgrid input:focus { background: transparent; box-shadow: none; }
   .sheetblock-add { display: flex; gap: 6px; padding: 5px 8px; border-top: 1px solid var(--rule); }
   .sheetblock-add button { background: none; border: 1px solid var(--rule); border-radius: 4px; color: var(--muted); font-size: 11px; padding: 2px 9px; cursor: pointer; font-family: inherit; }
   .sheetblock-add button:hover { background: var(--rule); color: var(--fg); }
@@ -315,9 +330,11 @@
   <div id="topbar">
     <div class="row" id="topleft"><span id="filename">untitled.kitten</span><span id="dirty"></span></div>
     <div class="row" id="topright">
-      <span id="grammar-status" title="Grammar — click to switch engine (blue = Harper offline, green = LanguageTool)"><span class="gram-dot"></span><span id="gram-count"></span></span>
-      <span id="read-status" title="Readability — click to set audience level"><span class="rd-dot"></span><span id="rd-grade"></span></span>
-      <button class="btn ic" id="btn-autofix" title="Auto-fix all issues">AF</button>
+      <span class="gram-group">
+        <span id="grammar-status" title="Grammar — click to switch engine (blue = Harper offline, green = LanguageTool)"><span class="gram-dot"></span><span id="gram-count"></span></span>
+        <button class="btn ic" id="btn-autofix" title="Auto-fix grammar (also flags table calculation errors)">AF</button>
+      </span>
+      <span id="read-status" title="Readability — click to set audience level"><span class="rd-ico">Aa</span><span id="rd-grade"></span></span>
       <button class="btn ic" id="btn-save" title="Save (⌘S)">S</button>
       <button class="btn ic" id="btn-open" title="Open (⌘O)">O</button>
       <button class="btn ic" id="btn-theme" title="Theme (light / dark / sepia)">☀</button>
@@ -473,7 +490,7 @@
     const SHEET_MARKER = /^⟦sheet:([a-z0-9]+)⟧$/; // ⟦sheet:ID⟧ on its own line
     const sheets = new Map(); // id -> { name, rows, cols, cells:[[...]] }
     function makeSheetId() { return "sh" + Date.now().toString(36) + Math.random().toString(36).slice(2, 5); }
-    function newSheet() { const rows = 4, cols = 3; return { name: "", rows, cols, cells: Array.from({ length: rows }, () => Array(cols).fill("")), formats: {} }; }
+    function newSheet() { const rows = 4, cols = 3; return { name: "", rows, cols, cells: Array.from({ length: rows }, () => Array(cols).fill("")), formats: {}, colWidths: Array(cols).fill(96) }; }
 
     // ---------- persistence ----------
     const LS_KEY = "scribeNext.doc";
@@ -489,7 +506,7 @@
         };
       }
       const sh = {};
-      for (const id of docSheetIds()) { const s = sheets.get(id); if (s) sh[id] = { name: s.name || "", rows: s.rows, cols: s.cols, cells: s.cells, formats: s.formats || {} }; }
+      for (const id of docSheetIds()) { const s = sheets.get(id); if (s) sh[id] = { name: s.name || "", rows: s.rows, cols: s.cols, cells: s.cells, formats: s.formats || {}, colWidths: s.colWidths || [] }; }
       return { version: 1, text: view.state.doc.toString(), scenes: s, sheets: sh, destination };
     }
     let saveTimer = null;
@@ -504,7 +521,9 @@
       if (data?.sheets) for (const id of Object.keys(data.sheets)) {
         const s = data.sheets[id];
         const cells = s.cells || [];
-        sheets.set(id, { name: s.name || "", rows: s.rows || cells.length || 4, cols: s.cols || (cells[0] ? cells[0].length : 3), cells, formats: s.formats || {} });
+        const cols = s.cols || (cells[0] ? cells[0].length : 3);
+        const cw = (s.colWidths && s.colWidths.length === cols) ? s.colWidths : Array(cols).fill(96);
+        sheets.set(id, { name: s.name || "", rows: s.rows || cells.length || 4, cols, cells, formats: s.formats || {}, colWidths: cw });
       }
       destination = data?.destination || "md";
       return data?.text ?? "";
@@ -893,11 +912,36 @@
         function commit(r, c, val) { if (sheet.cells[r][c] !== val) { sheet.cells[r][c] = val; scheduleSave(); } recompute(); }
         function buildGrid() {
           table.innerHTML = ""; inputs.length = 0;
-          const head = document.createElement("tr"); head.appendChild(document.createElement("th"));
-          for (let c = 0; c < sheet.cols; c++) { const th = document.createElement("th"); th.textContent = String.fromCharCode(65 + c); head.appendChild(th); }
-          table.appendChild(head);
+          if (!sheet.colWidths || sheet.colWidths.length !== sheet.cols) sheet.colWidths = Array(sheet.cols).fill(96);
+          const editing = wrap.classList.contains("editing");
+          // colgroup defines column widths; the row-header column exists only while editing
+          const cg = document.createElement("colgroup");
+          if (editing) { const rh = document.createElement("col"); rh.style.width = "34px"; cg.appendChild(rh); }
+          const dataCols = [];
+          for (let c = 0; c < sheet.cols; c++) { const col = document.createElement("col"); col.style.width = (sheet.colWidths[c] || 96) + "px"; cg.appendChild(col); dataCols.push(col); }
+          table.appendChild(cg);
+          if (editing) {
+            const head = document.createElement("tr"); head.appendChild(document.createElement("th"));
+            for (let c = 0; c < sheet.cols; c++) {
+              const th = document.createElement("th"); th.textContent = String.fromCharCode(65 + c);
+              const rz = document.createElement("div"); rz.className = "col-resizer";
+              (function (col, ci) {
+                rz.addEventListener("pointerdown", (e) => {
+                  e.preventDefault(); e.stopPropagation();
+                  const startX = e.clientX, startW = sheet.colWidths[ci] || 96;
+                  try { rz.setPointerCapture(e.pointerId); } catch {}
+                  const mv = (ev) => { const w = Math.max(40, startW + (ev.clientX - startX)); sheet.colWidths[ci] = w; col.style.width = w + "px"; };
+                  const up = () => { rz.removeEventListener("pointermove", mv); rz.removeEventListener("pointerup", up); scheduleSave(); };
+                  rz.addEventListener("pointermove", mv); rz.addEventListener("pointerup", up);
+                });
+              })(dataCols[c], c);
+              th.appendChild(rz); head.appendChild(th);
+            }
+            table.appendChild(head);
+          }
           for (let r = 0; r < sheet.rows; r++) {
-            const tr = document.createElement("tr"); const rh = document.createElement("th"); rh.textContent = String(r + 1); tr.appendChild(rh);
+            const tr = document.createElement("tr");
+            if (editing) { const rh = document.createElement("th"); rh.textContent = String(r + 1); tr.appendChild(rh); }
             inputs[r] = [];
             for (let c = 0; c < sheet.cols; c++) {
               const td = document.createElement("td"); const inp = document.createElement("input"); inp.type = "text";
@@ -919,8 +963,22 @@
         const addRow = document.createElement("button"); addRow.textContent = "+ Row";
         addRow.addEventListener("mousedown", (e) => { e.preventDefault(); sheet.cells.push(Array(sheet.cols).fill("")); sheet.rows++; scheduleSave(); buildGrid(); });
         const addCol = document.createElement("button"); addCol.textContent = "+ Col";
-        addCol.addEventListener("mousedown", (e) => { e.preventDefault(); if (sheet.cols >= 12) return; sheet.cells.forEach(row => row.push("")); sheet.cols++; scheduleSave(); buildGrid(); });
+        addCol.addEventListener("mousedown", (e) => { e.preventDefault(); if (sheet.cols >= 12) return; sheet.cells.forEach(row => row.push("")); sheet.colWidths.push(96); sheet.cols++; scheduleSave(); buildGrid(); });
         add.appendChild(addRow); add.appendChild(addCol); wrap.appendChild(add);
+
+        // view ⇆ edit: at rest it's a plain table; click to edit (toolbar + headers + resize), click outside to settle.
+        function outsideEdit(e) { if (!wrap.contains(e.target)) exitEdit(); }
+        function enterEdit() {
+          if (wrap.classList.contains("editing")) return;
+          wrap.classList.add("editing"); buildGrid();
+          setTimeout(() => document.addEventListener("mousedown", outsideEdit, true), 0);
+        }
+        function exitEdit() {
+          if (!wrap.classList.contains("editing")) return;
+          wrap.classList.remove("editing"); buildGrid();
+          document.removeEventListener("mousedown", outsideEdit, true);
+        }
+        wrap.addEventListener("mousedown", () => { if (!wrap.classList.contains("editing")) enterEdit(); });
         return wrap;
       }
     }
@@ -2490,7 +2548,7 @@
     });
     // Update awareness: compare the running build against the published one, show the banner when newer.
     (function () {
-      const APP_BUILD = "3334fdcc624c"; // replaced with the build hash at deploy; stays the token on local file://
+      const APP_BUILD = "c4449fcc63b7"; // replaced with the build hash at deploy; stays the token on local file://
       if (APP_BUILD === "__" + "BUILD__") return; // not deployed (local/dev) → no update checks
       let notified = false;
       async function checkUpdate() {
