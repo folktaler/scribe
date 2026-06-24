@@ -2,7 +2,7 @@
    First load must be online (to populate the cache); after that the app + its
    CDN dependencies (CodeMirror, Excalidraw, Harper, marked, Tesseract, fonts)
    work fully offline. Bump CACHE to ship an update. */
-const CACHE = "scribe-v1";
+const CACHE = "scribe-v2";
 const SHELL = ["scribe-next.html", "manifest.webmanifest", "scribe-icon.svg"];
 
 self.addEventListener("install", (e) => {
@@ -22,6 +22,9 @@ self.addEventListener("fetch", (e) => {
   if (req.method !== "GET") return;
   const url = new URL(req.url);
 
+  // Never intercept/cache Supabase or PostHog (live data / analytics must always hit the network).
+  if (url.hostname.endsWith("supabase.co") || url.hostname.endsWith("posthog.com")) return;
+
   if (url.origin === location.origin) {
     // App shell: network-first so updates land, fall back to cache offline.
     e.respondWith(
@@ -33,10 +36,14 @@ self.addEventListener("fetch", (e) => {
   }
 
   // Cross-origin CDN deps (esm.sh / unpkg / fonts): cache-first — they're versioned + immutable.
+  // Only cache clean, final responses — never errors or redirects (those poison cache-first).
   e.respondWith(
     caches.match(req).then((cached) =>
       cached ||
-      fetch(req).then((res) => { const copy = res.clone(); caches.open(CACHE).then((c) => c.put(req, copy)); return res; })
+      fetch(req).then((res) => {
+        if (res.ok && !res.redirected) { const copy = res.clone(); caches.open(CACHE).then((c) => c.put(req, copy)); }
+        return res;
+      })
     )
   );
 });

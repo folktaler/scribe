@@ -9,24 +9,59 @@
 <meta name="theme-color" content="#7c5cff" />
 <link rel="apple-touch-icon" href="scribe-icon-192.png" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Serif:wght@400;500&family=Inter:wght@400;500&family=Atkinson+Hyperlegible:wght@400;700&family=Newsreader:wght@400;500&family=Caveat:wght@400;500&family=Lora:wght@400;500&family=Shantell+Sans:wght@400;500&family=Lexend:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Serif:wght@400;500&family=Inter:wght@400;500;600;700&family=Atkinson+Hyperlegible:wght@400;700&family=Newsreader:wght@400;500&family=Caveat:wght@400;500&family=Lora:wght@400;500&family=Shantell+Sans:wght@400;500&family=Lexend:wght@400;500&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="https://unpkg.com/@excalidraw/excalidraw@0.17.6/dist/excalidraw.production.min.css" />
 <style>
+  /* Ghost design tokens — lifted from TryGhost/Ghost (MIT). See ~/toolkit/theme.css */
   :root {
-    --bg: #fafaf7; --fg: #1d1d1b; --muted: #8a8a85; --accent: #b07d2e;
-    --rule: #e6e4dc; --card-bg: #ffffff; --shadow: 0 8px 24px rgba(0,0,0,.10);
+    --color-white:    oklch(100% 0 0);
+    --color-black:    oklch(20.38% 0.0067 258.4);
+    --color-grey-50:  oklch(98.54% 0.0013 286.4);
+    --color-grey-100: oklch(96.97% 0.0017 247.8);
+    --color-grey-200: oklch(94.74% 0.0042 236.5);
+    --color-grey-400: oklch(86.68% 0.0095 242.9);
+    --color-grey-500: oklch(77.55% 0.0174 250.9);
+    --color-grey-700: oklch(62.98% 0.0286 248.3);
+    --color-grey-900: oklch(36.77% 0.0153 248.2);
+    --color-green-500: oklch(74.81% 0.2213 144.4);
+    --color-green-700: oklch(55.58% 0.1604 144.5);
+    --color-blue-500:  oklch(74.03% 0.1559 235.9);
+    --color-red-500:   oklch(61.27% 0.2462 26.4);
+    --text-primary:   var(--color-black);
+    --text-secondary: var(--color-grey-700);
+    --text-tertiary:  var(--color-grey-400);
+    --border:         var(--color-grey-200);
+    --border-strong:  var(--color-grey-500);
+    --surface-panel:  var(--color-white);
+    --bg-token:       var(--color-grey-50);
+    --radius: 8px;
+    --radius-control: 6px;
+    --shadow-sm: 0 0 1px rgba(0,0,0,.12), 0 1px 6px rgba(0,0,0,0.03), 0 8px 10px -8px rgba(0,0,0,.1);
+    --shadow-md: 0 0 1px rgba(0,0,0,0.12), 0 1px 6px rgba(0,0,0,0.03), 0 8px 10px -8px rgba(0,0,0,0.05), 0px 24px 37px -21px rgba(0,0,0,0.05);
+    --shadow-lg: 0 0 7px rgba(0,0,0,0.08), 0 2.1px 2.2px -5px rgba(0,0,0,0.011), 0 5.1px 5.3px -5px rgba(0,0,0,0.016), 0 9.5px 10px -5px rgba(0,0,0,0.02), 0 17px 17.9px -5px rgba(0,0,0,0.024), 0 31.8px 33.4px -5px rgba(0,0,0,0.029), 0 76px 80px -5px rgba(0,0,0,0.04);
+    --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+    --font: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+  /* Light theme re-pointed onto Ghost neutrals. --accent stays the amber brand
+     signature (editor caret, selection, links, task checks) — chrome primary
+     buttons use black via --btn-primary below. */
+  :root {
+    --bg: var(--bg-token); --fg: var(--text-primary); --muted: var(--text-secondary); --accent: #b07d2e;
+    --rule: var(--border); --rule-strong: var(--border-strong);
+    --card-bg: var(--surface-panel); --shadow: var(--shadow-sm);
   }
   [data-theme="dark"] {
     --bg: #282c34; --fg: #abb2bf; --muted: #5c6370; --accent: #61afef;
-    --rule: #3b4048; --card-bg: #21252b; --shadow: 0 8px 24px rgba(0,0,0,.45);
+    --rule: #3b4048; --rule-strong: #4b525c; --card-bg: #21252b; --shadow: 0 8px 24px rgba(0,0,0,.45);
   }
   [data-theme="sepia"] {
     --bg: #f3ead5; --fg: #3a2e1f; --muted: #8a7a5a; --accent: #9b6a1f;
-    --rule: #ddd1b3; --card-bg: #fbf4e0; --shadow: 0 8px 24px rgba(80,60,30,.12);
+    --rule: #ddd1b3; --rule-strong: #c4b48c; --card-bg: #fbf4e0; --shadow: 0 8px 24px rgba(80,60,30,.12);
   }
   * { box-sizing: border-box; }
   html, body { margin: 0; height: 100%; background: var(--bg); color: var(--fg);
-    font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace; font-size: 16px; line-height: 1.7; }
+    font-family: var(--font); font-size: 16px; line-height: 1.7; }
   #topbar { position: fixed; top: 0; left: 0; right: 0; height: 42px; z-index: 6;
     display: flex; align-items: center; justify-content: space-between;
     padding: 0 10px; gap: 8px; background: var(--bg); border-bottom: 1px solid var(--rule);
@@ -35,8 +70,47 @@
   #filename { color: var(--fg); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   #topleft { flex: 1; min-width: 0; }
   #topleft { gap: 7px; }
-  #fileBtn { background: none; border: 0; border-radius: 7px; padding: 1px 5px; margin: 0; font-size: 17px; line-height: 1; cursor: pointer; }
+  #fileBtn { background: none; border: 0; border-radius: 7px; padding: 3px 5px; margin: 0; line-height: 0; cursor: pointer; display: inline-flex; align-items: center; }
   #fileBtn:hover { background: var(--rule); }
+  #fileBtn img { display: block; }
+  #aboutDialog { position: fixed; inset: 0; z-index: 60; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,.45); }
+  #aboutDialog.show { display: flex; }
+  #aboutDialog .about-card { background: var(--surface-panel); border: 1px solid var(--rule); border-radius: var(--radius); box-shadow: var(--shadow-lg); padding: 22px 24px; width: min(320px, 86vw); text-align: center; }
+  #aboutDialog .about-card h2 { margin: 8px 0 2px; font-size: 18px; color: var(--fg); }
+  #aboutDialog .about-ver { font-size: 12px; color: var(--muted); margin-bottom: 12px; }
+  #aboutDialog .about-msg { font-size: 13px; color: var(--fg); min-height: 18px; margin-bottom: 14px; }
+  #aboutDialog .about-msg a { color: var(--accent); }
+  #aboutDialog .about-actions { display: flex; gap: 8px; justify-content: center; }
+  #aboutDialog .about-actions button { padding: 7px 14px; font-size: 13px; font-family: inherit; border: 1px solid var(--rule); border-radius: var(--radius-control); background: var(--card-bg); color: var(--fg); cursor: pointer; }
+  #aboutDialog .about-actions button:hover { background: var(--color-grey-100); }
+  #aboutDialog .about-actions button.primary { background: var(--text-primary); color: #fff; border-color: var(--text-primary); }
+  #aboutDialog .about-actions button.primary:hover { opacity: .85; background: var(--text-primary); }
+  #helpDialog { position: fixed; inset: 0; z-index: 61; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,.45); }
+  #helpDialog.show { display: flex; }
+  #helpDialog .help-card { background: var(--surface-panel); border: 1px solid var(--rule); border-radius: var(--radius); box-shadow: var(--shadow-lg); width: min(540px, 92vw); max-height: 84vh; display: flex; flex-direction: column; }
+  #helpDialog .help-head { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; border-bottom: 1px solid var(--rule); }
+  #helpDialog .help-head h2 { margin: 0; font-size: 17px; color: var(--fg); }
+  #helpDialog .help-head button { background: none; border: 0; font-size: 18px; color: var(--muted); cursor: pointer; }
+  #helpDialog .help-body { overflow-y: auto; padding: 16px 20px; font-size: 14px; line-height: 1.6; color: var(--fg); }
+  #helpDialog .help-body h3 { font-size: 14px; margin: 16px 0 4px; color: var(--fg); }
+  #helpDialog .help-body h3:first-child { margin-top: 0; }
+  #helpDialog .help-body p { margin: 4px 0; color: var(--muted); }
+  #helpDialog .help-body code { background: var(--rule); padding: 1px 5px; border-radius: 4px; font-size: 12.5px; }
+  #helpDialog .help-body ul { margin: 4px 0; padding-left: 18px; }
+  #helpDialog .help-body li { margin: 3px 0; color: var(--muted); }
+  #helpDialog .help-body b { color: var(--fg); }
+  #feedbackDialog { position: fixed; inset: 0; z-index: 61; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,.45); }
+  #feedbackDialog.show { display: flex; }
+  #feedbackDialog .fb-card { background: var(--surface-panel); border: 1px solid var(--rule); border-radius: var(--radius); box-shadow: var(--shadow-lg); width: min(440px, 92vw); padding: 18px 20px; }
+  #feedbackDialog h2 { margin: 0 0 4px; font-size: 16px; color: var(--fg); }
+  #feedbackDialog .fb-sub { font-size: 12px; color: var(--muted); margin-bottom: 12px; }
+  #feedbackDialog textarea { width: 100%; box-sizing: border-box; min-height: 110px; padding: 9px 11px; font-size: 13px; font-family: inherit; border: 1px solid var(--rule); border-radius: var(--radius-control); background: var(--bg); color: var(--fg); resize: vertical; }
+  #feedbackDialog textarea:focus { outline: none; border-color: var(--accent); }
+  #feedbackDialog input { width: 100%; box-sizing: border-box; padding: 8px 11px; font-size: 13px; font-family: inherit; border: 1px solid var(--rule); border-radius: var(--radius-control); background: var(--bg); color: var(--fg); margin-top: 8px; }
+  #feedbackDialog .fb-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 12px; }
+  #feedbackDialog .fb-actions button { padding: 7px 14px; font-size: 13px; font-family: inherit; border: 1px solid var(--rule); border-radius: var(--radius-control); background: var(--card-bg); color: var(--fg); cursor: pointer; }
+  #feedbackDialog .fb-actions button.primary { background: var(--text-primary); color: #fff; border-color: var(--text-primary); }
+  #feedbackDialog .fb-actions button:disabled { opacity: .5; cursor: default; }
   #fileMenu .fm-sub { float: right; color: var(--muted); font-size: 11px; margin-left: 16px; }
   /* cascading submenus (Theme / Font) — flyout to the right */
   #fileMenu .fm-sub-item { position: relative; }
@@ -53,9 +127,9 @@
     display: flex; align-items: center; justify-content: space-between; padding: 0 12px;
     background: var(--bg); border-top: 1px solid var(--rule); font-size: 11px; color: var(--muted); }
   #drawhint b { color: var(--fg); }
-  #fontSelect { background: transparent; color: var(--fg); border: 1px solid var(--rule);
-    border-radius: 4px; padding: 2px 6px; font-family: inherit; font-size: 11px; cursor: pointer; }
-  #fontSelect:hover { border-color: var(--accent); }
+  #fontSelect { background: transparent; color: var(--fg); border: 1px solid var(--rule-strong);
+    border-radius: var(--radius-control); padding: 2px 6px; font-family: inherit; font-size: 11px; cursor: pointer; }
+  #fontSelect:hover { border-color: var(--text-primary); }
   body[data-font="mono"] .cm-content { font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace; }
   body[data-font="serif"] .cm-content { font-family: "IBM Plex Serif", Georgia, serif; }
   body[data-font="lora"] .cm-content { font-family: "Lora", Georgia, serif; }
@@ -68,16 +142,16 @@
   body.roomy .cm-line { letter-spacing: .045em; word-spacing: .2em; }
   body[data-font="shantell"] .cm-content { font-family: "Shantell Sans", "Comic Sans MS", cursive; font-size: 17px; }
   body[data-font="caveat"] .cm-content { font-family: "Caveat", cursive; font-size: 20px; line-height: 1.5; }
-  .btn { background: none; border: 1px solid var(--rule); border-radius: 5px;
+  .btn { background: var(--card-bg); border: 1px solid var(--rule-strong); border-radius: var(--radius-control);
     padding: 4px 10px; color: var(--fg); font-family: inherit; font-size: 12px;
     cursor: pointer; transition: background .15s, border-color .15s; }
-  .btn:hover { background: var(--rule); }
-  .btn.accent { background: var(--accent); color: #fff; border-color: var(--accent); }
-  .btn.accent:hover { opacity: .9; background: var(--accent); }
+  .btn:hover { background: var(--color-grey-100); }
+  .btn.accent { background: var(--text-primary); color: #fff; border-color: var(--text-primary); }
+  .btn.accent:hover { opacity: .85; background: var(--text-primary); }
   #editor { position: absolute; top: 76px; bottom: 30px; left: 0; right: 0; overflow: auto; }
   /* preview (rendered "final" markdown) — read-only */
   #previewArea { position: absolute; top: 76px; bottom: 0; left: 0; right: 0; overflow: auto; display: none; background: var(--bg); }
-  body.previewing #editor, body.previewing #bottomstrip, body.previewing #composeLabel, body.previewing #composeFmt { display: none; }
+  body.previewing #editor, body.previewing #bottomstrip, body.previewing #composeFmt { display: none; }
   body.previewing #composePreview { margin-left: auto; }
   body.previewing #previewArea { display: block; }
   #composePreview { flex-shrink: 0; }
@@ -98,14 +172,9 @@
   #previewArea table.print-sheet { border-collapse: collapse; margin: 1em 0; font-size: .95em; }
   #previewArea .print-sheet th, #previewArea .print-sheet td { border: 1px solid var(--rule); padding: 4px 10px; }
   #previewArea .print-sheet th { background: color-mix(in srgb, var(--rule) 50%, transparent); text-align: left; }
-  #btn-dest.on { color: var(--accent); border-color: var(--accent); }
   #composeBar { position: fixed; top: 42px; left: 0; right: 0; height: 34px; z-index: 5;
     display: flex; align-items: center; gap: 8px; padding: 0 10px;
     background: var(--bg); border-bottom: 1px solid var(--rule); }
-  #composeLabel { flex-shrink: 0; font-size: 11px; color: var(--accent); font-weight: 600; letter-spacing: .02em;
-    cursor: pointer; border-radius: 5px; padding: 3px 6px; display: inline-flex; align-items: center; gap: 3px; }
-  #composeLabel:hover { background: var(--rule); }
-  #composeLabel .cl-caret { font-size: 9px; opacity: .7; }
   #composeFmt { flex: 1; min-width: 0; display: flex; align-items: center; gap: 1px; overflow-x: auto;
     scrollbar-width: thin; scrollbar-color: var(--rule) transparent; }
   #composeFmt::-webkit-scrollbar { height: 6px; }
@@ -138,7 +207,7 @@
     background: var(--card-bg); overflow: hidden; box-shadow: var(--shadow); }
   .drawblock-bar { display: flex; align-items: center; justify-content: space-between;
     padding: 7px 12px; border-bottom: 1px solid var(--rule); font-size: 12px; color: var(--muted);
-    font-family: "IBM Plex Mono", monospace; }
+    font-family: var(--font); }
   .drawblock-bar .ttl { color: var(--fg); display: flex; align-items: center; gap: 7px; }
   .drawblock-bar .acts { display: flex; gap: 6px; }
   .drawblock-bar .acts button { background: none; border: 1px solid var(--rule);
@@ -163,7 +232,7 @@
   body.dragging-block, body.dragging-block * { cursor: grabbing !important; user-select: none !important; }
 
   /* expanded overlay */
-  #overlay { position: fixed; inset: 0; z-index: 50; background: rgba(20,20,18,.45);
+  #overlay { position: fixed; inset: 0; z-index: 50; background: rgba(0,0,0,.45);
     display: none; flex-direction: column; }
   #overlay.show { display: flex; }
   #overlay-bar { height: 46px; display: flex; align-items: center; justify-content: space-between;
@@ -177,13 +246,11 @@
   .gram-underline { text-decoration: underline wavy var(--accent); text-decoration-skip-ink: none;
     text-underline-offset: 3px; cursor: pointer; }
   #grammar-status { display: inline-flex; align-items: center; font-size: 11px; color: var(--muted);
-    cursor: pointer; border-radius: 4px; padding: 2px 4px; }
-  #grammar-status:hover { background: var(--rule); }
+    border-radius: 4px; padding: 2px 4px; }
   .gram-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%;
     background: var(--muted); margin-right: 5px; }
   .gram-dot.loading { background: #d4a35a; animation: gpulse 1s infinite; }
-  .gram-dot.harper { background: #378add; }   /* blue = Harper (offline) */
-  .gram-dot.lt { background: #3cba54; }        /* green = LanguageTool */
+  .gram-dot.ready { background: #3cba54; }      /* green = grammar check active */
   .gram-dot.error { background: #e54848; }
   @keyframes gpulse { 0%,100% { opacity: .4; } 50% { opacity: .9; } }
   /* readability (offline, formula-based — no AI) */
@@ -206,7 +273,6 @@
   #read-status.over #rd-grade { color: #e54848; }
   .read-hard { background: color-mix(in srgb, #d4a35a 22%, transparent); border-radius: 2px; }
   .read-veryhard { background: color-mix(in srgb, #e54848 22%, transparent); border-radius: 2px; }
-  .claude-vague { text-decoration: underline wavy #d4a35a; text-decoration-skip-ink: none; text-underline-offset: 3px; }
   #fileMenu .rd-head { padding: 6px 11px 3px; font-size: 11px; color: var(--muted); }
   #fileMenu .rd-sub { color: var(--muted); font-size: 11px; }
   #fileMenu .rd-toggle { border-top: 1px solid var(--rule); margin-top: 4px; }
@@ -249,7 +315,7 @@
     align-items: center; justify-content: center; font-size: 12px; line-height: 1; color: #fff; }
   .task-line { background: color-mix(in srgb, var(--accent) 9%, transparent); border-radius: 4px; }
   #fmtBar { position: fixed; z-index: 36; display: none; align-items: center; gap: 1px; max-width: 94vw; overflow-x: auto;
-    background: var(--card-bg); border: 1px solid var(--rule); border-radius: 7px; box-shadow: var(--shadow); padding: 3px; }
+    background: var(--surface-panel); border: 1px solid var(--rule); border-radius: var(--radius); box-shadow: var(--shadow-md); padding: 3px; }
   #fmtBar.show { display: flex; }
   #fmtBar button { background: none; border: 0; border-radius: 4px; padding: 4px 7px; min-width: 26px; flex-shrink: 0;
     color: var(--fg); font-family: inherit; font-size: 13px; cursor: pointer; }
@@ -286,8 +352,8 @@
   #fixesPanel .tk-foot { padding: 8px 13px; border-top: 1px solid var(--rule); }
   #fixesPanel .tk-foot .btn { width: 100%; }
   /* ----- snippets: the / picker ----- */
-  #slashMenu { position: fixed; z-index: 45; min-width: 244px; max-width: 360px; background: var(--card-bg);
-    border: 1px solid var(--rule); border-radius: 9px; box-shadow: var(--shadow); padding: 4px; display: none; max-height: 300px; overflow: auto; }
+  #slashMenu { position: fixed; z-index: 45; min-width: 244px; max-width: 360px; background: var(--surface-panel);
+    border: 1px solid var(--rule); border-radius: var(--radius); box-shadow: var(--shadow-md); padding: 4px; display: none; max-height: 300px; overflow: auto; }
   #slashMenu.show { display: block; }
   #slashMenu .sm-row { display: flex; align-items: center; gap: 9px; padding: 6px 9px; border-radius: 6px; cursor: pointer; }
   #slashMenu .sm-row.sel { background: var(--rule); }
@@ -317,7 +383,7 @@
   #snipList .sn-acts { display: flex; gap: 5px; margin-top: 7px; }
   #snipList .sn-acts .btn { font-size: 11px; padding: 3px 9px; }
   #snipList textarea { width: 100%; box-sizing: border-box; margin-top: 7px; font-family: inherit; font-size: 12px; line-height: 1.5;
-    border: 1px solid var(--rule); border-radius: 6px; background: var(--bg); color: var(--fg); padding: 7px; min-height: 76px; resize: vertical; }
+    border: 1px solid var(--rule-strong); border-radius: var(--radius-control); background: var(--bg); color: var(--fg); padding: 7px; min-height: 76px; resize: vertical; }
   #snipPanel .tk-empty { color: var(--muted); padding: 18px 14px; text-align: center; line-height: 1.6; }
   #snipPanel .tk-foot { padding: 8px 12px; border-top: 1px solid var(--rule); }
   #snipPanel .tk-foot .btn { width: 100%; }
@@ -327,15 +393,7 @@
   #readPanel.show { display: flex; }
   #readPanel .tk-head { display: flex; align-items: center; justify-content: space-between; padding: 9px 12px; border-bottom: 1px solid var(--rule); font-size: 13px; color: var(--fg); }
   #readPanel .tk-head small { color: var(--muted); margin-left: 6px; }
-  #readPanel .rd-modes { display: flex; gap: 4px; padding: 7px 12px; border-bottom: 1px solid var(--rule); }
-  #readPanel .rd-modes button { flex: 1; font-size: 11px; padding: 4px 8px; background: none; border: 1px solid var(--rule); border-radius: 5px; color: var(--fg); cursor: pointer; font-family: inherit; }
-  #readPanel .rd-modes button.sel { background: var(--accent); color: #fff; border-color: var(--accent); }
   #readPanel .rd-grade-line { padding: 6px 12px; font-size: 11px; color: var(--muted); border-bottom: 1px solid var(--rule); }
-  #readList li.rd-check { cursor: default; }
-  #readList .rd-mark { flex-shrink: 0; width: 16px; text-align: center; font-weight: 700; }
-  #readList .rd-mark.ok { color: #3cba54; }
-  #readList .rd-mark.warn { color: #d4a35a; }
-  #readList .rd-mark.bad { color: #e54848; }
   #readList { list-style: none; margin: 0; padding: 4px 0; overflow: auto; flex: 1; }
   #readList li { display: flex; gap: 8px; align-items: flex-start; padding: 8px 12px; font-size: 13px; line-height: 1.45; cursor: pointer; border-bottom: 1px solid var(--rule); }
   #readList li:hover { background: var(--rule); }
@@ -343,22 +401,110 @@
   #readList .rd-badge { flex-shrink: 0; font-size: 10px; font-weight: 700; color: #fff; background: #d4a35a; border-radius: 4px; padding: 1px 5px; margin-top: 1px; }
   #readList .rd-badge.vh { background: #e54848; }
   #readList .rd-sent { color: var(--fg); word-break: break-word; }
+  #readList li.rd-hard-li { flex-wrap: wrap; }
+  #readList li.rd-hard-li .rd-sent { flex: 1; }
+  #readList .rd-simplify-btn { flex-shrink: 0; background: none; border: 1px solid var(--rule); border-radius: 5px; color: var(--accent); font-size: 12px; padding: 1px 7px; cursor: pointer; font-family: inherit; align-self: flex-start; }
+  #readList .rd-simplify-btn:hover { background: var(--rule); }
+  #readList .rd-simplify-btn:disabled { opacity: .5; cursor: default; }
+  #readList .rd-fix { flex-basis: 100%; margin-top: 7px; padding: 8px 9px; background: color-mix(in srgb, var(--accent) 8%, transparent); border-radius: 6px; cursor: default; }
+  #readList .rd-fix-text { font-size: 13px; line-height: 1.5; color: var(--fg); white-space: pre-wrap; }
+  #readList .rd-fix-text.thinking { color: var(--muted); font-style: italic; }
+  #readList .rd-fix-actions { display: flex; gap: 6px; margin-top: 8px; }
+  #readList .rd-fix-actions button { font-size: 12px; padding: 4px 10px; border-radius: 5px; border: 1px solid var(--rule); background: none; color: var(--fg); cursor: pointer; font-family: inherit; }
+  #readList .rd-fix-actions button.use { background: var(--accent); color: #fff; border-color: var(--accent); }
   #readPanel .tk-foot { padding: 8px 12px; border-top: 1px solid var(--rule); display: flex; flex-direction: column; gap: 7px; }
   #readPanel .rd-targets { display: flex; flex-wrap: wrap; gap: 4px; }
   #readPanel .rd-targets button { font-size: 11px; padding: 3px 8px; background: none; border: 1px solid var(--rule); border-radius: 4px; color: var(--fg); cursor: pointer; font-family: inherit; }
   #readPanel .rd-targets button.sel { background: var(--accent); color: #fff; border-color: var(--accent); }
   #readPanel #readHL { width: 100%; font-size: 12px; }
   #readPanel #readHL.on { color: var(--accent); border-color: var(--accent); }
-  #pasteChooser, #fontMenu, #timerMenu, #soundMenu, #shareMenu, #destMenu, #fileMenu, #gramPopover { position: fixed; z-index: 40; min-width: 230px; background: var(--card-bg);
-    border: 1px solid var(--rule); border-radius: 8px; box-shadow: var(--shadow); padding: 5px; display: none; }
-  #pasteChooser.show, #fontMenu.show, #timerMenu.show, #soundMenu.show, #shareMenu.show, #destMenu.show, #fileMenu.show, #gramPopover.show { display: block; }
-  #pasteChooser button, #fontMenu button, #timerMenu button, #soundMenu button, #shareMenu button, #destMenu button, #fileMenu button, #gramPopover button { display: block; width: 100%; text-align: left; background: none; border: 0;
+  /* ---- local AI (Ollama) ---- */
+  #ai-status { display: none; align-items: center; cursor: pointer; font-size: 13px; padding: 3px 7px; border-radius: 5px; color: var(--muted); user-select: none; border: 1px solid transparent; }
+  #ai-status.ready { border-color: color-mix(in srgb, var(--accent) 35%, transparent); }
+  #accountBtn.in { padding: 0; width: 26px; height: 26px; border-radius: 50%; background-color: var(--accent); color: #fff !important; font-weight: 700; font-size: 13px; display: inline-flex; align-items: center; justify-content: center; border: 0; }
+  #ai-status.ready { display: inline-flex; color: var(--accent); }
+  #ai-status.off { display: inline-flex; color: var(--muted); opacity: .5; }
+  #ai-status.busy { display: inline-flex; color: var(--accent); animation: ai-pulse 1s ease-in-out infinite; }
+  @keyframes ai-pulse { 0%,100% { opacity: 1; } 50% { opacity: .35; } }
+  body.draft #ai-status { display: none !important; }
+  #aiPanel { position: fixed; top: 42px; bottom: 30px; right: 0; width: min(360px, 88vw); z-index: 12;
+    background: var(--card-bg); border-left: 1px solid var(--rule); box-shadow: var(--shadow); display: none; flex-direction: column; }
+  #aiPanel.show { display: flex; }
+  #aiPanel .tk-head { display: flex; align-items: center; justify-content: space-between; padding: 9px 12px; border-bottom: 1px solid var(--rule); font-size: 13px; color: var(--fg); }
+  #aiPanel .ai-src { padding: 6px 12px; font-size: 11px; color: var(--muted); border-bottom: 1px solid var(--rule); }
+  #aiPanel .ai-body { flex: 1; overflow-y: auto; padding: 12px 14px; font-size: 14px; line-height: 1.55; white-space: pre-wrap; color: var(--fg); }
+  #aiPanel .ai-body.placeholder { color: var(--muted); font-style: italic; }
+  #aiPanel .ai-caveat { padding: 6px 12px; font-size: 10.5px; color: var(--muted); border-top: 1px solid var(--rule); }
+  #aiPanel .tk-foot { padding: 8px 12px; border-top: 1px solid var(--rule); display: flex; flex-wrap: wrap; gap: 6px; }
+  #aiPanel .tk-foot button { font-size: 12px; padding: 5px 10px; background: none; border: 1px solid var(--rule); border-radius: 5px; color: var(--fg); cursor: pointer; font-family: inherit; }
+  #aiPanel .tk-foot button:hover { background: var(--rule); }
+  #aiPanel .tk-foot button.accent { background: var(--accent); color: #fff; border-color: var(--accent); }
+  #aiPanel .ai-body::-webkit-scrollbar { width: 8px; } #aiPanel .ai-body::-webkit-scrollbar-thumb { background: var(--rule); border-radius: 4px; } #aiPanel .ai-body::-webkit-scrollbar-track { background: transparent; }
+  #aiPanel .df-del { color: #c0392b; text-decoration: line-through; text-decoration-thickness: 1px; }
+  #aiPanel .df-add { color: #1e8449; }
+  [data-theme="dark"] #aiPanel .df-del { color: #ff8a80; } [data-theme="dark"] #aiPanel .df-add { color: #7ee2a8; }
+  #aiPanel .ai-clean { color: var(--muted); font-style: italic; }
+  #aiTasks { border-top: 1px solid var(--rule); padding: 0; max-height: 38%; overflow-y: auto; }
+  #aiTasks:empty { display: none; }
+  #aiTasks .ai-tasks-head { padding: 8px 12px 4px; font-size: 11px; color: var(--accent); font-weight: 600; }
+  #aiTasks .ai-tasks-list { padding: 0 12px; }
+  #aiTasks .ai-task-row { display: flex; align-items: flex-start; gap: 7px; padding: 3px 0; font-size: 13px; color: var(--fg); cursor: pointer; }
+  #aiTasks .ai-task-row input { margin-top: 3px; }
+  #aiTasks button { margin: 7px 12px 10px; font-size: 12px; padding: 5px 11px; background: var(--accent); color: #fff; border: 0; border-radius: 5px; cursor: pointer; font-family: inherit; }
+  #cloudPanel { position: fixed; top: 42px; bottom: 30px; right: 0; width: min(340px, 86vw); z-index: 13; background: var(--card-bg); border-left: 1px solid var(--rule); box-shadow: var(--shadow); display: none; flex-direction: column; }
+  #cloudPanel.show { display: flex; }
+  #cloudPanel .tk-head { display: flex; align-items: center; justify-content: space-between; padding: 9px 12px; border-bottom: 1px solid var(--rule); font-size: 13px; color: var(--fg); }
+  #cloudList { list-style: none; margin: 0; padding: 4px 0; overflow: auto; flex: 1; }
+  #cloudList li { display: flex; align-items: center; gap: 8px; padding: 9px 12px; border-bottom: 1px solid var(--rule); }
+  #cloudList li.cl-empty { color: var(--muted); justify-content: center; font-size: 13px; padding: 18px 12px; text-align: center; line-height: 1.5; }
+  #cloudList .cl-main { flex: 1; min-width: 0; cursor: pointer; }
+  #cloudList li.cl-current { background: color-mix(in srgb, var(--accent) 8%, transparent); }
+  #cloudList .cl-name { font-size: 13px; color: var(--fg); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #cloudList .cl-date { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  #cloudList .cl-del { background: none; border: 0; color: var(--muted); cursor: pointer; font-size: 13px; padding: 4px 6px; border-radius: 5px; flex-shrink: 0; }
+  #cloudList .cl-del:hover { background: var(--rule); color: #e54848; }
+  #cloudSearchWrap { padding: 8px 10px; border-bottom: 1px solid var(--rule); }
+  #cloudSearch { width: 100%; box-sizing: border-box; padding: 7px 9px; font-size: 13px; font-family: inherit; border: 1px solid var(--rule-strong); border-radius: var(--radius-control); background: var(--bg); color: var(--fg); }
+  #cloudSearch:focus { outline: none; border-color: var(--text-primary); }
+  #cloudList .cl-snip { font-size: 11px; color: var(--muted); margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #cloudList .cl-snip mark { background: color-mix(in srgb, var(--accent) 30%, transparent); color: var(--fg); border-radius: 2px; padding: 0 1px; }
+  #pasteChooser, #fontMenu, #timerMenu, #soundMenu, #shareMenu, #copyMenu, #fileMenu, #gramPopover, #accountMenu, #tagMenu { position: fixed; z-index: 40; min-width: 230px; background: var(--surface-panel);
+    border: 1px solid var(--rule); border-radius: var(--radius); box-shadow: var(--shadow-md); padding: 5px; display: none; }
+  #pasteChooser.show, #fontMenu.show, #timerMenu.show, #soundMenu.show, #shareMenu.show, #copyMenu.show, #fileMenu.show, #gramPopover.show, #accountMenu.show, #tagMenu.show { display: block; }
+  #tagMenu { padding: 11px; min-width: 260px; }
+  #tagMenu .tm-label { font-size: 11px; color: var(--muted); margin-bottom: 7px; }
+  #tagMenu .tm-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 9px; }
+  #tagMenu .tm-tags:empty::before { content: "No tags yet"; color: var(--muted); font-size: 12px; font-style: italic; }
+  .tag-chip { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; padding: 2px 4px 2px 8px; border-radius: 11px; background: color-mix(in srgb, var(--accent) 14%, transparent); color: var(--fg); }
+  .tag-chip button { background: none; border: 0; color: var(--muted); cursor: pointer; font-size: 12px; padding: 0 2px; line-height: 1; }
+  .tag-chip button:hover { color: #e54848; }
+  #tagMenu .tm-row { display: flex; gap: 6px; margin-bottom: 8px; }
+  #tagMenu .tm-row input { flex: 1; min-width: 0; padding: 6px 9px; font-size: 13px; font-family: inherit; border: 1px solid var(--rule-strong); border-radius: var(--radius-control); background: var(--bg); color: var(--fg); }
+  #tagMenu .tm-row input:focus { outline: none; border-color: var(--text-primary); }
+  #tagMenu .tm-add { padding: 6px 11px; font-size: 13px; border: 1px solid var(--rule); border-radius: 6px; background: none; color: var(--fg); cursor: pointer; font-family: inherit; flex-shrink: 0; }
+  #tagMenu .tm-suggest { width: 100%; padding: 7px; font-size: 13px; border: 1px solid var(--accent); border-radius: 6px; background: none; color: var(--accent); cursor: pointer; font-family: inherit; }
+  #tagMenu .tm-suggest:disabled { opacity: .5; cursor: default; }
+  #tagMenu .tm-suggested { margin-top: 9px; display: flex; flex-wrap: wrap; gap: 5px; }
+  #tagMenu .tm-suggested .sug { font-size: 12px; padding: 3px 9px; border-radius: 11px; border: 1px dashed var(--rule); background: none; color: var(--fg); cursor: pointer; font-family: inherit; }
+  #tagMenu .tm-suggested .sug:hover { border-color: var(--accent); color: var(--accent); }
+  #cloudTagBar { display: flex; flex-wrap: wrap; gap: 5px; padding: 7px 10px 0; }
+  #cloudTagBar .ctag { font-size: 11px; padding: 2px 9px; border-radius: 11px; border: 1px solid var(--rule); background: none; color: var(--fg); cursor: pointer; font-family: inherit; }
+  #cloudTagBar .ctag.sel { background: var(--accent); color: #fff; border-color: var(--accent); }
+  #pasteChooser button, #fontMenu button, #timerMenu button, #soundMenu button, #shareMenu button, #copyMenu button, #fileMenu button, #gramPopover button { display: block; width: 100%; text-align: left; background: none; border: 0;
     padding: 7px 11px; border-radius: 5px; color: var(--fg); font-family: inherit; font-size: 13px; cursor: pointer; }
-  #pasteChooser button:hover, #pasteChooser button.sel, #fontMenu button:hover, #fontMenu button.sel, #timerMenu button:hover, #soundMenu button:hover, #shareMenu button:hover, #destMenu button:hover, #destMenu button.sel, #fileMenu button:hover, #fileMenu button.sel, #gramPopover button:hover { background: var(--rule); }
+  /* (removed leftover #accountBtn.in color rule that hid the avatar initial) */
+  #accountMenu { padding: 11px; min-width: 250px; }
+  #accountMenu .am-label { font-size: 12px; color: var(--muted); margin-bottom: 7px; line-height: 1.4; }
+  #accountMenu .am-email { font-size: 13px; color: var(--fg); font-weight: 600; word-break: break-all; margin-bottom: 9px; }
+  #accountMenu input { width: 100%; box-sizing: border-box; padding: 7px 9px; font-size: 13px; font-family: inherit; border: 1px solid var(--rule-strong); border-radius: var(--radius-control); background: var(--bg); color: var(--fg); margin-bottom: 8px; }
+  #accountMenu button { width: 100%; padding: 7px 11px; font-size: 13px; font-family: inherit; border-radius: 6px; border: 1px solid var(--rule); background: none; color: var(--fg); cursor: pointer; }
+  #accountMenu button.primary { background: var(--text-primary); color: #fff; border-color: var(--text-primary); }
+  #accountMenu button:disabled { opacity: .5; cursor: default; }
+  #pasteChooser button:hover, #pasteChooser button.sel, #fontMenu button:hover, #fontMenu button.sel, #timerMenu button:hover, #soundMenu button:hover, #shareMenu button:hover, #copyMenu button:hover, #copyMenu button.sel, #fileMenu button:hover, #fileMenu button.sel, #gramPopover button:hover { background: var(--rule); }
   #gramPopover .gp-msg { padding: 7px 11px 4px; font-size: 12px; color: var(--muted); max-width: 280px; }
   #gramPopover button b { color: var(--accent); font-weight: 500; }
   #gramPopover .gp-add { color: var(--accent); border-top: 1px solid var(--rule); margin-top: 3px; }
-  #pasteChooser button small, #fontMenu button small, #timerMenu button small, #soundMenu button small, #shareMenu button small, #destMenu button small { display: block; color: var(--muted); font-size: 11px; margin-top: 1px; }
+  #pasteChooser button small, #fontMenu button small, #timerMenu button small, #soundMenu button small, #shareMenu button small, #copyMenu button small { display: block; color: var(--muted); font-size: 11px; margin-top: 1px; }
   #pasteChooser .pc-count { padding: 9px 13px 3px; font-size: 14px; color: var(--fg); white-space: nowrap; }
   #pasteChooser .pc-count b { color: var(--accent); font-size: 1.15em; }
   #pasteChooser .pc-hint { padding: 0 13px 9px; font-size: 11px; color: var(--muted); white-space: nowrap; }
@@ -377,7 +523,7 @@
     #printArea .print-sheet th, #printArea .print-sheet td { border: 1px solid #999; padding: 3px 9px; }
     #printArea .print-sheet th { background: #f0f0f0; text-align: left; }
   }
-  #fontMenu, #timerMenu, #destMenu { min-width: 170px; }
+  #fontMenu, #timerMenu, #copyMenu { min-width: 170px; }
   #timer, #sound { font-variant-numeric: tabular-nums; user-select: none; }
   #timer:hover, #timer:focus, #timer:active, #sound:hover, #sound:focus, #sound:active { background: none; }
   #timer.running, #sound.playing { color: var(--accent); border-color: var(--accent); }
@@ -385,13 +531,13 @@
   @keyframes timerpulse { 0%,100% { background: transparent; } 50% { background: color-mix(in srgb, var(--accent) 25%, transparent); } }
   #pasteChooser button small { color: var(--muted); display: block; font-size: 11px; margin-top: 1px; }
   #toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
-    background: var(--card-bg); color: var(--fg); padding: 9px 15px; border-radius: 5px;
-    border: 1px solid var(--rule); box-shadow: var(--shadow); font-size: 13px; z-index: 60;
+    background: var(--surface-panel); color: var(--fg); padding: 9px 15px; border-radius: var(--radius-control);
+    border: 1px solid var(--rule); box-shadow: var(--shadow-md); font-size: 13px; z-index: 60;
     opacity: 0; transition: opacity .2s; pointer-events: none; }
   #toast.show { opacity: 1; }
   #updateBanner { position: fixed; left: 50%; transform: translateX(-50%); bottom: 42px; z-index: 70;
-    display: none; align-items: center; gap: 10px; background: var(--card-bg); color: var(--fg);
-    border: 1px solid var(--rule); border-radius: 9px; box-shadow: var(--shadow); padding: 8px 9px 8px 14px; font-size: 13px; }
+    display: none; align-items: center; gap: 10px; background: var(--surface-panel); color: var(--fg);
+    border: 1px solid var(--rule); border-radius: var(--radius); box-shadow: var(--shadow-md); padding: 8px 9px 8px 14px; font-size: 13px; }
   #updateBanner.show { display: flex; }
   #updateBanner .btn { font-size: 12px; }
   #bootError { display: none; position: fixed; inset: 40px; padding: 20px; background: #fff;
@@ -402,25 +548,26 @@
 <body>
   <div id="topbar">
     <div class="row" id="topleft">
-      <button id="fileBtn" title="File &amp; settings">🐱</button>
+      <button id="fileBtn" title="Menu"><img src="scribe-icon.svg" alt="Scribe" width="22" height="22"></button>
       <span id="filename">untitled.kitten</span><span id="dirty"></span>
     </div>
     <div class="row" id="topright">
       <button class="btn" id="btn-draftmode" title="Draft = write freely, all checking silenced · Review = bring feedback back">Review</button>
       <span class="gram-group">
-        <span id="grammar-status" title="Grammar — click to switch engine (blue = Harper offline, green = LanguageTool)"><span class="gram-dot"></span><span id="gram-count"></span></span>
+        <span id="grammar-status" title="Spelling &amp; grammar check"><span class="gram-dot"></span><span id="gram-count"></span></span>
         <button class="btn ic" id="btn-autofix" title="Auto-fix grammar (also flags table calculation errors)">AF</button>
       </span>
       <span id="read-status" title="Readability — click to set audience level"><span class="rd-ico">Aa</span><span id="rd-grade"></span></span>
+      <span id="ai-status" title="Proofread with local AI">Proofread</span>
       <button class="btn ic" id="timer" title="Timer — click to start · click to pause · double-click to reset">🕐</button>
       <button class="btn ic" id="sound" title="Focus noise — click to choose · click to pause · double-click to stop">🎧</button>
+      <button class="btn" id="accountBtn" title="Sign in to sync your notes">Sign in</button>
     </div>
   </div>
   <div id="composeBar">
-    <span id="composeLabel" title="Composing for — click to change format (Markdown / WhatsApp / Telegram / Gmail)"></span>
     <div id="composeFmt"></div>
     <button class="btn ic" id="composePreview" title="Preview ⇄ Edit (rendered view)">👁</button>
-    <button class="btn ic" id="composeCopy" title="Copy for this destination">⧉</button>
+    <button class="btn ic" id="composeCopy" title="Copy as… (Markdown / WhatsApp / Telegram / Plain / Gmail)">⧉</button>
   </div>
   <div id="editor"></div>
   <div id="previewArea"></div>
@@ -429,6 +576,7 @@
     <div class="row" style="gap:8px">
       <button class="btn ic" id="btn-snippets" title="Snippets — manage &amp; insert (type / in the doc)">❏</button>
       <button class="btn ic" id="btn-tasks" title="All tasks (T)">T</button>
+      <button class="btn ic" id="btn-tags" title="Tags for this note">🏷</button>
     </div>
   </div>
 
@@ -461,7 +609,6 @@
   </div>
   <div id="readPanel">
     <div class="tk-head"><span><span class="rd-title">Hard sentences</span> <small id="readCount"></small></span><button class="btn ic" id="readClose" title="Close">✕</button></div>
-    <div class="rd-modes" id="readModeToggle"></div>
     <div class="rd-grade-line" id="readGrade"></div>
     <ul id="readList"></ul>
     <div class="tk-foot">
@@ -469,16 +616,35 @@
       <button class="btn" id="readHL"></button>
     </div>
   </div>
+  <div id="aiPanel">
+    <div class="tk-head"><span>✦ <span id="aiTitle">Summary</span></span><button class="btn ic" id="aiClose" title="Close">✕</button></div>
+    <div class="ai-src" id="aiSrc"></div>
+    <div class="ai-body placeholder" id="aiBody"></div>
+    <div id="aiTasks"></div>
+    <div class="ai-caveat">Local model — may be wrong or miss nuance. Nothing leaves your machine.</div>
+    <div class="tk-foot" id="aiFoot"></div>
+  </div>
+  <div id="cloudPanel">
+    <div class="tk-head"><span>☁ Cloud notes</span><button class="btn ic" id="cloudClose" title="Close">✕</button></div>
+    <div id="cloudSearchWrap"><input id="cloudSearch" type="text" placeholder="Search your notes…" autocomplete="off" spellcheck="false"></div>
+    <div id="cloudTagBar"></div>
+    <ul id="cloudList"></ul>
+  </div>
   <div id="pasteChooser"></div>
   <div id="slashMenu"></div>
   <div id="fileMenu"></div>
   <div id="fontMenu"></div>
   <div id="timerMenu"></div>
-  <div id="destMenu"></div>
+  <div id="copyMenu"></div>
   <div id="soundMenu"></div>
+  <div id="tagMenu"></div>
+  <div id="accountMenu"></div>
   <div id="gramPopover"></div>
   <div id="printArea"></div>
   <div id="toast"></div>
+  <div id="aboutDialog"></div>
+  <div id="helpDialog"></div>
+  <div id="feedbackDialog"></div>
   <div id="updateBanner">
     <span>✨ New version available</span>
     <button class="btn accent" id="updateReload">Reload</button>
@@ -577,7 +743,7 @@
 
     // ---------- persistence ----------
     const LS_KEY = "scribeNext.doc";
-    let destination = "md"; // copy/compose destination: md | whatsapp | telegram | gmail
+    let docTags = []; // tags for the current note — ride inside the .cat so they sync + work offline
     function serialize() {
       const s = {};
       for (const [id, sc] of scenes) {
@@ -590,11 +756,12 @@
       }
       const sh = {};
       for (const id of docSheetIds()) { const s = sheets.get(id); if (s) sh[id] = { name: s.name || "", rows: s.rows, cols: s.cols, cells: s.cells, formats: s.formats || {}, colWidths: s.colWidths || [] }; }
-      return { version: 1, text: view.state.doc.toString(), scenes: s, sheets: sh, destination };
+      return { version: 1, text: view.state.doc.toString(), scenes: s, sheets: sh, tags: docTags };
     }
     let saveTimer = null;
     function scheduleSave() { clearTimeout(saveTimer); saveTimer = setTimeout(() => {
       try { localStorage.setItem(LS_KEY, JSON.stringify(serialize())); } catch (e) { console.warn("save", e); }
+      if (typeof scheduleCloudSync === "function") scheduleCloudSync(); // push to cloud too when logged in + linked to a cloud doc
     }, 500); }
 
     function loadFromData(data) {
@@ -608,11 +775,12 @@
         const cw = (s.colWidths && s.colWidths.length === cols) ? s.colWidths : Array(cols).fill(96);
         sheets.set(id, { name: s.name || "", rows: s.rows || cells.length || 4, cols, cells, formats: s.formats || {}, colWidths: cw });
       }
-      destination = data?.destination || "md";
+      docTags = Array.isArray(data?.tags) ? data.tags.filter(t => typeof t === "string") : [];
+      if (typeof renderTagButton === "function") renderTagButton();
       return data?.text ?? "";
     }
 
-    let initialText = "# untitled\n\nStart writing. To add a drawing, type /draw on a blank line and press Enter.\n\n";
+    let initialText = "# Welcome to Scribe 👋\n\nA calm place to write — it saves as you type.\n\nA few things you can do:\n\n- Just **start writing** (this text is yours to delete).\n- Type `/` on a new line for tasks, drawings, tables, and snippets.\n- Select text to **format** it, or to proofread / make a task.\n- **Sign in** (top right) to save your notes to the cloud and reach them anywhere.\n- The **menu** (the icon in the top-left) has Save, Open, Export, themes, and the guide.\n\nHappy writing.\n";
     try {
       const raw = localStorage.getItem(LS_KEY);
       if (raw) initialText = loadFromData(JSON.parse(raw));
@@ -1107,7 +1275,23 @@
       if (!w) return;
       dictionary.add(w);
       try { localStorage.setItem("scribeNext.dictionary", JSON.stringify([...dictionary])); } catch {}
+      if (typeof scheduleUserDataSync === "function") scheduleUserDataSync(); // sync to cloud when logged in
       scheduleLint();
+    }
+    // ignored grammar suggestions (false positives you dismissed) — keyed by message + flagged text
+    let ignoredLints = new Set();
+    try { const a = JSON.parse(localStorage.getItem("scribeNext.ignoredLints") || "[]"); if (Array.isArray(a)) ignoredLints = new Set(a); } catch {}
+    function lintKey(message, t) { return (message || "").trim().toLowerCase() + "||" + (t || "").trim().toLowerCase(); }
+    function ignoreLint(lint) {
+      ignoredLints.add(lintKey(lint.message, view.state.doc.sliceString(lint.from, lint.to)));
+      try { localStorage.setItem("scribeNext.ignoredLints", JSON.stringify([...ignoredLints])); } catch {}
+      scheduleLint();
+    }
+    // code & template spans — don't grammar-check these (e.g. `code`, ```blocks```, {{ vars }})
+    function codeTemplateRanges(text) {
+      const ranges = []; const res = [/```[\s\S]*?```/g, /`[^`\n]+`/g, /\{\{[^}]*\}\}/g, /\{%[^%]*%\}/g];
+      for (const re of res) { let m; while ((m = re.exec(text)) !== null) ranges.push([m.index, m.index + m[0].length]); }
+      return ranges;
     }
     let engine = "harper"; // "harper" | "languagetool" — actual default chosen at boot by initGrammar()
     let ltUrl = localStorage.getItem("scribeNext.ltUrl") || "http://localhost:8081/v2/check";
@@ -1116,17 +1300,16 @@
       const dot = document.querySelector("#grammar-status .gram-dot");
       const cnt = document.getElementById("gram-count");
       const wrap = document.getElementById("grammar-status");
-      const name = engine === "languagetool" ? "LanguageTool" : "Harper";
       let cls = "gram-dot";
       if (state === "loading") cls += " loading";
       else if (state === "error") cls += " error";
-      else if (state === "ready") cls += (engine === "languagetool" ? " lt" : " harper");
+      else if (state === "ready") cls += " ready";
       if (dot) dot.className = cls;
       if (cnt) cnt.textContent = state === "loading" ? "" : state === "error" ? " !"
         : state === "ready" ? (count ? " " + count : " ✓") : "";
-      if (wrap) wrap.title = state === "error" && engine === "languagetool"
-          ? "LanguageTool unreachable at " + ltUrl + " — start your server, or click to switch back to Harper"
-        : "Grammar: " + name + " — click to switch (blue = Harper offline, green = LanguageTool)";
+      if (wrap) wrap.title = state === "loading" ? "Starting grammar check…"
+        : state === "error" ? "Grammar check unavailable"
+        : (count ? count + " issue" + (count === 1 ? "" : "s") + " — spelling & grammar" : "No issues — spelling & grammar");
     }
 
     const setLints = StateEffect.define();
@@ -1229,9 +1412,16 @@
       const doc = view.state.doc;
       const markerRanges = [];
       for (let i = 1; i <= doc.lines; i++) { const ln = doc.line(i); if (MARKER.test(ln.text)) markerRanges.push([ln.from, ln.to]); }
-      const mapped = raw.filter(l => l && l.from != null && l.to != null && l.to > l.from && l.to <= doc.length
-        && !markerRanges.some(([a, b]) => l.from < b && l.to > a)
-        && !dictionary.has(doc.sliceString(l.from, l.to).trim().toLowerCase()));
+      const codeRanges = codeTemplateRanges(text);
+      const mapped = raw.filter(l => {
+        if (!l || l.from == null || l.to == null || l.to <= l.from || l.to > doc.length) return false;
+        if (markerRanges.some(([a, b]) => l.from < b && l.to > a)) return false; // drawings/sheets
+        if (codeRanges.some(([a, b]) => l.from < b && l.to > a)) return false;    // code & template spans
+        const t = doc.sliceString(l.from, l.to);
+        if (dictionary.has(t.trim().toLowerCase())) return false;                 // personal dictionary
+        if (ignoredLints.has(lintKey(l.message, t))) return false;                // dismissed suggestions
+        return true;
+      });
       currentLints = mapped;
       view.dispatch({ effects: setLints.of(mapped) });
       setGrammarIndicator("ready", mapped.length);
@@ -1301,22 +1491,7 @@
       } catch { return false; }
     }
 
-    async function switchEngine() {
-      if (engine === "harper") {
-        const up = await checkLtHealth();
-        if (!up) { toast("LanguageTool not reachable at " + ltUrl); return; }
-        engine = "languagetool";
-        toast("Grammar engine: LanguageTool");
-        setGrammarIndicator("ready", currentLints.length); runLint();
-      } else {
-        engine = "harper";
-        toast("Grammar engine: Harper");
-        if (!harperReady) { setGrammarIndicator("loading"); initHarper(); }
-        else { setGrammarIndicator("ready", currentLints.length); runLint(); }
-      }
-    }
-
-    // Boot-time engine selection: prefer LanguageTool if its server is up, else Harper.
+    // Boot-time engine selection: prefer LanguageTool if its server is up, else Harper (silent — no user-facing switcher).
     async function initGrammar() {
       setGrammarIndicator("loading");
       const ltUp = await checkLtHealth();
@@ -1433,60 +1608,25 @@
       view.dispatch({ changes: { from: sel.from, to: sel.to, insert: ins }, selection: { anchor: sel.from + ins.length } });
       view.focus(); scheduleSave();
     }
-    // per-destination format buttons (insert that app's NATIVE syntax — Option A)
-    const FORMAT_SETS = {
-      md: [
-        { html: "<b>B</b>", title: "Bold (⌘B)", run: () => wrapSel("**","**") },
-        { html: "<i>I</i>", title: "Italic (⌘I)", run: () => wrapSel("*","*") },
-        { html: "<s>S</s>", title: "Strikethrough", run: () => wrapSel("~~","~~") },
-        { html: "&lt;/&gt;", title: "Inline code", run: () => wrapSel("`","`") },
-        "sep",
-        { html: "H1", title: "Heading 1", run: () => lineToggle("# ") },
-        { html: "H2", title: "Heading 2", run: () => lineToggle("## ") },
-        { html: "&bull;", title: "Bullet list", run: () => lineToggle("- ") },
-        { html: "1.", title: "Numbered list", run: () => lineToggle("1. ") },
-        { html: "&gt;", title: "Quote", run: () => lineToggle("> ") },
-        { html: "&#128279;", title: "Link", run: insertLink },
-        "sep",
-        { html: "&check;", title: "Make task (⌘↵)", run: convertSelectionToTask },
-      ],
-      whatsapp: [
-        { html: "<b>B</b>", title: "Bold  *text*", run: () => wrapSel("*","*") },
-        { html: "<i>I</i>", title: "Italic  _text_", run: () => wrapSel("_","_") },
-        { html: "<s>S</s>", title: "Strikethrough  ~text~", run: () => wrapSel("~","~") },
-        { html: "&lt;/&gt;", title: "Monospace  ```text```", run: () => wrapSel("```","```") },
-        "sep",
-        { html: "&bull;", title: "Bullet line", run: () => lineToggle("• ") },
-        { html: "&check;", title: "Make task (⌘↵)", run: convertSelectionToTask },
-      ],
-      telegram: [
-        { html: "<b>B</b>", title: "Bold  **text**", run: () => wrapSel("**","**") },
-        { html: "<i>I</i>", title: "Italic  __text__", run: () => wrapSel("__","__") },
-        { html: "<s>S</s>", title: "Strikethrough  ~~text~~", run: () => wrapSel("~~","~~") },
-        { html: "&lt;/&gt;", title: "Code  `text`", run: () => wrapSel("`","`") },
-        { html: "▌", title: "Spoiler  ||text||", run: () => wrapSel("||","||") },
-        "sep",
-        { html: "&bull;", title: "Bullet line", run: () => lineToggle("• ") },
-        { html: "&check;", title: "Make task (⌘↵)", run: convertSelectionToTask },
-      ],
-      gmail: [
-        { html: "<b>B</b>", title: "Bold (⌘B)", run: () => wrapSel("**","**") },
-        { html: "<i>I</i>", title: "Italic (⌘I)", run: () => wrapSel("*","*") },
-        { html: "<s>S</s>", title: "Strikethrough", run: () => wrapSel("~~","~~") },
-        "sep",
-        { html: "H1", title: "Heading 1", run: () => lineToggle("# ") },
-        { html: "H2", title: "Heading 2", run: () => lineToggle("## ") },
-        { html: "&bull;", title: "Bullet list", run: () => lineToggle("- ") },
-        { html: "1.", title: "Numbered list", run: () => lineToggle("1. ") },
-        { html: "&gt;", title: "Quote", run: () => lineToggle("> ") },
-        { html: "&#128279;", title: "Link", run: insertLink },
-        "sep",
-        { html: "&check;", title: "Make task (⌘↵)", run: convertSelectionToTask },
-      ],
-    };
+    // Scribe writes in Markdown. One format set; copy transforms per target at copy time (see copyAs).
+    const FORMAT_BTNS = [
+      { html: "<b>B</b>", title: "Bold (⌘B)", run: () => wrapSel("**","**") },
+      { html: "<i>I</i>", title: "Italic (⌘I)", run: () => wrapSel("*","*") },
+      { html: "<s>S</s>", title: "Strikethrough", run: () => wrapSel("~~","~~") },
+      { html: "&lt;/&gt;", title: "Inline code", run: () => wrapSel("`","`") },
+      "sep",
+      { html: "H1", title: "Heading 1", run: () => lineToggle("# ") },
+      { html: "H2", title: "Heading 2", run: () => lineToggle("## ") },
+      { html: "&bull;", title: "Bullet list", run: () => lineToggle("- ") },
+      { html: "1.", title: "Numbered list", run: () => lineToggle("1. ") },
+      { html: "&gt;", title: "Quote", run: () => lineToggle("> ") },
+      { html: "&#128279;", title: "Link", run: insertLink },
+      "sep",
+      { html: "&check;", title: "Make task (⌘↵)", run: convertSelectionToTask },
+    ];
     function buildFmtInto(el) {
       el.innerHTML = "";
-      for (const it of (FORMAT_SETS[destination] || FORMAT_SETS.md)) {
+      for (const it of FORMAT_BTNS) {
         if (it === "sep") { const s = document.createElement("span"); s.className = "fmtsep"; el.appendChild(s); continue; }
         const b = document.createElement("button"); b.innerHTML = it.html; b.title = it.title;
         b.addEventListener("mousedown", (e) => { e.preventDefault(); it.run(); });
@@ -1495,20 +1635,15 @@
       const sep = document.createElement("span"); sep.className = "fmtsep"; el.appendChild(sep);
       const sb = document.createElement("button"); sb.innerHTML = "&#10063;"; sb.title = "Save selection as a snippet";
       sb.addEventListener("mousedown", (e) => { e.preventDefault(); captureSnippet(); }); el.appendChild(sb);
+      if (aiReady && !draftMode()) {
+        const s2 = document.createElement("span"); s2.className = "fmtsep"; el.appendChild(s2);
+        const ab = document.createElement("button"); ab.innerHTML = "✦"; ab.title = "Proofread selection (local AI)";
+        ab.addEventListener("mousedown", (e) => { e.preventDefault(); runProofread("selection"); }); el.appendChild(ab);
+      }
     }
     function renderToolbars() {
       buildFmtInto(document.getElementById("composeFmt"));
       if (document.getElementById("fmtBar").classList.contains("show")) buildFmtInto(document.getElementById("fmtBar"));
-    }
-    const DEST_CODE = { md: "MD", whatsapp: "WA", telegram: "TG", gmail: "GM" };
-    const DEST_NAME = { md: "Markdown", whatsapp: "WhatsApp", telegram: "Telegram", gmail: "Gmail" };
-    function setDestination(dest) {
-      destination = FORMAT_SETS[dest] ? dest : "md";
-      const label = document.getElementById("composeLabel");
-      if (label) label.innerHTML = esc(DEST_NAME[destination] || "Markdown") + ' <span class="cl-caret">▾</span>';
-      view.dispatch({ effects: highlightCompartment.reconfigure(destination === "md" ? MD_HIGHLIGHT : []) });
-      renderToolbars();
-      scheduleSave();
     }
     function updateFmtBar() {
       const bar = document.getElementById("fmtBar");
@@ -1523,11 +1658,34 @@
       bar.style.top = Math.max(80, c.top - 42) + "px";
     }
     function hideFmtBar() { document.getElementById("fmtBar").classList.remove("show"); }
-    async function copyNative() {
+    // Copy as… — you write once in Markdown; these transform it only at copy time (best-effort).
+    function mdToPlain(s) {
+      return s
+        .replace(/\*\*([^*]+)\*\*/g, "$1").replace(/(^|[^*])\*([^*\n]+)\*/g, "$1$2")
+        .replace(/__([^_]+)__/g, "$1").replace(/~~([^~]+)~~/g, "$1")
+        .replace(/`{1,3}([^`]+)`{1,3}/g, "$1")
+        .replace(/^#{1,6}\s+/gm, "").replace(/^(\s*)[-*+]\s+/gm, "$1• ").replace(/^\s*>\s?/gm, "");
+    }
+    // Italic runs BEFORE bold: the italic regex requires a non-"*" before its "*", so it skips inside **bold**.
+    function mdToWhatsApp(s) {
+      return s
+        .replace(/(^|[^*])\*([^*\n]+)\*/g, "$1_$2_")          // *italic* -> _italic_
+        .replace(/\*\*([^*]+)\*\*/g, "*$1*")                  // **bold** -> *bold*
+        .replace(/__([^_]+)__/g, "_$1_")                      // __italic__ -> _italic_
+        .replace(/~~([^~]+)~~/g, "~$1~")                      // ~~strike~~ -> ~strike~
+        .replace(/`([^`]+)`/g, "$1")                          // drop inline code marks (WA mono is ```)
+        .replace(/^#{1,6}\s+/gm, "").replace(/^(\s*)[-*+]\s+/gm, "$1• ").replace(/^\s*>\s?/gm, "");
+    }
+    function mdToTelegram(s) {
+      return s
+        .replace(/(^|[^*])\*([^*\n]+)\*/g, "$1__$2__")        // *italic* -> __italic__  (**bold** kept as-is)
+        .replace(/^#{1,6}\s+/gm, "").replace(/^(\s*)[-*+]\s+/gm, "$1• ");
+    }
+    async function copyAs(dest) {
       const src = docForShare();
       if (!src.trim()) { toast("Nothing to copy"); return; }
       try {
-        if (destination === "gmail") {
+        if (dest === "gmail") {
           const marked = (await import("https://esm.sh/marked@12")).marked;
           marked.setOptions({ gfm: true });
           const html = marked.parse(src);
@@ -1537,8 +1695,13 @@
           } else { fallbackCopy(src); toast("Copied"); }
           return;
         }
-        if (navigator.clipboard?.writeText) await navigator.clipboard.writeText(src); else fallbackCopy(src);
-        toast("Copied for " + destination.toUpperCase());
+        const out = dest === "whatsapp" ? mdToWhatsApp(src)
+          : dest === "telegram" ? mdToTelegram(src)
+          : dest === "plain" ? mdToPlain(src)
+          : src; // markdown verbatim
+        if (navigator.clipboard?.writeText) await navigator.clipboard.writeText(out); else fallbackCopy(out);
+        const lbl = { md: "Markdown", whatsapp: "WhatsApp", telegram: "Telegram", plain: "plain text" }[dest] || dest;
+        toast("Copied — " + lbl);
       } catch { fallbackCopy(src); toast("Copied"); }
     }
 
@@ -1709,7 +1872,7 @@
     const SNIP_KEY = "scribeNext.snippets";
     const DRAW_RE = /⟦draw:([a-z0-9]+)⟧/g;
     function loadSnippets() { try { return JSON.parse(localStorage.getItem(SNIP_KEY) || "{}"); } catch { return {}; } }
-    function saveSnippets(o) { try { localStorage.setItem(SNIP_KEY, JSON.stringify(o)); } catch (e) { console.warn("snip save", e); } }
+    function saveSnippets(o) { try { localStorage.setItem(SNIP_KEY, JSON.stringify(o)); } catch (e) { console.warn("snip save", e); } if (typeof scheduleUserDataSync === "function") scheduleUserDataSync(); }
     function snippetType(s) {
       const t = s.text || "";
       if (/⟦draw:[a-z0-9]+⟧/.test(t)) return "drawing";
@@ -2011,6 +2174,7 @@
         const data = JSON.parse(await file.text());
         const text = loadFromData(data);
         fileHandle = h; curName = h.name;
+        if (typeof setCloudId === "function") setCloudId(null); // a disk file isn't tied to a cloud doc
         document.getElementById("filename").textContent = curName;
         view.dispatch({ changes: { from: 0, to: view.state.doc.length, insert: text }, effects: refreshDraw.of(null) });
         setDirty(false); toast("Opened " + curName);
@@ -2021,19 +2185,17 @@
     document.getElementById("btn-autofix").addEventListener("click", autoFixAll);
     document.getElementById("fixesClose").addEventListener("click", closeFixesPanel);
     document.getElementById("fixesUndo").addEventListener("click", undoAutoFix);
-    document.getElementById("grammar-status").addEventListener("click", switchEngine);
     document.getElementById("btn-draftmode").addEventListener("click", toggleDraftMode);
     document.getElementById("read-status").addEventListener("click", toggleReadPanel);
     document.getElementById("readClose").addEventListener("click", closeReadPanel);
     document.getElementById("readHL").addEventListener("click", () => { localStorage.setItem("scribeNext.readHighlight", readHighlightOn() ? "0" : "1"); computeReadability(); });
-    document.getElementById("composeLabel").addEventListener("click", (e) => { e.stopPropagation(); toggleDestMenu(); });
     const timerEl = document.getElementById("timer");
     timerEl.addEventListener("click", (e) => { e.stopPropagation(); onTimerClick(); });
     timerEl.addEventListener("dblclick", (e) => { e.stopPropagation(); onTimerDblClick(); });
     const soundEl = document.getElementById("sound");
     soundEl.addEventListener("click", (e) => { e.stopPropagation(); onSoundClick(); });
     soundEl.addEventListener("dblclick", (e) => { e.stopPropagation(); onSoundDblClick(); });
-    document.getElementById("composeCopy").addEventListener("click", copyNative);
+    document.getElementById("composeCopy").addEventListener("click", (e) => { e.stopPropagation(); toggleCopyMenu(); });
     document.getElementById("composePreview").addEventListener("click", togglePreview);
     document.getElementById("btn-tasks").addEventListener("click", toggleTasksPanel);
     document.getElementById("tasksClose").addEventListener("click", toggleTasksPanel);
@@ -2055,9 +2217,15 @@
         b.addEventListener("mousedown", (e) => { e.preventDefault(); view.dispatch({ changes: { from: lint.from, to: lint.to, insert: s }, selection: { anchor: lint.from + s.length } }); hideGramPopover(); scheduleLint(); view.focus(); });
         el.appendChild(b);
       }
-      const add = document.createElement("button"); add.className = "gp-add"; add.textContent = "+ Add “" + word + "” to dictionary";
-      add.addEventListener("mousedown", (e) => { e.preventDefault(); addToDictionary(word); hideGramPopover(); toast("Added “" + word + "” to your dictionary"); view.focus(); });
-      el.appendChild(add);
+      const ig = document.createElement("button"); ig.className = "gp-add"; ig.textContent = "Ignore this suggestion";
+      ig.addEventListener("mousedown", (e) => { e.preventDefault(); ignoreLint(lint); hideGramPopover(); toast("Ignored"); view.focus(); });
+      el.appendChild(ig);
+      // "Add to dictionary" only makes sense for an actual word — hide it for punctuation/spacing false positives
+      if (/^[\p{L}][\p{L}'’-]*$/u.test(word.trim())) {
+        const add = document.createElement("button"); add.className = "gp-add"; add.textContent = "+ Add “" + word.trim() + "” to dictionary";
+        add.addEventListener("mousedown", (e) => { e.preventDefault(); addToDictionary(word); hideGramPopover(); toast("Added “" + word.trim() + "” to your dictionary"); view.focus(); });
+        el.appendChild(add);
+      }
       el.classList.add("show");
       const c = view.coordsAtPos(lint.from);
       const w = el.offsetWidth;
@@ -2068,11 +2236,13 @@
       if (tasksPanelOpen) toggleTasksPanel();
       if (document.getElementById("fixesPanel").classList.contains("show")) closeFixesPanel();
       if (readPanelOpen) closeReadPanel();
+      if (typeof aiPanelOpen === "function" && aiPanelOpen()) closeAIPanel();
+      if (typeof cloudPanelOpen === "function" && cloudPanelOpen()) closeCloudPanel();
       hideGramPopover();
     }
     view.contentDOM.addEventListener("mousedown", closeSidePanels);
     view.contentDOM.addEventListener("click", () => { const sel = view.state.selection.main; if (sel.empty) showGramPopoverAt(sel.head); else hideGramPopover(); });
-    window.addEventListener("keydown", (e) => { if (e.key === "Escape") { if (previewing()) exitPreview(); closeSidePanels(); closeSnipPanel(); closeSlash(); } });
+    window.addEventListener("keydown", (e) => { if (e.key === "Escape") { if (previewing()) exitPreview(); closeSidePanels(); closeSnipPanel(); closeSlash(); if (aiPanelOpen()) closeAIPanel(); closeAccountMenu(); if (cloudPanelOpen()) closeCloudPanel(); closeTagMenu(); hideAbout(); hideHelp(); hideFeedback(); } });
 
     function setFont(name) {
       document.body.dataset.font = name;
@@ -2149,6 +2319,11 @@
       item("Save", "⌘S", () => { closeFileMenu(); saveFile(); });
       item("Open", "⌘O", () => { closeFileMenu(); openFile(); });
       item("Export / Share", "PDF", () => { closeFileMenu(); exportPDF(); });
+      if (authUser) {
+        const cdiv = document.createElement("div"); cdiv.style.cssText = "border-top:1px solid var(--rule); margin:4px 0;"; el.appendChild(cdiv);
+        item("Save to cloud", "☁", () => { closeFileMenu(); saveToCloud(); });
+        item("Open from cloud", "☁", () => { closeFileMenu(); openFromCloud(); });
+      }
       const div = document.createElement("div"); div.style.cssText = "border-top:1px solid var(--rule); margin:4px 0;"; el.appendChild(div);
       subItem("Theme", (fly) => {
         const cur = document.body.dataset.theme || "light";
@@ -2160,6 +2335,101 @@
         const d = document.createElement("div"); d.style.cssText = "border-top:1px solid var(--rule); margin:4px 0;"; fly.appendChild(d);
         const sp = flyBtn(fly, (roomyOn() ? "✓ " : "") + "Comfortable spacing", false, () => { setRoomy(!roomyOn()); sp.textContent = (roomyOn() ? "✓ " : "") + "Comfortable spacing"; });
       });
+      const adiv = document.createElement("div"); adiv.style.cssText = "border-top:1px solid var(--rule); margin:4px 0;"; el.appendChild(adiv);
+      item("Guide", "", () => { closeFileMenu(); showHelp(); });
+      item("Send feedback", "", () => { closeFileMenu(); showFeedback(); });
+      item("About Scribe", "", () => { closeFileMenu(); showAbout(); });
+    }
+    function showAbout() {
+      const el = document.getElementById("aboutDialog"); el.innerHTML = "";
+      const card = document.createElement("div"); card.className = "about-card";
+      card.innerHTML = '<img src="scribe-icon.svg" width="40" height="40" alt="">'
+        + '<h2>Scribe</h2>'
+        + '<div class="about-ver">Version: ' + esc(window.SCRIBE_BUILD || "local") + '</div>'
+        + '<div class="about-msg" id="aboutMsg"></div>';
+      const row = document.createElement("div"); row.className = "about-actions";
+      const chk = document.createElement("button"); chk.className = "primary"; chk.textContent = "Check for updates";
+      chk.addEventListener("click", () => checkForUpdatesManual(chk));
+      const close = document.createElement("button"); close.textContent = "Close"; close.addEventListener("click", hideAbout);
+      row.append(chk, close); card.appendChild(row); el.appendChild(card);
+      el.classList.add("show");
+      el.addEventListener("mousedown", (e) => { if (e.target === el) hideAbout(); });
+    }
+    function hideAbout() { document.getElementById("aboutDialog").classList.remove("show"); }
+    function hideHelp() { document.getElementById("helpDialog").classList.remove("show"); }
+    function hideFeedback() { document.getElementById("feedbackDialog").classList.remove("show"); }
+    function showFeedback() {
+      const el = document.getElementById("feedbackDialog");
+      const askEmail = !authUser; // logged-in users: we already have their email
+      el.innerHTML = '<div class="fb-card">'
+        + '<h2>Send feedback</h2>'
+        + '<div class="fb-sub">Bugs, ideas, anything confusing — it goes straight to the maker.</div>'
+        + '<textarea id="fbText" placeholder="What\'s on your mind?"></textarea>'
+        + (askEmail ? '<input id="fbEmail" type="email" placeholder="Your email (optional, if you\'d like a reply)">' : '')
+        + '<div class="fb-actions"><button id="fbCancel">Cancel</button><button id="fbSend" class="primary">Send</button></div>'
+        + '</div>';
+      el.classList.add("show");
+      document.getElementById("fbCancel").addEventListener("click", hideFeedback);
+      document.getElementById("fbSend").addEventListener("click", submitFeedback);
+      el.addEventListener("mousedown", (e) => { if (e.target === el) hideFeedback(); });
+      setTimeout(() => document.getElementById("fbText").focus(), 30);
+    }
+    async function submitFeedback() {
+      const msg = (document.getElementById("fbText").value || "").trim();
+      if (!msg) { toast("Write something first"); return; }
+      if (!supabase) { toast("Feedback needs a connection — try again online"); return; }
+      const emailEl = document.getElementById("fbEmail");
+      const email = (authUser && authUser.email) || (emailEl ? emailEl.value.trim() : "") || null;
+      const btn = document.getElementById("fbSend"); btn.disabled = true; btn.textContent = "Sending…";
+      try {
+        const { error } = await supabase.from("feedback").insert({ message: msg, email, app_version: window.SCRIBE_BUILD || "local" });
+        if (error) throw error;
+        track("feedback_sent");
+        document.querySelector("#feedbackDialog .fb-card").innerHTML = '<h2>Thank you 🙏</h2><div class="fb-sub" style="margin:8px 0 14px;">Your feedback was sent.</div><div class="fb-actions"><button class="primary" id="fbDone">Done</button></div>';
+        document.getElementById("fbDone").addEventListener("click", hideFeedback);
+      } catch (e) { btn.disabled = false; btn.textContent = "Send"; toast("Couldn't send: " + (e.message || e)); }
+    }
+    function showHelp() {
+      const el = document.getElementById("helpDialog");
+      el.innerHTML = '<div class="help-card">'
+        + '<div class="help-head"><h2>Scribe — quick guide</h2><button id="helpClose" title="Close">✕</button></div>'
+        + '<div class="help-body">'
+        + '<h3>The basics</h3><p>Just start typing — Scribe <b>saves as you go</b>. It uses Markdown, but you can ignore that and write plainly.</p>'
+        + '<h3>The menu</h3><p>The <b>icon in the top-left</b> is your menu: Save, Open, Export to PDF, Theme, Font, and this guide.</p>'
+        + '<h3>Format & the “/” menu</h3><ul>'
+        + '<li><b>Select text</b> → a small toolbar appears (bold, italic, headings, link…).</li>'
+        + '<li>Type <code>/</code> at the start of a line for <b>tasks</b>, <b>drawings</b>, <b>tables</b>, and saved <b>snippets</b>.</li>'
+        + '<li><b>Tasks:</b> <code>/task</code> + Enter, or select lines and press <code>⌘↵</code>. The <b>T</b> button lists them.</li>'
+        + '<li><b>Tags:</b> the <b>🏷</b> button — add your own or let it suggest some.</li></ul>'
+        + '<h3>Writing help</h3><ul>'
+        + '<li>Misspellings get a wavy underline — click for fixes, or <b>Ignore</b> / add to your dictionary.</li>'
+        + '<li>The grade badge (e.g. <code>G10</code>) shows how easy your writing is to read; click it for hard sentences.</li>'
+        + '<li><b>Draft</b> mode (top bar) silences all checking so you can write freely.</li></ul>'
+        + '<h3>Your account & cloud</h3><ul>'
+        + '<li><b>Sign in</b> (top-right) with your email — you’ll get a one-tap link, no password.</li>'
+        + '<li>Then the menu has <b>Save to cloud</b> / <b>Open from cloud</b> (with search). Notes sync automatically and are private to you.</li>'
+        + '<li>Works offline too — it syncs when you’re back online.</li></ul>'
+        + '<h3>Make it yours</h3><p>Menu → <b>Theme</b> (Light / Dark / Sepia) and <b>Font</b> (with a Comfortable-spacing option).</p>'
+        + '<p style="margin-top:14px;font-size:12px;">Tip: on a phone, “Add to Home Screen” installs Scribe like an app.</p>'
+        + '</div></div>';
+      el.classList.add("show");
+      document.getElementById("helpClose").addEventListener("click", hideHelp);
+      el.addEventListener("mousedown", (e) => { if (e.target === el) hideHelp(); });
+    }
+    async function checkForUpdatesManual(btn) {
+      const msg = document.getElementById("aboutMsg");
+      if (!window.SCRIBE_BUILD || window.SCRIBE_BUILD === "local") { msg.textContent = "Local build — updates apply automatically when you reload."; return; }
+      btn.disabled = true; btn.textContent = "Checking…"; msg.textContent = "";
+      try {
+        const r = await fetch("version.json?ts=" + Date.now(), { cache: "no-store" });
+        if (!r.ok) throw new Error("no version file");
+        const v = await r.json();
+        btn.disabled = false; btn.textContent = "Check for updates";
+        if (v && v.build && v.build !== window.SCRIBE_BUILD) {
+          msg.innerHTML = '✨ Update available. <a href="#" id="aboutReload">Reload now</a>';
+          document.getElementById("aboutReload").addEventListener("click", (e) => { e.preventDefault(); location.reload(); });
+        } else { msg.textContent = "✓ You're up to date."; }
+      } catch (e) { btn.disabled = false; btn.textContent = "Check for updates"; msg.textContent = "Couldn't check — you may be offline."; }
     }
     function openFileMenu() {
       renderFileMenu();
@@ -2199,6 +2469,8 @@
       if (btn) { btn.textContent = on ? "Draft" : "Review"; btn.classList.toggle("on", on); }
       if (on) view.dispatch({ effects: [setLints.of([]), setReadDecos.of([])] }); // clear all underlines/highlights
       else { scheduleLint(); computeReadability(); }                              // bring feedback back
+      if (on) closeAIPanel();          // Draft mode: no AI either
+      renderToolbars();                // show/hide the ✦ summarize button in the format bar
       updateCatMood();
     }
     function toggleDraftMode() { setDraftMode(!draftMode()); }
@@ -2262,50 +2534,17 @@
       return { overall, hard, lvl, doc };
     }
     let readPanelOpen = false;
-    function readMode() { return localStorage.getItem("scribeNext.readMode") === "claude" ? "claude" : "human"; }
-
-    // --- Claude prompt-lint: heuristic "is this a clear prompt?" checks (offline; NOT an AI verdict) ---
-    const VAGUE_RE = /\b(things?|stuff|etc\.?|somehow|someway|kind of|sort of|good|nice|better|maybe|basically|whatever|and so on|cleaner?|simple|a lot|lots)\b/gi;
-    function computeClaudeLint() {
-      const doc = view.state.doc.toString();
-      const text = doc.replace(/⟦(?:draw|sheet):[a-z0-9]+⟧/g, " ");
-      const wc = (text.match(/[A-Za-z][A-Za-z'-]*/g) || []).length;
-      const long = wc >= 40;
-      const hasAsk = /\?|\b(please|can you|could you|i (?:want|need|'?d like)|write|build|create|make|fix|explain|summari[sz]e|generate|review|refactor|implement|add|remove|update|design|help me|give me|list|find|debug|optimi[sz]e|convert|turn)\b/i.test(text);
-      const hasStructure = /^#{1,6}\s/m.test(text) || /^\s*(?:[-*+]|\d+[.)])\s/m.test(text) || /```/.test(text) || text.split(/\n\s*\n/).filter(p => p.trim()).length >= 2;
-      const specificity = (text.match(/\b\d+\b/g) || []).length + (text.match(/`[^`]+`/g) || []).length + (text.match(/\b[\w-]+\.[a-z]{1,4}\b|\/[\w./-]+/g) || []).length + (text.match(/\b[a-z]+[A-Z]\w*|\b\w+_\w+\b/g) || []).length;
-      const hasContext = /\b(because|so that|so it|must|should|don'?t|do not|avoid|constraint|requirement|only|without|instead|make sure|ensure|note that|goal|context)\b/i.test(text);
-      const hasExample = /\b(e\.?g\.?|for example|for instance|such as|like this|example)\b/i.test(text) || /```/.test(text);
-      const vague = []; let m; VAGUE_RE.lastIndex = 0;
-      while ((m = VAGUE_RE.exec(doc)) !== null) vague.push({ from: m.index, to: m.index + m[0].length });
-      const checks = [
-        { ok: hasAsk, label: "States a clear ask", weight: 35 },
-        { ok: !long || hasStructure, label: "Has structure (headings / lists / code)", weight: 15 },
-        { ok: !long || specificity >= 1, label: "Includes specifics (names, numbers, paths)", weight: 15 },
-        { ok: !long || hasContext, label: "Gives context or constraints", weight: 10 },
-        { ok: !long || hasExample, label: "Shows an example", weight: 5 },
-        { ok: vague.length === 0, warn: vague.length > 0, label: vague.length ? (vague.length + " vague word" + (vague.length === 1 ? "" : "s") + " to sharpen") : "No vague words", weight: Math.min(20, vague.length * 4) },
-      ];
-      let score = 100; for (const c of checks) if (!c.ok) score -= c.weight;
-      return { score: Math.max(0, Math.round(score)), checks, vague, issues: checks.filter(c => !c.ok).length, empty: wc < 3 };
-    }
     function computeReadability() {
       if (draftMode()) { view.dispatch({ effects: setReadDecos.of([]) }); return; } // Draft mode: no readability checking
-      if (readMode() === "claude") {
-        const c = computeClaudeLint();
-        updateReadIndicatorClaude(c);
-        view.dispatch({ effects: setReadDecos.of(readHighlightOn() ? c.vague.map(v => ({ from: v.from, to: v.to, cls: "claude-vague" })) : []) });
-        if (readPanelOpen) renderReadPanel();
-        return;
-      }
       const r = computeReadHard();
       updateReadIndicator(r);
       view.dispatch({ effects: setReadDecos.of(readHighlightOn() ? r.hard.map(h => ({ from: h.from, to: h.to, cls: h.grade > r.lvl.grade + 4 ? "read-veryhard" : "read-hard" })) : []) });
       if (readPanelOpen) renderReadPanel();
     }
+    function gradeAbbr(n) { if (n == null) return "Aa"; const g = Math.max(1, Math.round(n)); return g <= 12 ? "G" + g : g <= 16 ? "UG" : "PG"; }
     function updateReadIndicator(r) {
       const wrap = document.getElementById("read-status");
-      document.querySelector("#read-status .rd-ico").textContent = "Aa";
+      document.querySelector("#read-status .rd-ico").textContent = gradeAbbr(r.overall); // doc's reading level, e.g. G11
       const g = document.getElementById("rd-grade");
       const n = r.hard.length, veryHard = r.hard.some(h => h.grade > r.lvl.grade + 4);
       g.textContent = n === 0 ? "✓" : String(n);
@@ -2313,55 +2552,25 @@
       const gr = r.overall == null ? "?" : gradeLabel(Math.max(1, Math.round(r.overall)));
       wrap.title = "Readability (human) — reads at ~" + gr + " · target " + r.lvl.label + " · " + (n ? n + " hard sentence" + (n === 1 ? "" : "s") : "all within target") + " · click for details";
     }
-    function updateReadIndicatorClaude(c) {
-      const wrap = document.getElementById("read-status");
-      document.querySelector("#read-status .rd-ico").textContent = "✦";
-      const g = document.getElementById("rd-grade");
-      if (c.empty) { g.textContent = ""; wrap.className = ""; wrap.title = "Claude-readiness — write a prompt to check it"; return; }
-      g.textContent = c.issues === 0 ? "✓" : String(c.issues);
-      wrap.className = c.score >= 85 ? "ok" : c.score >= 60 ? "warn" : "over";
-      wrap.title = "Claude-readiness: " + c.score + "/100 · " + (c.issues ? c.issues + " to improve" : "looks clear") + " · click for the checklist";
-    }
-    function renderReadModeToggle() {
-      const el = document.getElementById("readModeToggle"); el.innerHTML = "";
-      [["human", "Human"], ["claude", "✦ Claude"]].forEach(([mk, label]) => {
-        const b = document.createElement("button"); b.textContent = label;
-        if (readMode() === mk) b.className = "sel";
-        b.addEventListener("click", () => { localStorage.setItem("scribeNext.readMode", mk); computeReadability(); renderReadPanel(); });
-        el.appendChild(b);
-      });
-    }
     function renderReadPanel() {
-      renderReadModeToggle();
-      const claude = readMode() === "claude";
-      document.querySelector("#readPanel .rd-title").textContent = claude ? "Claude-readiness" : "Hard sentences";
-      document.getElementById("readTargets").style.display = claude ? "none" : "";
       const ul = document.getElementById("readList"); ul.innerHTML = "";
       const hl = document.getElementById("readHL");
-      if (claude) {
-        const c = computeClaudeLint();
-        document.getElementById("readGrade").textContent = c.empty ? "Write a prompt, then check how clear it is for Claude." : ("Claude-ready score: " + c.score + " / 100");
-        document.getElementById("readCount").textContent = c.empty ? "" : (c.issues ? c.issues + " to improve" : "clear ✓");
-        if (!c.empty) for (const ck of c.checks) {
-          const li = document.createElement("li"); li.className = "rd-check";
-          const mark = document.createElement("span"); mark.className = "rd-mark " + (ck.ok ? "ok" : ck.warn ? "warn" : "bad"); mark.textContent = ck.ok ? "✓" : ck.warn ? "!" : "✗";
-          const lbl = document.createElement("span"); lbl.className = "rd-sent"; lbl.textContent = ck.label;
-          li.append(mark, lbl); ul.appendChild(li);
-        }
-        hl.textContent = (readHighlightOn() ? "✓ " : "") + "Highlight vague words"; hl.classList.toggle("on", readHighlightOn());
-        return;
-      }
       const r = computeReadHard();
       document.getElementById("readGrade").textContent = r.overall == null ? "—" : "Reads at about " + gradeLabel(Math.max(1, Math.round(r.overall))) + " · target " + r.lvl.label;
       document.getElementById("readCount").textContent = r.hard.length ? (r.hard.length + " hard") : "";
       if (!r.hard.length) {
         const li = document.createElement("li"); li.className = "tk-empty"; li.textContent = "Nothing above your target — clean read 🎉"; ul.appendChild(li);
       } else for (const h of r.hard) {
-        const li = document.createElement("li");
+        const li = document.createElement("li"); li.className = "rd-hard-li";
         const veryHard = h.grade > r.lvl.grade + 4;
         const badge = document.createElement("span"); badge.className = "rd-badge" + (veryHard ? " vh" : ""); badge.textContent = gradeLabel(Math.round(h.grade));
         const sent = document.createElement("span"); sent.className = "rd-sent"; sent.textContent = r.doc.slice(h.from, h.to).replace(/\s+/g, " ").trim().slice(0, 90);
         li.append(badge, sent);
+        if (aiReady) {
+          const sb = document.createElement("button"); sb.className = "rd-simplify-btn"; sb.innerHTML = "✦"; sb.title = "Simplify this sentence (local AI)";
+          sb.addEventListener("click", (e) => { e.stopPropagation(); simplifyHardSentence(h, li, sb); });
+          li.append(sb);
+        }
         li.addEventListener("click", () => { view.dispatch({ selection: { anchor: h.from }, effects: EditorView.scrollIntoView(h.from, { y: "center" }) }); view.focus(); });
         ul.appendChild(li);
       }
@@ -2379,39 +2588,39 @@
     function closeReadPanel() { readPanelOpen = false; document.getElementById("readPanel").classList.remove("show"); }
     function toggleReadPanel() { if (readPanelOpen) closeReadPanel(); else openReadPanel(); }
 
-    const DESTS = [
-      ["md", "Markdown", "plain writing — copy with ⌘C"],
+    const COPY_TARGETS = [
+      ["md", "Markdown", "verbatim"],
       ["whatsapp", "WhatsApp", "*bold*  _italic_  ~strike~"],
-      ["telegram", "Telegram", "**bold**  __italic__  ||spoiler||"],
+      ["telegram", "Telegram", "**bold**  __italic__"],
+      ["plain", "Plain text", "no markdown marks"],
       ["gmail", "Gmail (rich)", "formatted paste"],
     ];
-    let destMenuKey = null;
-    function outsideDestMenu(e) { if (!e.target.closest("#destMenu") && !e.target.closest("#composeLabel")) closeDestMenu(); }
-    function closeDestMenu() {
-      document.getElementById("destMenu").classList.remove("show");
-      if (destMenuKey) { window.removeEventListener("keydown", destMenuKey, true); destMenuKey = null; }
-      document.removeEventListener("mousedown", outsideDestMenu, true);
+    let copyMenuKey = null;
+    function outsideCopyMenu(e) { if (!e.target.closest("#copyMenu") && !e.target.closest("#composeCopy")) closeCopyMenu(); }
+    function closeCopyMenu() {
+      document.getElementById("copyMenu").classList.remove("show");
+      if (copyMenuKey) { window.removeEventListener("keydown", copyMenuKey, true); copyMenuKey = null; }
+      document.removeEventListener("mousedown", outsideCopyMenu, true);
     }
-    function openDestMenu() {
-      const el = document.getElementById("destMenu");
+    function openCopyMenu() {
+      const el = document.getElementById("copyMenu");
       el.innerHTML = "";
-      for (const [val, label, hint] of DESTS) {
+      for (const [val, label, hint] of COPY_TARGETS) {
         const b = document.createElement("button");
-        b.innerHTML = label + (hint ? "<small>" + hint + "</small>" : "");
-        if (val === destination) b.className = "sel";
-        b.addEventListener("mousedown", (e) => { e.preventDefault(); setDestination(val); closeDestMenu(); });
+        b.innerHTML = esc(label) + (hint ? "<small>" + esc(hint) + "</small>" : "");
+        b.addEventListener("mousedown", (e) => { e.preventDefault(); copyAs(val); closeCopyMenu(); });
         el.appendChild(b);
       }
       el.classList.add("show");
-      const r = document.getElementById("composeLabel").getBoundingClientRect();
-      el.style.left = Math.max(8, Math.min(r.left, window.innerWidth - el.offsetWidth - 8)) + "px";
+      const r = document.getElementById("composeCopy").getBoundingClientRect();
+      el.style.left = Math.max(8, Math.min(r.right - el.offsetWidth, window.innerWidth - el.offsetWidth - 8)) + "px";
       el.style.top = (r.bottom + 6) + "px";
-      destMenuKey = (e) => { if (e.key === "Escape") { e.preventDefault(); closeDestMenu(); } };
-      window.addEventListener("keydown", destMenuKey, true);
-      setTimeout(() => document.addEventListener("mousedown", outsideDestMenu, true), 0);
+      copyMenuKey = (e) => { if (e.key === "Escape") { e.preventDefault(); closeCopyMenu(); } };
+      window.addEventListener("keydown", copyMenuKey, true);
+      setTimeout(() => document.addEventListener("mousedown", outsideCopyMenu, true), 0);
     }
-    function toggleDestMenu() {
-      if (document.getElementById("destMenu").classList.contains("show")) closeDestMenu(); else openDestMenu();
+    function toggleCopyMenu() {
+      if (document.getElementById("copyMenu").classList.contains("show")) closeCopyMenu(); else openCopyMenu();
     }
 
     // ---------- gentle focus / flow timer (opt-in, no buzzer) ----------
@@ -2425,7 +2634,7 @@
       if (draftMode()) return "✏️";      // Draft mode → pencil (writing freely)
       return "🔍";                       // Review (default) → magnifying glass (examining)
     }
-    function updateCatMood() { const b = document.getElementById("fileBtn"); if (b) b.textContent = "🐱" + catAccessory(); }
+    function updateCatMood() { /* logo is now a static icon — no reactive emoji */ }
 
     function renderTimer() {
       const el = document.getElementById("timer");
@@ -2772,13 +2981,542 @@
       clearTimeout(toastTimer); toastTimer = setTimeout(() => el.classList.remove("show"), 1600);
     }
 
+    // ---------- local AI (Ollama) — proofread + task extraction; mirrors the LanguageTool power-up pattern ----------
+    let aiUrl = localStorage.getItem("scribeNext.aiUrl") || "http://localhost:11434";
+    let aiModel = localStorage.getItem("scribeNext.aiModel") || "";
+    let aiReady = false, aiBusy = false, aiAbort = null, aiScope = null, aiCorrected = "";
+    function setAIIndicator(state) {
+      const el = document.getElementById("ai-status"); if (!el) return;
+      el.classList.remove("ready", "off", "busy"); if (state) el.classList.add(state);
+      el.textContent = state === "busy" ? "Proofreading…" : "Proofread";
+      el.title = state === "ready" ? "Proofread with local AI (" + (aiModel || "Ollama") + ") — click to proofread this note"
+        : state === "busy" ? "Proofreading…"
+        : "Ollama not running — start the Ollama app, then click to retry";
+    }
+    async function initAI() {
+      try {
+        const r = await fetch(aiUrl + "/api/tags", { method: "GET" });
+        if (!r.ok) throw new Error("tags " + r.status);
+        const names = ((await r.json()).models || []).map(m => m.name);
+        if (!names.length) { aiReady = false; setAIIndicator("off"); return; }
+        if (!names.includes(aiModel)) aiModel = names.find(n => /gemma/i.test(n)) || names[0];
+        localStorage.setItem("scribeNext.aiModel", aiModel);
+        aiReady = true; setAIIndicator("ready"); renderToolbars();
+      } catch (e) { aiReady = false; setAIIndicator("off"); }
+    }
+    function aiCleanMarkers(text) {
+      return text
+        .replace(/^[ \t]*⟦draw:([a-z0-9]+)⟧[ \t]*$/gm, (m, id) => { const n = (scenes.get(id)?.name || "").trim(); return "[drawing" + (n ? ": " + n : "") + "]"; })
+        .replace(/^[ \t]*⟦sheet:([a-z0-9]+)⟧[ \t]*$/gm, (m, id) => { const s = sheets.get(id); return s ? "\n" + sheetToMarkdown(s) + "\n" : ""; });
+    }
+    function aiPanelOpen() { return document.getElementById("aiPanel").classList.contains("show"); }
+    function openAIPanel() { document.getElementById("aiPanel").classList.add("show"); }
+    function closeAIPanel() {
+      if (aiAbort) { try { aiAbort.abort(); } catch {} aiAbort = null; }
+      aiBusy = false; document.getElementById("aiPanel").classList.remove("show");
+      if (aiReady) setAIIndicator("ready");
+    }
+    function aiMkBtn(label, fn, cls) { const b = document.createElement("button"); b.textContent = label; if (cls) b.className = cls; b.addEventListener("click", fn); return b; }
+
+    // word-level diff (LCS) so the editor's changes read as track-changes, never a black-box rewrite
+    function aiTokenize(s) { return s.match(/\s+|[^\s]+/g) || []; }
+    function aiDiff(a, b) {
+      const A = aiTokenize(a), B = aiTokenize(b);
+      if (A.length * B.length > 4000000) return null; // too big to diff cheaply
+      const n = A.length, m = B.length;
+      const dp = Array.from({ length: n + 1 }, () => new Uint32Array(m + 1));
+      for (let i = n - 1; i >= 0; i--) for (let j = m - 1; j >= 0; j--)
+        dp[i][j] = A[i] === B[j] ? dp[i + 1][j + 1] + 1 : Math.max(dp[i + 1][j], dp[i][j + 1]);
+      const out = []; let i = 0, j = 0;
+      while (i < n && j < m) {
+        if (A[i] === B[j]) { out.push({ t: "same", s: A[i] }); i++; j++; }
+        else if (dp[i + 1][j] >= dp[i][j + 1]) { out.push({ t: "del", s: A[i] }); i++; }
+        else { out.push({ t: "add", s: B[j] }); j++; }
+      }
+      while (i < n) out.push({ t: "del", s: A[i++] });
+      while (j < m) out.push({ t: "add", s: B[j++] });
+      return out;
+    }
+    function renderDiff(orig, corrected) {
+      const body = document.getElementById("aiBody"); body.classList.remove("placeholder");
+      const d = aiDiff(orig, corrected);
+      if (!d) { body.textContent = corrected; return true; } // can't diff cheaply → treat as changed
+      if (!d.some(x => x.t !== "same")) { body.innerHTML = '<span class="ai-clean">No changes needed — reads clean. ✓</span>'; return false; }
+      body.innerHTML = d.map(x => x.t === "same" ? escapeHtml(x.s)
+        : x.t === "del" ? '<span class="df-del">' + escapeHtml(x.s) + '</span>'
+        : '<span class="df-add">' + escapeHtml(x.s) + '</span>').join("");
+      return true;
+    }
+    function buildProofFoot(hasChanges) {
+      const foot = document.getElementById("aiFoot"); foot.innerHTML = "";
+      if (hasChanges) foot.appendChild(aiMkBtn("✓ Accept all edits", acceptProofread, "accent"));
+      foot.appendChild(aiMkBtn("Copy", () => { const t = aiCorrected; (navigator.clipboard?.writeText ? navigator.clipboard.writeText(t) : Promise.reject()).then(() => toast("Copied")).catch(() => { fallbackCopy(t); toast("Copied"); }); }));
+      foot.appendChild(aiMkBtn("↻ Redo", () => runProofread(aiScope && aiScope.had ? "selection" : "doc")));
+    }
+    function acceptProofread() {
+      if (!aiCorrected || !aiScope) return;
+      view.dispatch({ changes: { from: aiScope.from, to: aiScope.to, insert: aiCorrected }, selection: { anchor: aiScope.from + aiCorrected.length } });
+      aiScope = null; // consumed — prevent double-apply
+      document.getElementById("aiBody").innerHTML = '<span class="ai-clean">✓ Edits applied to your note.</span>';
+      const foot = document.getElementById("aiFoot"); foot.innerHTML = ""; foot.appendChild(aiMkBtn("Close", closeAIPanel, "accent"));
+      toast("Edits applied"); // panel stays open so any to-dos below are still addable
+    }
+    async function runProofread(scope) {
+      const sel = view.state.selection.main;
+      const useSel = scope === "selection" && !sel.empty;
+      const from = useSel ? sel.from : 0, to = useSel ? sel.to : view.state.doc.length;
+      const text = aiCleanMarkers(view.state.sliceDoc(from, to)).trim();
+      aiScope = { from, to, had: useSel };
+      document.getElementById("aiTitle").textContent = "Proofread";
+      document.getElementById("aiSrc").textContent = (useSel ? "Editing your selection" : "Editing the whole note") + " · " + (aiModel || "local");
+      const body = document.getElementById("aiBody"), foot = document.getElementById("aiFoot"), tasksEl = document.getElementById("aiTasks");
+      foot.innerHTML = ""; tasksEl.innerHTML = "";
+      if (!text) { body.classList.add("placeholder"); body.textContent = "Nothing to proofread — write or select some text first."; openAIPanel(); return; }
+      if (!aiReady) { body.classList.add("placeholder"); body.textContent = "Ollama isn't running. Start the Ollama app, then retry."; foot.appendChild(aiMkBtn("↻ Retry", () => initAI().then(() => runProofread(scope)))); openAIPanel(); return; }
+      openAIPanel(); body.classList.add("placeholder"); body.textContent = "Reading…";
+      aiBusy = true; setAIIndicator("busy");
+      if (aiAbort) { try { aiAbort.abort(); } catch {} }
+      aiAbort = new AbortController();
+      const prompt = "You are a careful copy-editor. Correct spelling, grammar, punctuation, and clearly awkward phrasing in the text below. Preserve the author's voice, style, and word choices. Do NOT rewrite for style, do not restructure, do not change meaning, do not add or remove content. Return ONLY the corrected text, nothing else.\n\n---\n" + text;
+      let acc = "", ok = false;
+      try {
+        const r = await fetch(aiUrl + "/api/generate", { method: "POST", headers: { "Content-Type": "application/json" }, signal: aiAbort.signal, body: JSON.stringify({ model: aiModel, prompt, stream: true, options: { temperature: 0.2 } }) });
+        if (!r.ok || !r.body) throw new Error("generate " + r.status);
+        const reader = r.body.getReader(), dec = new TextDecoder(); let buf = "";
+        body.classList.remove("placeholder"); body.textContent = "";
+        while (true) {
+          const { done, value } = await reader.read(); if (done) break;
+          buf += dec.decode(value, { stream: true });
+          let nl;
+          while ((nl = buf.indexOf("\n")) >= 0) {
+            const line = buf.slice(0, nl).trim(); buf = buf.slice(nl + 1); if (!line) continue;
+            try { const j = JSON.parse(line); if (j.response) { acc += j.response; body.textContent = acc; body.scrollTop = body.scrollHeight; } } catch {}
+          }
+        }
+        aiCorrected = acc.trim();
+        buildProofFoot(renderDiff(text, aiCorrected));
+        ok = true;
+      } catch (e) {
+        if (e.name === "AbortError") { /* user closed/redid */ }
+        else { body.classList.add("placeholder"); body.textContent = "Proofread failed: " + (e.message || e) + "\nIs Ollama running?"; }
+      } finally { aiBusy = false; aiAbort = null; if (aiReady) setAIIndicator("ready"); }
+      if (ok && aiPanelOpen()) findTasks(text).catch(() => {}); // scan for to-dos after proofread (non-blocking)
+    }
+    async function findTasks(text) {
+      const tasksEl = document.getElementById("aiTasks");
+      const r = await fetch(aiUrl + "/api/generate", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ model: aiModel, prompt: "List any to-do items or action items the author needs to do, mentioned in the text. Be conservative — only real tasks, not narrative or description. Return JSON {\"tasks\":[\"short imperative task\", ...]}; empty array if none.\n\n" + text, format: "json", stream: false, options: { temperature: 0 } }) });
+      if (!r.ok) return;
+      let tasks = [];
+      try { tasks = (JSON.parse((await r.json()).response).tasks || []).filter(t => typeof t === "string" && t.trim()); } catch {}
+      if (!tasks.length || !aiPanelOpen()) return;
+      const head = document.createElement("div"); head.className = "ai-tasks-head"; head.textContent = "To-dos spotted (" + tasks.length + ")"; tasksEl.appendChild(head);
+      const list = document.createElement("div"); list.className = "ai-tasks-list";
+      tasks.forEach(t => {
+        const row = document.createElement("label"); row.className = "ai-task-row";
+        const cb = document.createElement("input"); cb.type = "checkbox"; cb.checked = true; cb.value = t.trim();
+        const span = document.createElement("span"); span.textContent = t.trim();
+        row.appendChild(cb); row.appendChild(span); list.appendChild(row);
+      });
+      tasksEl.appendChild(list);
+      tasksEl.appendChild(aiMkBtn("Add to note", () => {
+        const chosen = [...list.querySelectorAll("input:checked")].map(c => c.value);
+        if (!chosen.length) { toast("None selected"); return; }
+        const ins = "\n" + chosen.map(t => "- [ ] " + t).join("\n") + "\n";
+        view.dispatch({ changes: { from: view.state.doc.length, insert: ins } });
+        toast(chosen.length + " task" + (chosen.length > 1 ? "s" : "") + " added"); tasksEl.innerHTML = "";
+      }));
+    }
+    document.getElementById("aiClose").addEventListener("click", closeAIPanel);
+    document.getElementById("ai-status").addEventListener("click", () => {
+      if (aiBusy) return;
+      if (!aiReady) { initAI().then(() => aiReady ? runProofread("doc") : toast("Ollama not running — start the Ollama app")); return; }
+      runProofread("doc");
+    });
+
+    // shared streaming generate (used by sentence-simplify in the readability tray)
+    async function aiStream(prompt, onToken, signal, options) {
+      const r = await fetch(aiUrl + "/api/generate", { method: "POST", headers: { "Content-Type": "application/json" }, signal, body: JSON.stringify({ model: aiModel, prompt, stream: true, options: options || {} }) });
+      if (!r.ok || !r.body) throw new Error("generate " + r.status);
+      const reader = r.body.getReader(), dec = new TextDecoder(); let buf = "", acc = "";
+      while (true) {
+        const { done, value } = await reader.read(); if (done) break;
+        buf += dec.decode(value, { stream: true });
+        let nl;
+        while ((nl = buf.indexOf("\n")) >= 0) {
+          const line = buf.slice(0, nl).trim(); buf = buf.slice(nl + 1); if (!line) continue;
+          try { const j = JSON.parse(line); if (j.response) { acc += j.response; onToken(acc); } } catch {}
+        }
+      }
+      return acc.trim();
+    }
+    // simplify ONE Hemingway-flagged hard sentence — opt-in, shown as a suggestion you accept or ignore
+    let simplifyAbort = null;
+    async function simplifyHardSentence(h, li, btn) {
+      const existing = li.querySelector(".rd-fix"); if (existing) existing.remove();
+      const fix = document.createElement("div"); fix.className = "rd-fix"; fix.addEventListener("click", e => e.stopPropagation());
+      const out = document.createElement("div"); out.className = "rd-fix-text thinking"; out.textContent = "Simplifying…";
+      fix.appendChild(out); li.appendChild(fix); btn.disabled = true;
+      if (simplifyAbort) { try { simplifyAbort.abort(); } catch {} }
+      simplifyAbort = new AbortController();
+      const orig = view.state.sliceDoc(h.from, h.to).trim();
+      const target = readLevel().label;
+      const prompt = "Rewrite the sentence below to be clearer and easier to read (around " + target + " reading level). Preserve its full meaning and the author's voice — do not add or drop information. Return ONLY the rewritten sentence: no quotes, no preamble, no explanation.\n\nSentence: " + orig;
+      try {
+        const res = await aiStream(prompt, (acc) => { out.classList.remove("thinking"); out.textContent = acc; }, simplifyAbort.signal, { temperature: 0.3 });
+        const suggestion = res.replace(/^["'“”]+|["'“”]+$/g, "").trim();
+        if (!suggestion) { out.textContent = "(no suggestion)"; btn.disabled = false; return; }
+        out.classList.remove("thinking"); out.textContent = suggestion;
+        const actions = document.createElement("div"); actions.className = "rd-fix-actions";
+        const use = aiMkBtn("Use this", () => {
+          view.dispatch({ changes: { from: h.from, to: h.to, insert: suggestion } });
+          toast("Sentence simplified"); computeReadability(); // re-renders the tray with fresh positions
+        }); use.className = "use";
+        actions.append(use, aiMkBtn("✕", () => { fix.remove(); btn.disabled = false; }));
+        fix.appendChild(actions);
+      } catch (e) {
+        if (e.name !== "AbortError") { out.classList.remove("thinking"); out.textContent = "Couldn't simplify — " + (e.message || e); }
+      } finally { btn.disabled = false; }
+    }
+
+    // ---------- Supabase: optional cloud login + sync. Local-first — app works fully offline/logged-out. ----------
+    const SUPABASE_URL = "https://xbfnlamhwtvxxtofiwkc.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_tRhQNQ2JQbxTPQ_NkcbsJw_Ce6FwBKS"; // publishable/anon key — safe in client; data protected by RLS
+    // ---------- PostHog: privacy-locked product analytics (button clicks only; never note content) ----------
+    async function initPostHog() {
+      if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname) || location.protocol === "file:") return; // skip local/dev — only count real hosted visitors
+      try {
+        const ph = (await import("https://esm.sh/posthog-js@1")).default;
+        ph.init("phc_xzyY8MzVL85mPpWtGWNkhyJH7tYwPLRHEWbNGcu2ffKo", {
+          api_host: "https://us.i.posthog.com",
+          autocapture: { css_selector_allowlist: ["button", "a", ".btn", '[role="button"]'] }, // capture button/link clicks only — never content divs/spans/the editor
+          capture_pageview: true,
+          disable_session_recording: true,   // never record the screen (this is a writing app)
+          persistence: "localStorage",       // cookieless — no cookie banner needed
+          person_profiles: "identified_only", // stays anonymous (we never identify by email) → no PII
+        });
+        window.__ph = ph;
+      } catch (e) { console.warn("posthog init failed (offline?) — app continues", e); }
+    }
+    function track(name, props) { try { window.__ph && window.__ph.capture(name, props || {}); } catch {} }
+
+    let supabase = null, authUser = null, accountMenuKey = null, supabaseInitError = "";
+    let currentCloudId = localStorage.getItem("scribeNext.cloudId") || null, cloudSyncTimer = null, cloudDirty = false;
+    async function initSupabase() {
+      const sources = ["https://esm.sh/@supabase/supabase-js@2", "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm"];
+      for (const src of sources) {
+        try {
+          const { createClient } = await import(/* @vite-ignore */ src);
+          supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+          supabase.auth.onAuthStateChange((_e, session) => { const was = authUser; authUser = session?.user || null; renderAccount(); if (authUser && (!was || was.id !== authUser.id)) pullUserData(); });
+          const { data } = await supabase.auth.getSession();
+          authUser = data?.session?.user || null;
+          supabaseInitError = ""; renderAccount(); if (authUser) pullUserData(); return;
+        } catch (e) { supabaseInitError = (e && (e.message || String(e))) || "unknown"; console.warn("supabase load failed from", src, e); }
+      }
+      renderAccount(); // all sources failed → offline message (with the captured error) is shown
+    }
+    function renderAccount() {
+      const btn = document.getElementById("accountBtn"); if (!btn) return;
+      if (authUser) {
+        btn.classList.add("in");
+        btn.textContent = ((authUser.email || "?").trim().charAt(0).toUpperCase()) || "✓";
+        btn.title = (cloudDirty ? "Syncing…" : "Synced") + " as " + (authUser.email || "you") + " — click for account";
+      } else {
+        btn.classList.remove("in"); btn.textContent = "Sign in";
+        btn.title = supabase ? "Sign in to sync your notes" : "Cloud sync (offline)";
+      }
+    }
+    function closeAccountMenu() {
+      document.getElementById("accountMenu").classList.remove("show");
+      if (accountMenuKey) { document.removeEventListener("mousedown", accountMenuKey, true); accountMenuKey = null; }
+    }
+    function openAccountMenu() {
+      const el = document.getElementById("accountMenu"); el.innerHTML = "";
+      if (!supabase) {
+        const p = document.createElement("div"); p.className = "am-label";
+        p.textContent = "Cloud sync couldn't load" + (supabaseInitError ? " — " + supabaseInitError : "") + ". Scribe keeps working locally.";
+        const retry = document.createElement("button"); retry.textContent = "↻ Retry";
+        retry.addEventListener("click", async () => { retry.disabled = true; retry.textContent = "Loading…"; await initSupabase(); closeAccountMenu(); openAccountMenu(); });
+        el.append(p, retry);
+      } else if (authUser) {
+        const lbl = document.createElement("div"); lbl.className = "am-label"; lbl.textContent = "Signed in — your notes will sync to the cloud.";
+        const em = document.createElement("div"); em.className = "am-email"; em.textContent = authUser.email || "(no email)";
+        const out = document.createElement("button"); out.textContent = "Sign out";
+        out.addEventListener("click", async () => { out.disabled = true; try { await supabase.auth.signOut(); toast("Signed out"); } catch {} closeAccountMenu(); });
+        el.append(lbl, em, out);
+      } else {
+        const lbl = document.createElement("div"); lbl.className = "am-label"; lbl.textContent = "Enter your email — we'll send a one-tap sign-in link. No password.";
+        const input = document.createElement("input"); input.type = "email"; input.placeholder = "you@example.com"; input.autocomplete = "email";
+        const send = document.createElement("button"); send.className = "primary"; send.textContent = "Send magic link";
+        const doSend = async () => {
+          const email = input.value.trim();
+          if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { toast("Enter a valid email"); return; }
+          send.disabled = true; send.textContent = "Sending…";
+          try {
+            const { error } = await supabase.auth.signInWithOtp({ email, options: { emailRedirectTo: location.href.split("#")[0] } });
+            if (error) throw error;
+            el.innerHTML = ""; const ok = document.createElement("div"); ok.className = "am-label";
+            ok.textContent = "✓ Check " + email + " for a sign-in link. Open it on this device.";
+            el.appendChild(ok);
+          } catch (e) { send.disabled = false; send.textContent = "Send magic link"; toast("Couldn't send: " + (e.message || e)); }
+        };
+        send.addEventListener("click", doSend);
+        input.addEventListener("keydown", (e) => { if (e.key === "Enter") doSend(); });
+        el.append(lbl, input, send);
+        setTimeout(() => input.focus(), 30);
+      }
+      const r = document.getElementById("accountBtn").getBoundingClientRect();
+      el.classList.add("show");
+      const w = el.offsetWidth;
+      el.style.top = (r.bottom + 6) + "px";
+      el.style.left = Math.max(8, Math.min(r.right - w, window.innerWidth - w - 8)) + "px";
+      accountMenuKey = (e) => { if (!e.target.closest("#accountMenu") && !e.target.closest("#accountBtn")) closeAccountMenu(); };
+      document.addEventListener("mousedown", accountMenuKey, true);
+    }
+    document.getElementById("accountBtn").addEventListener("click", () => {
+      document.getElementById("accountMenu").classList.contains("show") ? closeAccountMenu() : openAccountMenu();
+    });
+
+    // ---------- Phase 2: cloud documents. Local-first — localStorage stays the working copy; cloud is sync/backup. ----------
+    function setCloudId(id) { currentCloudId = id || null; if (id) localStorage.setItem("scribeNext.cloudId", id); else localStorage.removeItem("scribeNext.cloudId"); }
+    function scheduleCloudSync() {
+      if (!supabase || !authUser || !currentCloudId) return;
+      cloudDirty = true; renderAccount(); clearTimeout(cloudSyncTimer); cloudSyncTimer = setTimeout(flushCloudSync, 1500);
+    }
+    async function flushCloudSync() {
+      if (!supabase || !authUser || !currentCloudId || !cloudDirty) return;
+      try {
+        const { error } = await supabase.from("documents").update({ name: catName(curName), content: serialize() }).eq("id", currentCloudId);
+        if (error) throw error; cloudDirty = false;
+      } catch (e) { /* offline/failed → stays dirty, retries on next edit or 'online' */ }
+      renderAccount();
+    }
+    window.addEventListener("online", () => { if (cloudDirty) flushCloudSync(); });
+    async function saveToCloud() {
+      if (!supabase) { toast("Cloud sync isn't loaded — try the ☁ menu"); return; }
+      if (!authUser) { toast("Sign in (☁) to save to the cloud"); openAccountMenu(); return; }
+      const name = catName(curName), content = serialize();
+      try {
+        if (currentCloudId) {
+          const { error } = await supabase.from("documents").update({ name, content }).eq("id", currentCloudId);
+          if (error) throw error;
+        } else {
+          const { data, error } = await supabase.from("documents").insert({ name, content }).select("id").single();
+          if (error) throw error; setCloudId(data.id);
+        }
+        cloudDirty = false; renderAccount(); toast("Saved to cloud ☁");
+      } catch (e) { toast("Cloud save failed: " + (e.message || e)); }
+    }
+    function openCloudPanel() { document.getElementById("cloudPanel").classList.add("show"); }
+    function closeCloudPanel() { document.getElementById("cloudPanel").classList.remove("show"); }
+    function cloudPanelOpen() { return document.getElementById("cloudPanel").classList.contains("show"); }
+    let cloudDocsCache = [], cloudTagFilter = null;
+    async function openFromCloud() {
+      if (!supabase) { toast("Cloud sync isn't loaded"); return; }
+      if (!authUser) { toast("Sign in (☁) to open cloud notes"); openAccountMenu(); return; }
+      openCloudPanel();
+      const search = document.getElementById("cloudSearch"); if (search) search.value = "";
+      cloudTagFilter = null;
+      document.getElementById("cloudList").innerHTML = '<li class="cl-empty">Loading…</li>';
+      try {
+        // pull just the text + tags — not the heavy drawings/sheets — for fast in-panel search & filter
+        const { data, error } = await supabase.from("documents").select("id,name,updated_at,body:content->>text,tags:content->tags").order("updated_at", { ascending: false });
+        if (error) throw error;
+        cloudDocsCache = data || []; renderCloudList(""); if (search) search.focus();
+      } catch (e) {
+        const list = document.getElementById("cloudList"); list.innerHTML = "";
+        const li = document.createElement("li"); li.className = "cl-empty"; li.textContent = "Couldn't load: " + (e.message || e); list.appendChild(li);
+      }
+    }
+    function relTime(iso) {
+      if (!iso) return ""; const d = new Date(iso), s = (new Date() - d) / 1000;
+      if (s < 60) return "just now"; if (s < 3600) return Math.floor(s / 60) + "m ago"; if (s < 86400) return Math.floor(s / 3600) + "h ago";
+      if (s < 604800) return Math.floor(s / 86400) + "d ago"; return d.toLocaleDateString();
+    }
+    function cleanBody(t) { return (t || "").replace(/⟦(?:draw|sheet):[a-z0-9]+⟧/g, " ").replace(/\s+/g, " ").trim(); }
+    function matchSnippet(text, q) {
+      const i = text.toLowerCase().indexOf(q); if (i < 0) return null;
+      const div = document.createElement("div"); div.className = "cl-snip";
+      const start = Math.max(0, i - 24); if (start > 0) div.append("…");
+      div.append(document.createTextNode(text.slice(start, i)));
+      const mk = document.createElement("mark"); mk.textContent = text.slice(i, i + q.length); div.append(mk);
+      const end = Math.min(text.length, i + q.length + 40);
+      div.append(document.createTextNode(text.slice(i + q.length, end))); if (end < text.length) div.append("…");
+      return div;
+    }
+    function renderCloudTagBar() {
+      const bar = document.getElementById("cloudTagBar"); if (!bar) return; bar.innerHTML = "";
+      const set = new Set(); for (const d of cloudDocsCache) if (Array.isArray(d.tags)) for (const t of d.tags) if (typeof t === "string") set.add(t);
+      const tags = [...set].sort();
+      if (!tags.length) { bar.style.display = "none"; return; } bar.style.display = "flex";
+      for (const t of tags) {
+        const b = document.createElement("button"); b.className = "ctag" + (cloudTagFilter === t ? " sel" : ""); b.textContent = "#" + t;
+        b.addEventListener("click", () => { cloudTagFilter = (cloudTagFilter === t ? null : t); renderCloudList(document.getElementById("cloudSearch").value); });
+        bar.appendChild(b);
+      }
+    }
+    function renderCloudList(query) {
+      renderCloudTagBar();
+      const list = document.getElementById("cloudList"); list.innerHTML = "";
+      const q = (query || "").trim().toLowerCase();
+      const empty = (txt) => { const li = document.createElement("li"); li.className = "cl-empty"; li.textContent = txt; list.appendChild(li); };
+      if (!cloudDocsCache.length) return empty("No cloud notes yet. Use “Save to cloud” in the 🐱 menu to add one.");
+      let docs = cloudDocsCache;
+      if (cloudTagFilter) docs = docs.filter(d => Array.isArray(d.tags) && d.tags.includes(cloudTagFilter));
+      if (q) docs = docs.filter(d => (d.name || "").toLowerCase().includes(q) || cleanBody(d.body).toLowerCase().includes(q));
+      if (!docs.length) return empty(q || cloudTagFilter ? "No notes match your filter." : "No notes.");
+      for (const d of docs) {
+        const li = document.createElement("li"); if (d.id === currentCloudId) li.classList.add("cl-current");
+        const main = document.createElement("div"); main.className = "cl-main";
+        const nm = document.createElement("div"); nm.className = "cl-name"; nm.textContent = d.name || "untitled.cat";
+        const dt = document.createElement("div"); dt.className = "cl-date"; dt.textContent = relTime(d.updated_at);
+        main.append(nm, dt);
+        if (q) { const snip = matchSnippet(cleanBody(d.body), q); if (snip) main.appendChild(snip); }
+        main.addEventListener("click", () => loadCloudDoc(d.id, d.name));
+        const del = document.createElement("button"); del.className = "cl-del"; del.innerHTML = "&#10005;"; del.title = "Delete from cloud";
+        del.addEventListener("click", (e) => { e.stopPropagation(); deleteCloudDoc(d.id); });
+        li.append(main, del); list.appendChild(li);
+      }
+    }
+    async function loadCloudDoc(id, name) {
+      if (!currentCloudId && view.state.doc.length > 40 &&
+          !confirm("Open this cloud note? Your current note isn't saved to the cloud and will be replaced in the editor (it stays in your local autosave).")) return;
+      try {
+        const { data, error } = await supabase.from("documents").select("content,name").eq("id", id).single();
+        if (error) throw error;
+        const text = loadFromData(data.content || {});
+        view.dispatch({ changes: { from: 0, to: view.state.doc.length, insert: text }, effects: refreshDraw.of(null) });
+        setCloudId(id); curName = catName(data.name || name || "untitled");
+        document.getElementById("filename").textContent = curName; fileHandle = null; setDirty(false);
+        try { localStorage.setItem(LS_KEY, JSON.stringify(serialize())); } catch {}
+        cloudDirty = false; renderAccount(); closeCloudPanel(); toast("Opened " + curName + " ☁");
+      } catch (e) { toast("Couldn't open: " + (e.message || e)); }
+    }
+    async function deleteCloudDoc(id) {
+      if (!confirm("Delete this note from the cloud? This can't be undone.")) return;
+      try {
+        const { error } = await supabase.from("documents").delete().eq("id", id);
+        if (error) throw error;
+        if (id === currentCloudId) setCloudId(null);
+        toast("Deleted from cloud"); openFromCloud();
+      } catch (e) { toast("Delete failed: " + (e.message || e)); }
+    }
+    document.getElementById("cloudClose").addEventListener("click", closeCloudPanel);
+    document.getElementById("cloudSearch").addEventListener("input", (e) => renderCloudList(e.target.value));
+
+    // ---------- Tags: ride inside the note (sync + offline). AI-suggest reuses existing tags to avoid sprawl. ----------
+    function normTag(t) { return (t || "").trim().toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "").replace(/^-+|-+$/g, "").slice(0, 30); }
+    function renderTagButton() { const b = document.getElementById("btn-tags"); if (!b) return; b.style.color = docTags.length ? "var(--accent)" : ""; b.title = docTags.length ? "Tags: " + docTags.map(t => "#" + t).join(" ") : "Tags for this note"; }
+    function addDocTag(t) { const n = normTag(t); if (!n || docTags.includes(n)) return false; docTags.push(n); scheduleSave(); renderTagButton(); return true; }
+    function removeDocTag(t) { const i = docTags.indexOf(t); if (i >= 0) { docTags.splice(i, 1); scheduleSave(); renderTagButton(); } }
+    function allKnownTags() { const s = new Set(docTags); for (const d of cloudDocsCache) if (Array.isArray(d.tags)) for (const t of d.tags) if (typeof t === "string") s.add(t); return [...s].sort(); }
+    let tagMenuOutside = null;
+    function closeTagMenu() { document.getElementById("tagMenu").classList.remove("show"); if (tagMenuOutside) { document.removeEventListener("mousedown", tagMenuOutside, true); tagMenuOutside = null; } }
+    function positionTagMenu() {
+      const el = document.getElementById("tagMenu"); if (!el.classList.contains("show")) return;
+      const r = document.getElementById("btn-tags").getBoundingClientRect(), h = el.offsetHeight, w = el.offsetWidth;
+      el.style.left = Math.max(8, Math.min(r.right - w, window.innerWidth - w - 8)) + "px";
+      el.style.top = Math.max(8, r.top - h - 6) + "px"; // opens upward from the bottom strip
+    }
+    function renderTagMenu(suggested) {
+      const el = document.getElementById("tagMenu"); el.innerHTML = "";
+      const lab = document.createElement("div"); lab.className = "tm-label"; lab.textContent = "Tags for this note"; el.appendChild(lab);
+      const tags = document.createElement("div"); tags.className = "tm-tags";
+      for (const t of docTags) {
+        const chip = document.createElement("span"); chip.className = "tag-chip"; chip.append("#" + t);
+        const x = document.createElement("button"); x.textContent = "✕"; x.title = "Remove";
+        x.addEventListener("click", () => { removeDocTag(t); renderTagMenu(suggested); });
+        chip.appendChild(x); tags.appendChild(chip);
+      }
+      el.appendChild(tags);
+      const row = document.createElement("div"); row.className = "tm-row";
+      const input = document.createElement("input"); input.type = "text"; input.placeholder = "add a tag…"; input.autocomplete = "off"; input.spellcheck = false;
+      const add = document.createElement("button"); add.className = "tm-add"; add.textContent = "Add";
+      const doAdd = () => { if (addDocTag(input.value)) { renderTagMenu(suggested); } };
+      add.addEventListener("click", doAdd);
+      input.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); doAdd(); } e.stopPropagation(); });
+      row.append(input, add); el.appendChild(row);
+      if (aiReady) { const sug = document.createElement("button"); sug.className = "tm-suggest"; sug.textContent = "✦ Suggest tags"; sug.addEventListener("click", () => suggestTagsAI(sug)); el.appendChild(sug); }
+      const fresh = (suggested || []).filter(t => !docTags.includes(t));
+      if (fresh.length) {
+        const wrap = document.createElement("div"); wrap.className = "tm-suggested";
+        for (const t of fresh) { const b = document.createElement("button"); b.className = "sug"; b.textContent = "+ #" + t; b.addEventListener("click", () => { addDocTag(t); renderTagMenu(fresh.filter(x => x !== t)); }); wrap.appendChild(b); }
+        el.appendChild(wrap);
+      }
+      positionTagMenu();
+      setTimeout(() => { const i = document.querySelector("#tagMenu .tm-row input"); if (i && !suggested) i.focus(); }, 0);
+    }
+    function openTagMenu() { renderTagMenu(); document.getElementById("tagMenu").classList.add("show"); positionTagMenu();
+      tagMenuOutside = (e) => { if (!e.target.closest("#tagMenu") && !e.target.closest("#btn-tags")) closeTagMenu(); }; document.addEventListener("mousedown", tagMenuOutside, true); }
+    async function suggestTagsAI(btn) {
+      if (!aiReady) { toast("Local AI isn't connected"); return; }
+      btn.disabled = true; btn.textContent = "Thinking…";
+      const text = aiCleanMarkers(view.state.doc.toString()).trim().slice(0, 4000);
+      const vocab = allKnownTags();
+      const prompt = "Suggest 2 to 4 short topic tags for this note. Strongly PREFER reusing these existing tags when any fit: " + (vocab.length ? vocab.join(", ") : "(none yet)") + ". Only invent a new tag for a genuinely new theme. Each tag = a single lowercase word or hyphenated-phrase, no '#'. Return JSON {\"tags\":[\"...\"]}.\n\nNote:\n" + text;
+      try {
+        const r = await fetch(aiUrl + "/api/generate", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ model: aiModel, prompt, format: "json", stream: false, options: { temperature: 0.2 } }) });
+        if (!r.ok) throw new Error("generate " + r.status);
+        let tags = []; try { tags = (JSON.parse((await r.json()).response).tags || []).map(normTag).filter(Boolean); } catch {}
+        tags = [...new Set(tags)].filter(t => !docTags.includes(t)).slice(0, 6);
+        btn.disabled = false; btn.textContent = "✦ Suggest tags";
+        if (!tags.length) { toast("No new tags suggested"); return; }
+        renderTagMenu(tags);
+      } catch (e) { btn.disabled = false; btn.textContent = "✦ Suggest tags"; toast("Suggest failed: " + (e.message || e)); }
+    }
+    document.getElementById("btn-tags").addEventListener("click", () => { document.getElementById("tagMenu").classList.contains("show") ? closeTagMenu() : openTagMenu(); });
+
+    // ---------- Phase 3: sync GLOBAL data (dictionary + snippets) via the user_data row. Merge, never clobber. ----------
+    let userDataTimer = null;
+    function localUserData() { return { dictionary: [...dictionary], snippets: loadSnippets() }; }
+    function scheduleUserDataSync() {
+      if (!supabase || !authUser) return;
+      clearTimeout(userDataTimer); userDataTimer = setTimeout(pushUserData, 1500);
+    }
+    async function pushUserData() {
+      if (!supabase || !authUser) return;
+      try { await supabase.from("user_data").upsert({ user_id: authUser.id, data: localUserData() }, { onConflict: "user_id" }); }
+      catch (e) { /* offline → retries on next change or 'online' */ }
+    }
+    async function pullUserData() {
+      if (!supabase || !authUser) return;
+      try {
+        const { data, error } = await supabase.from("user_data").select("data").eq("user_id", authUser.id).maybeSingle();
+        if (error) throw error;
+        mergeUserData(data?.data || {});
+      } catch (e) { /* offline → local stays; will push later */ }
+    }
+    function mergeUserData(cloud) {
+      // dictionary: union (add-only, so union never loses a word)
+      if (Array.isArray(cloud.dictionary)) {
+        const before = dictionary.size;
+        for (const w of cloud.dictionary) if (typeof w === "string") dictionary.add(w.toLowerCase());
+        if (dictionary.size !== before) { try { localStorage.setItem("scribeNext.dictionary", JSON.stringify([...dictionary])); } catch {} scheduleLint(); }
+      }
+      // snippets: merge by nickname, newer (last||created) wins on conflict
+      if (cloud.snippets && typeof cloud.snippets === "object") {
+        const local = loadSnippets(); let changed = false;
+        for (const [nick, snip] of Object.entries(cloud.snippets)) {
+          const l = local[nick];
+          if (!l) { local[nick] = snip; changed = true; }
+          else if ((snip.last || snip.created || 0) > (l.last || l.created || 0)) { local[nick] = snip; changed = true; }
+        }
+        if (changed) { try { localStorage.setItem(SNIP_KEY, JSON.stringify(local)); } catch {} if (typeof snipPanelOpen !== "undefined" && snipPanelOpen && typeof renderSnipPanel === "function") renderSnipPanel(); }
+      }
+      pushUserData(); // converge the cloud copy (seed it if empty, add anything local had)
+    }
+    window.addEventListener("online", () => { if (supabase && authUser) pushUserData(); });
+
     window.__scribeReady = true;
     window.__scribeView = view;
     setTheme(localStorage.getItem("scribeNext.theme") || "light");
-    setDestination(destination);
+    renderToolbars();
     document.body.dataset.font = localStorage.getItem("scribeNext.font") || "lexend";
     if (roomyOn()) document.body.classList.add("roomy");
     initGrammar();
+    initAI();
+    initSupabase();
+    initPostHog();
     computeReadability();
     if (draftMode()) setDraftMode(true);
     updateCatMood();
@@ -2804,8 +3542,9 @@
     });
     // Update awareness: compare the running build against the published one, show the banner when newer.
     (function () {
-      const APP_BUILD = "fc7902abb9fc"; // replaced with the build hash at deploy; stays the token on local file://
-      if (APP_BUILD === "__" + "BUILD__") return; // not deployed (local/dev) → no update checks
+      const APP_BUILD = "eff6bfdae4f5"; // replaced with the build hash at deploy; stays the token on local file://
+      window.SCRIBE_BUILD = (APP_BUILD === "__" + "BUILD__") ? "local" : APP_BUILD; // exposed for About
+      if (APP_BUILD === "__" + "BUILD__") return; // not deployed (local/dev) → no auto update checks
       let notified = false;
       async function checkUpdate() {
         if (notified) return;
