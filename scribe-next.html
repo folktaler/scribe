@@ -13,28 +13,44 @@
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Serif:wght@400;500&family=Inter:wght@400;500;600;700&family=Atkinson+Hyperlegible:wght@400;700&family=Newsreader:wght@400;500&family=Caveat:wght@400;500&family=Lora:wght@400;500&family=Shantell+Sans:wght@400;500&family=Lexend:wght@400;500&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="https://unpkg.com/@excalidraw/excalidraw@0.17.6/dist/excalidraw.production.min.css" />
 <style>
-  /* Ghost design tokens — lifted from TryGhost/Ghost (MIT). See ~/toolkit/theme.css */
+  /* ==== GHOST-TOKENS (managed by theme-sync — do not edit between markers) ==== */
   :root {
+    /* Ghost colour primitives — lifted verbatim from TryGhost/Ghost (MIT),
+       apps/shade/tailwind.theme.css. Managed by theme-sync; see UPSTREAM.md. */
     --color-white:    oklch(100% 0 0);
     --color-black:    oklch(20.38% 0.0067 258.4);
     --color-grey-50:  oklch(98.54% 0.0013 286.4);
     --color-grey-100: oklch(96.97% 0.0017 247.8);
     --color-grey-200: oklch(94.74% 0.0042 236.5);
+    --color-grey-300: oklch(90.78% 0.0070 247.9);
     --color-grey-400: oklch(86.68% 0.0095 242.9);
     --color-grey-500: oklch(77.55% 0.0174 250.9);
+    --color-grey-600: oklch(70.33% 0.0223 248.1);
     --color-grey-700: oklch(62.98% 0.0286 248.3);
+    --color-grey-800: oklch(52.97% 0.0232 250.6);
     --color-grey-900: oklch(36.77% 0.0153 248.2);
+    --color-grey-950: oklch(25.95% 0.0063 258.4);
+    --color-green-400: oklch(79.04% 0.1936 145.5);
     --color-green-500: oklch(74.81% 0.2213 144.4);
     --color-green-700: oklch(55.58% 0.1604 144.5);
     --color-blue-500:  oklch(74.03% 0.1559 235.9);
     --color-red-500:   oklch(61.27% 0.2462 26.4);
+    --color-yellow-400: oklch(84.87% 0.1508 81.3);
+    --color-yellow-500: oklch(82.04% 0.1655 77.3);
+    --color-purple-400: oklch(64.94% 0.2182 298.5);
+    --color-purple-500: oklch(58.34% 0.2584 295.5);
+    /* Semantic roles (light) */
     --text-primary:   var(--color-black);
     --text-secondary: var(--color-grey-700);
     --text-tertiary:  var(--color-grey-400);
     --border:         var(--color-grey-200);
     --border-strong:  var(--color-grey-500);
     --surface-panel:  var(--color-white);
-    --bg-token:       var(--color-grey-50);
+    --bg:             var(--color-grey-50);
+    --surface-subtle: var(--color-grey-50);
+    --chip-bg:        var(--color-grey-100);
+    --inverse-fg:     #fff;
+    /* Geometry / shadow / motion / type (px — apps run at a 16px root) */
     --radius: 8px;
     --radius-control: 6px;
     --shadow-sm: 0 0 1px rgba(0,0,0,.12), 0 1px 6px rgba(0,0,0,0.03), 0 8px 10px -8px rgba(0,0,0,.1);
@@ -43,6 +59,7 @@
     --ease-standard: cubic-bezier(0.2, 0, 0, 1);
     --font: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   }
+  /* ==== /GHOST-TOKENS ==== */
   /* Light theme re-pointed onto Ghost neutrals. --accent stays the amber brand
      signature (editor caret, selection, links, task checks) — chrome primary
      buttons use black via --btn-primary below. */
@@ -255,8 +272,10 @@
   @keyframes gpulse { 0%,100% { opacity: .4; } 50% { opacity: .9; } }
   /* readability (offline, formula-based — no AI) */
   /* Draft mode: silence all feedback so you can write without judging (evidence: separate generating from editing) */
-  #btn-draftmode { font-size: 11px; padding: 4px 8px; }
-  #btn-draftmode.on { color: var(--accent); border-color: var(--accent); }
+  #modeToggle { display: inline-flex; border: 1px solid var(--rule); border-radius: var(--radius-control); overflow: hidden; }
+  #modeToggle button { font-size: 11px; padding: 4px 9px; background: none; border: 0; color: var(--muted); cursor: pointer; font-family: inherit; line-height: 1.4; }
+  #modeToggle button.active { background: var(--accent); color: #fff; }
+  #modeToggle button:not(.active):hover { background: var(--rule); }
   body.draft .gram-group, body.draft #read-status { display: none; }
   /* grammar + auto-fix joined into one pill (so AF reads as part of grammar, not readability) */
   .gram-group { display: inline-flex; align-items: center; border: 1px solid var(--rule); border-radius: 5px; overflow: hidden; }
@@ -552,7 +571,7 @@
       <span id="filename">untitled.kitten</span><span id="dirty"></span>
     </div>
     <div class="row" id="topright">
-      <button class="btn" id="btn-draftmode" title="Draft = write freely, all checking silenced · Review = bring feedback back">Review</button>
+      <div id="modeToggle" title="Draft = write freely, all checking silenced · Review = bring feedback back"><button id="modeDraft" type="button">Draft</button><button id="modeReview" type="button" class="active">Review</button></div>
       <span class="gram-group">
         <span id="grammar-status" title="Spelling &amp; grammar check"><span class="gram-dot"></span><span id="gram-count"></span></span>
         <button class="btn ic" id="btn-autofix" title="Auto-fix grammar (also flags table calculation errors)">AF</button>
@@ -2185,7 +2204,8 @@
     document.getElementById("btn-autofix").addEventListener("click", autoFixAll);
     document.getElementById("fixesClose").addEventListener("click", closeFixesPanel);
     document.getElementById("fixesUndo").addEventListener("click", undoAutoFix);
-    document.getElementById("btn-draftmode").addEventListener("click", toggleDraftMode);
+    document.getElementById("modeDraft").addEventListener("click", () => setDraftMode(true));
+    document.getElementById("modeReview").addEventListener("click", () => setDraftMode(false));
     document.getElementById("read-status").addEventListener("click", toggleReadPanel);
     document.getElementById("readClose").addEventListener("click", closeReadPanel);
     document.getElementById("readHL").addEventListener("click", () => { localStorage.setItem("scribeNext.readHighlight", readHighlightOn() ? "0" : "1"); computeReadability(); });
@@ -2346,7 +2366,8 @@
       card.innerHTML = '<img src="scribe-icon.svg" width="40" height="40" alt="">'
         + '<h2>Scribe</h2>'
         + '<div class="about-ver">Version: ' + esc(window.SCRIBE_BUILD || "local") + '</div>'
-        + '<div class="about-msg" id="aboutMsg"></div>';
+        + '<div class="about-msg" id="aboutMsg"></div>'
+        + '<div class="about-ai" id="aboutAI" style="font-size:11px;color:var(--muted);margin-bottom:12px;line-height:1.5;">Checking on-device AI…</div>';
       const row = document.createElement("div"); row.className = "about-actions";
       const chk = document.createElement("button"); chk.className = "primary"; chk.textContent = "Check for updates";
       chk.addEventListener("click", () => checkForUpdatesManual(chk));
@@ -2354,6 +2375,34 @@
       row.append(chk, close); card.appendChild(row); el.appendChild(card);
       el.classList.add("show");
       el.addEventListener("mousedown", (e) => { if (e.target === el) hideAbout(); });
+      detectDeviceAI().then(renderDeviceAI);
+    }
+    // Capability check for browser on-device AI (Chrome built-in / Gemini Nano): emerging global classes + older window.ai namespace
+    async function detectDeviceAI() {
+      const found = [];
+      for (const name of ["LanguageModel", "Proofreader", "Rewriter", "Writer", "Summarizer", "Translator", "LanguageDetector"]) {
+        const C = window[name];
+        if (!C) continue;
+        let status = "present";
+        try {
+          if (typeof C.availability === "function") status = await C.availability();
+          else if (typeof C.capabilities === "function") { const c = await C.capabilities(); status = (c && (c.available || c.availability)) || "present"; }
+        } catch (e) { status = "err"; }
+        found.push(name + ": " + status);
+      }
+      if (window.ai && typeof window.ai === "object") {
+        const present = ["languageModel", "assistant", "summarizer", "rewriter", "writer", "proofreader", "translator"].filter(s => window.ai[s]);
+        found.push("window.ai (" + (present.length ? present.join(", ") : "namespace only") + ")");
+      }
+      const chrome = (navigator.userAgent.match(/Chrome\/(\d+)/) || [])[1] || "?";
+      return { found, chrome, android: /Android/.test(navigator.userAgent), secure: window.isSecureContext };
+    }
+    function renderDeviceAI(r) {
+      const el = document.getElementById("aboutAI"); if (!el) return;
+      const head = "On-device AI · Chrome " + r.chrome + (r.android ? " · Android" : "");
+      el.innerHTML = r.found.length
+        ? "<b>" + esc(head) + "</b><br>✅ " + esc(r.found.join(" · "))
+        : "<b>" + esc(head) + "</b><br>❌ No built-in AI APIs in this browser yet." + (r.secure ? "" : " (needs https)");
     }
     function hideAbout() { document.getElementById("aboutDialog").classList.remove("show"); }
     function hideHelp() { document.getElementById("helpDialog").classList.remove("show"); }
@@ -2465,8 +2514,8 @@
       localStorage.setItem("scribeNext.draftMode", on ? "1" : "0");
       document.body.classList.toggle("draft", on);
       view.contentDOM.setAttribute("spellcheck", on ? "false" : "true");
-      const btn = document.getElementById("btn-draftmode");
-      if (btn) { btn.textContent = on ? "Draft" : "Review"; btn.classList.toggle("on", on); }
+      document.getElementById("modeDraft")?.classList.toggle("active", on);
+      document.getElementById("modeReview")?.classList.toggle("active", !on);
       if (on) view.dispatch({ effects: [setLints.of([]), setReadDecos.of([])] }); // clear all underlines/highlights
       else { scheduleLint(); computeReadability(); }                              // bring feedback back
       if (on) closeAIPanel();          // Draft mode: no AI either
@@ -3542,7 +3591,7 @@
     });
     // Update awareness: compare the running build against the published one, show the banner when newer.
     (function () {
-      const APP_BUILD = "eff6bfdae4f5"; // replaced with the build hash at deploy; stays the token on local file://
+      const APP_BUILD = "24992537db45"; // replaced with the build hash at deploy; stays the token on local file://
       window.SCRIBE_BUILD = (APP_BUILD === "__" + "BUILD__") ? "local" : APP_BUILD; // exposed for About
       if (APP_BUILD === "__" + "BUILD__") return; // not deployed (local/dev) → no auto update checks
       let notified = false;
