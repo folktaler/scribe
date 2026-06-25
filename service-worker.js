@@ -2,7 +2,7 @@
    First load must be online (to populate the cache); after that the app + its
    CDN dependencies (CodeMirror, Excalidraw, Harper, marked, Tesseract, fonts)
    work fully offline. Bump CACHE to ship an update. */
-const CACHE = "scribe-v2";
+const CACHE = "scribe-v3";
 const SHELL = ["scribe-next.html", "manifest.webmanifest", "scribe-icon.svg"];
 
 self.addEventListener("install", (e) => {

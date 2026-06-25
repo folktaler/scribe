@@ -3591,7 +3591,7 @@
     });
     // Update awareness: compare the running build against the published one, show the banner when newer.
     (function () {
-      const APP_BUILD = "24992537db45"; // replaced with the build hash at deploy; stays the token on local file://
+      const APP_BUILD = "e66460451345"; // replaced with the build hash at deploy; stays the token on local file://
       window.SCRIBE_BUILD = (APP_BUILD === "__" + "BUILD__") ? "local" : APP_BUILD; // exposed for About
       if (APP_BUILD === "__" + "BUILD__") return; // not deployed (local/dev) → no auto update checks
       let notified = false;
