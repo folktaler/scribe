@@ -4,9 +4,10 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Scribe</title>
+<!-- UI: follows theme-sync/PATTERNS.md (Ghost design language). Tokens via theme-sync; no raw hex. -->
 <link rel="icon" type="image/svg+xml" href="scribe-icon.svg" />
 <link rel="manifest" href="manifest.webmanifest" />
-<meta name="theme-color" content="#7c5cff" />
+<meta name="theme-color" content="#b07d2e" />
 <link rel="apple-touch-icon" href="scribe-icon-192.png" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -64,9 +65,30 @@
      signature (editor caret, selection, links, task checks) — chrome primary
      buttons use black via --btn-primary below. */
   :root {
+    --bg-token: var(--color-grey-50);
     --bg: var(--bg-token); --fg: var(--text-primary); --muted: var(--text-secondary); --accent: #b07d2e;
     --rule: var(--border); --rule-strong: var(--border-strong);
     --card-bg: var(--surface-panel); --shadow: var(--shadow-sm);
+  }
+  /* Semantic state tokens (success / warning / danger) — routed onto the Ghost
+     primitives above. These replace stray pre-Ghost status hexes in chrome
+     (grammar dots, reading-grade, delete buttons, diff add/del). Theme-neutral:
+     the dark/sepia palettes intentionally do NOT re-point these. */
+  :root {
+    --color-yellow-700: oklch(65.82% 0.1419 70.8);
+    --color-yellow-800: oklch(54.44% 0.1173 70.8);
+    --ok-bg:     color-mix(in oklch, var(--color-green-500) 14%, transparent);
+    --ok-line:   color-mix(in oklch, var(--color-green-500) 34%, transparent);
+    --ok-ink:    var(--color-green-700);
+    --ok-solid:  var(--color-green-500);
+    --warn-bg:   color-mix(in oklch, var(--color-yellow-500) 18%, transparent);
+    --warn-line: color-mix(in oklch, var(--color-yellow-500) 42%, transparent);
+    --warn-ink:  var(--color-yellow-800);
+    --warn-solid:   var(--color-yellow-700);
+    --warn-solid-h: var(--color-yellow-800);
+    --danger-bg:   color-mix(in oklch, var(--color-red-500) 12%, transparent);
+    --danger-line: color-mix(in oklch, var(--color-red-500) 32%, transparent);
+    --danger-ink:  var(--color-red-500);
   }
   [data-theme="dark"] {
     --bg: #282c34; --fg: #abb2bf; --muted: #5c6370; --accent: #61afef;
@@ -87,24 +109,24 @@
   #filename { color: var(--fg); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   #topleft { flex: 1; min-width: 0; }
   #topleft { gap: 7px; }
-  #fileBtn { background: none; border: 0; border-radius: 7px; padding: 3px 5px; margin: 0; line-height: 0; cursor: pointer; display: inline-flex; align-items: center; }
+  #fileBtn { background: none; border: 0; border-radius: var(--radius-control); padding: 3px 5px; margin: 0; line-height: 0; cursor: pointer; display: inline-flex; align-items: center; }
   #fileBtn:hover { background: var(--rule); }
   #fileBtn img { display: block; }
   #aboutDialog { position: fixed; inset: 0; z-index: 60; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,.45); }
   #aboutDialog.show { display: flex; }
-  #aboutDialog .about-card { background: var(--surface-panel); border: 1px solid var(--rule); border-radius: var(--radius); box-shadow: var(--shadow-lg); padding: 22px 24px; width: min(320px, 86vw); text-align: center; }
+  #aboutDialog .about-card { background: var(--card-bg); border: 1px solid var(--rule); border-radius: var(--radius); box-shadow: var(--shadow-lg); padding: 22px 24px; width: min(320px, 86vw); text-align: center; }
   #aboutDialog .about-card h2 { margin: 8px 0 2px; font-size: 18px; color: var(--fg); }
   #aboutDialog .about-ver { font-size: 12px; color: var(--muted); margin-bottom: 12px; }
   #aboutDialog .about-msg { font-size: 13px; color: var(--fg); min-height: 18px; margin-bottom: 14px; }
   #aboutDialog .about-msg a { color: var(--accent); }
   #aboutDialog .about-actions { display: flex; gap: 8px; justify-content: center; }
   #aboutDialog .about-actions button { padding: 7px 14px; font-size: 13px; font-family: inherit; border: 1px solid var(--rule); border-radius: var(--radius-control); background: var(--card-bg); color: var(--fg); cursor: pointer; }
-  #aboutDialog .about-actions button:hover { background: var(--color-grey-100); }
+  #aboutDialog .about-actions button:hover { background: var(--rule); }
   #aboutDialog .about-actions button.primary { background: var(--text-primary); color: #fff; border-color: var(--text-primary); }
   #aboutDialog .about-actions button.primary:hover { opacity: .85; background: var(--text-primary); }
   #helpDialog { position: fixed; inset: 0; z-index: 61; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,.45); }
   #helpDialog.show { display: flex; }
-  #helpDialog .help-card { background: var(--surface-panel); border: 1px solid var(--rule); border-radius: var(--radius); box-shadow: var(--shadow-lg); width: min(540px, 92vw); max-height: 84vh; display: flex; flex-direction: column; }
+  #helpDialog .help-card { background: var(--card-bg); border: 1px solid var(--rule); border-radius: var(--radius); box-shadow: var(--shadow-lg); width: min(540px, 92vw); max-height: 84vh; display: flex; flex-direction: column; }
   #helpDialog .help-head { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; border-bottom: 1px solid var(--rule); }
   #helpDialog .help-head h2 { margin: 0; font-size: 17px; color: var(--fg); }
   #helpDialog .help-head button { background: none; border: 0; font-size: 18px; color: var(--muted); cursor: pointer; }
@@ -112,13 +134,13 @@
   #helpDialog .help-body h3 { font-size: 14px; margin: 16px 0 4px; color: var(--fg); }
   #helpDialog .help-body h3:first-child { margin-top: 0; }
   #helpDialog .help-body p { margin: 4px 0; color: var(--muted); }
-  #helpDialog .help-body code { background: var(--rule); padding: 1px 5px; border-radius: 4px; font-size: 12.5px; }
+  #helpDialog .help-body code { background: var(--rule); padding: 1px 5px; border-radius: 4px; font-size: 13px; }
   #helpDialog .help-body ul { margin: 4px 0; padding-left: 18px; }
   #helpDialog .help-body li { margin: 3px 0; color: var(--muted); }
   #helpDialog .help-body b { color: var(--fg); }
   #feedbackDialog { position: fixed; inset: 0; z-index: 61; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,.45); }
   #feedbackDialog.show { display: flex; }
-  #feedbackDialog .fb-card { background: var(--surface-panel); border: 1px solid var(--rule); border-radius: var(--radius); box-shadow: var(--shadow-lg); width: min(440px, 92vw); padding: 18px 20px; }
+  #feedbackDialog .fb-card { background: var(--card-bg); border: 1px solid var(--rule); border-radius: var(--radius); box-shadow: var(--shadow-lg); width: min(440px, 92vw); padding: 18px 20px; }
   #feedbackDialog h2 { margin: 0 0 4px; font-size: 16px; color: var(--fg); }
   #feedbackDialog .fb-sub { font-size: 12px; color: var(--muted); margin-bottom: 12px; }
   #feedbackDialog textarea { width: 100%; box-sizing: border-box; min-height: 110px; padding: 9px 11px; font-size: 13px; font-family: inherit; border: 1px solid var(--rule); border-radius: var(--radius-control); background: var(--bg); color: var(--fg); resize: vertical; }
@@ -140,6 +162,9 @@
   #fileMenu .fm-flyout button:hover, #fileMenu .fm-flyout button.sel { background: var(--rule); }
   #topright { flex-shrink: 0; gap: 7px; }
   .btn.ic { min-width: 28px; padding: 4px 6px; text-align: center; }
+  /* Lucide icons (the set Ghost uses) — monochrome, inherit text colour */
+  .ico { width: 16px; height: 16px; flex-shrink: 0; stroke: currentColor; fill: none; vertical-align: -3px; }
+  .btn.ic { display: inline-flex; align-items: center; justify-content: center; }
   #bottomstrip { position: fixed; bottom: 0; left: 0; right: 0; height: 30px; z-index: 5;
     display: flex; align-items: center; justify-content: space-between; padding: 0 12px;
     background: var(--bg); border-top: 1px solid var(--rule); font-size: 11px; color: var(--muted); }
@@ -162,7 +187,7 @@
   .btn { background: var(--card-bg); border: 1px solid var(--rule-strong); border-radius: var(--radius-control);
     padding: 4px 10px; color: var(--fg); font-family: inherit; font-size: 12px;
     cursor: pointer; transition: background .15s, border-color .15s; }
-  .btn:hover { background: var(--color-grey-100); }
+  .btn:hover { background: var(--rule); }
   .btn.accent { background: var(--text-primary); color: #fff; border-color: var(--text-primary); }
   .btn.accent:hover { opacity: .85; background: var(--text-primary); }
   #editor { position: absolute; top: 76px; bottom: 30px; left: 0; right: 0; overflow: auto; }
@@ -180,7 +205,7 @@
   #previewArea a { color: var(--accent); }
   #previewArea strong { font-weight: 700; } #previewArea em { font-style: italic; } #previewArea del { text-decoration: line-through; color: var(--muted); }
   #previewArea code { background: color-mix(in srgb, var(--rule) 60%, transparent); padding: 1px 5px; border-radius: 4px; font-size: .9em; }
-  #previewArea pre { background: color-mix(in srgb, var(--rule) 50%, transparent); padding: 11px 13px; border-radius: 7px; overflow: auto; } #previewArea pre code { background: none; padding: 0; }
+  #previewArea pre { background: color-mix(in srgb, var(--rule) 50%, transparent); padding: 11px 13px; border-radius: var(--radius); overflow: auto; } #previewArea pre code { background: none; padding: 0; }
   #previewArea blockquote { border-left: 3px solid var(--rule); padding-left: 13px; margin: .8em 0; color: var(--muted); }
   #previewArea li:has(> input[type=checkbox]) { list-style: none; margin-left: -1.3em; } #previewArea input[type=checkbox] { margin-right: 7px; accent-color: var(--accent); }
   #previewArea figure { margin: 1.3em 0; text-align: center; } #previewArea figure svg { max-width: 100%; height: auto; }
@@ -209,7 +234,12 @@
   .cm-content { max-width: 70ch; margin: 0 auto; padding: 40px 20px 200px; caret-color: var(--accent); }
   .cm-cursor { border-left: 2px solid var(--accent) !important; }
   .cm-gutters { display: none; }
-  ::selection { background: rgba(176,125,46,.2); }
+  ::selection { background: color-mix(in srgb, var(--accent) 20%, transparent); }
+  /* CodeMirror draws its own selection layer (ignores ::selection); its default is an off-brand
+     lavender — theme it to the accent so editor selection matches the rest of the app, per theme.
+     !important overrides CodeMirror's runtime-injected default. */
+  .cm-editor .cm-selectionLayer .cm-selectionBackground { background: color-mix(in srgb, var(--accent) 16%, transparent) !important; }
+  .cm-editor.cm-focused .cm-selectionLayer .cm-selectionBackground { background: color-mix(in srgb, var(--accent) 26%, transparent) !important; }
   /* slim, unobtrusive scrollbars */
   .cm-scroller, #editor, #tasksList, #overlay-canvas { scrollbar-width: thin; scrollbar-color: var(--rule) transparent; }
   .cm-scroller::-webkit-scrollbar, #editor::-webkit-scrollbar, #tasksList::-webkit-scrollbar { width: 10px; height: 10px; }
@@ -231,8 +261,8 @@
     border-radius: 5px; padding: 3px 0; min-width: 26px; text-align: center; font-size: 12px; color: var(--muted);
     font-family: inherit; cursor: pointer; }
   .drawblock-bar .acts button:hover { background: var(--rule); color: var(--fg); }
-  .drawblock-bar .acts .del { color: #e54848; }
-  .drawblock-bar .acts .del:hover { background: #e54848; color: #fff; border-color: #e54848; }
+  .drawblock-bar .acts .del { color: var(--danger-ink); }
+  .drawblock-bar .acts .del:hover { background: var(--danger-ink); color: #fff; border-color: var(--danger-ink); }
   .drawblock-preview { display: flex; align-items: center; justify-content: center;
     min-height: 120px; max-height: 320px; padding: 12px; cursor: pointer; background: transparent; }
   .drawblock-preview svg { max-width: 100%; max-height: 296px; height: auto; }
@@ -245,7 +275,7 @@
   .drawblock-name:hover, .drawblock-name:focus { background: var(--rule); }
   .drawblock.dragging { opacity: .4; }
   .drag-indicator { position: fixed; height: 3px; background: var(--accent); border-radius: 2px;
-    z-index: 45; display: none; pointer-events: none; box-shadow: 0 0 0 1px rgba(176,125,46,.3); }
+    z-index: 45; display: none; pointer-events: none; box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 30%, transparent); }
   body.dragging-block, body.dragging-block * { cursor: grabbing !important; user-select: none !important; }
 
   /* expanded overlay */
@@ -266,9 +296,9 @@
     border-radius: 4px; padding: 2px 4px; }
   .gram-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%;
     background: var(--muted); margin-right: 5px; }
-  .gram-dot.loading { background: #d4a35a; animation: gpulse 1s infinite; }
-  .gram-dot.ready { background: #3cba54; }      /* green = grammar check active */
-  .gram-dot.error { background: #e54848; }
+  .gram-dot.loading { background: var(--warn-solid); animation: gpulse 1s infinite; }
+  .gram-dot.ready { background: var(--ok-solid); }      /* green = grammar check active */
+  .gram-dot.error { background: var(--danger-ink); }
   @keyframes gpulse { 0%,100% { opacity: .4; } 50% { opacity: .9; } }
   /* readability (offline, formula-based — no AI) */
   /* Draft mode: silence all feedback so you can write without judging (evidence: separate generating from editing) */
@@ -287,11 +317,11 @@
   #read-status:hover { background: var(--rule); }
   #read-status .rd-ico { font-size: 10px; font-weight: 700; letter-spacing: -.5px; opacity: .6; }
   #read-status #rd-grade { font-weight: 600; }
-  #read-status.ok #rd-grade { color: #3cba54; }
-  #read-status.warn #rd-grade { color: #d4a35a; }
-  #read-status.over #rd-grade { color: #e54848; }
-  .read-hard { background: color-mix(in srgb, #d4a35a 22%, transparent); border-radius: 2px; }
-  .read-veryhard { background: color-mix(in srgb, #e54848 22%, transparent); border-radius: 2px; }
+  #read-status.ok #rd-grade { color: var(--ok-ink); }
+  #read-status.warn #rd-grade { color: var(--warn-ink); }
+  #read-status.over #rd-grade { color: var(--danger-ink); }
+  .read-hard { background: color-mix(in srgb, var(--warn-solid) 22%, transparent); border-radius: 2px; }
+  .read-veryhard { background: color-mix(in srgb, var(--danger-ink) 22%, transparent); border-radius: 2px; }
   #fileMenu .rd-head { padding: 6px 11px 3px; font-size: 11px; color: var(--muted); }
   #fileMenu .rd-sub { color: var(--muted); font-size: 11px; }
   #fileMenu .rd-toggle { border-top: 1px solid var(--rule); margin-top: 4px; }
@@ -303,11 +333,16 @@
   .sheetblock-name { color: var(--fg); outline: none; }
   .sheetblock-bar .acts button { background: none; border: 1px solid var(--rule); border-radius: 4px; color: var(--fg); font-size: 11px; padding: 2px 8px; cursor: pointer; font-family: inherit; }
   .sheetblock-bar .acts button:hover { background: var(--rule); }
-  .sheetblock-bar .acts button.del { color: #c0392b; }
+  .sheetblock-bar .acts button.del { color: var(--danger-ink); }
   .sheetgrid { border-collapse: collapse; table-layout: fixed; font-size: 13px; font-variant-numeric: tabular-nums; }
   .sheetgrid th { position: relative; background: color-mix(in srgb, var(--rule) 45%, transparent); color: var(--muted); font-weight: 500; font-size: 11px; text-align: center; border: 1px solid var(--rule); padding: 2px 6px; user-select: none; }
   .sheetgrid td { border: 1px solid var(--rule); padding: 0; overflow: hidden; }
   .sheetgrid input { width: 100%; box-sizing: border-box; border: 0; background: transparent; color: var(--fg); font-family: inherit; font-size: 13px; padding: 3px 6px; outline: none; }
+  #sheetAuto { position: fixed; z-index: 50; background: var(--surface-panel); border: 1px solid var(--rule); border-radius: var(--radius-control); box-shadow: var(--shadow-md); min-width: 150px; max-height: 200px; overflow-y: auto; padding: 3px; display: none; }
+  #sheetAuto .sa-row { padding: 4px 8px; border-radius: 4px; cursor: pointer; }
+  #sheetAuto .sa-row.sel, #sheetAuto .sa-row:hover { background: var(--rule); }
+  #sheetAuto .sa-row b { display: block; font-size: 12px; color: var(--fg); }
+  #sheetAuto .sa-row small { font-size: 10px; color: var(--muted); }
   .sheetgrid input:focus { background: color-mix(in srgb, var(--accent) 12%, transparent); box-shadow: inset 0 0 0 2px var(--accent); }
   .sheetgrid .col-resizer { position: absolute; top: 0; right: -3px; width: 7px; height: 100%; cursor: col-resize; z-index: 2; }
   /* at rest: a plain table — no edit chrome, not editable, click to edit */
@@ -325,6 +360,9 @@
   .sheetblock-fmt button { min-width: 30px; background: none; border: 1px solid var(--rule); border-radius: 4px; color: var(--fg); font-size: 11px; padding: 2px 7px; cursor: pointer; font-family: inherit; }
   .sheetblock-fmt button:hover { background: var(--rule); }
   .sheetblock-fmt button.on { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .sheetgrid tr.sheet-totals td { border-top: 2px solid var(--rule); font-weight: 700; color: var(--fg); padding: 3px 7px; }
+  .sheetgrid tr.sheet-totals th { border-top: 2px solid var(--rule); color: var(--muted); text-align: center; }
+  .sheetgrid th .sort-ind { font-size: 9px; color: var(--accent); margin-left: 3px; }
   .task-check { display: inline-block; width: 17px; height: 17px; box-sizing: border-box; flex-shrink: 0;
     border: 2px solid var(--muted); border-radius: 4px; vertical-align: -4px; margin-right: 7px;
     cursor: pointer; user-select: none; position: relative; transition: border-color .12s; }
@@ -333,8 +371,14 @@
   .task-check.done::after { content: "✓"; position: absolute; inset: 0; display: flex;
     align-items: center; justify-content: center; font-size: 12px; line-height: 1; color: #fff; }
   .task-line { background: color-mix(in srgb, var(--accent) 9%, transparent); border-radius: 4px; }
+  /* TODO placeholder = a prominent gap you can't miss on a re-read (dashed = a hole to fill) */
+  .todo-line { background: color-mix(in srgb, var(--accent) 13%, transparent); border-left: 3px dashed var(--accent); border-top-right-radius: 4px; }
+  .todo-context { background: color-mix(in srgb, var(--accent) 6%, transparent); border-left: 3px dashed color-mix(in srgb, var(--accent) 45%, transparent); border-bottom-right-radius: 4px; color: var(--muted); }
+  .todo-context.done, .todo-line.done { opacity: .45; }
+  /* Trim (L1) — a cut suggestion previewed in place: struck through, gentle (not alarming) until you confirm */
+  .trim-strike { text-decoration: line-through; text-decoration-thickness: 1.5px; color: var(--muted); background: color-mix(in srgb, var(--muted) 9%, transparent); border-radius: 3px; }
   #fmtBar { position: fixed; z-index: 36; display: none; align-items: center; gap: 1px; max-width: 94vw; overflow-x: auto;
-    background: var(--surface-panel); border: 1px solid var(--rule); border-radius: var(--radius); box-shadow: var(--shadow-md); padding: 3px; }
+    background: var(--card-bg); border: 1px solid var(--rule); border-radius: var(--radius); box-shadow: var(--shadow-md); padding: 3px; }
   #fmtBar.show { display: flex; }
   #fmtBar button { background: none; border: 0; border-radius: 4px; padding: 4px 7px; min-width: 26px; flex-shrink: 0;
     color: var(--fg); font-family: inherit; font-size: 13px; cursor: pointer; }
@@ -352,6 +396,8 @@
   #tasksList li:hover { background: var(--rule); }
   #tasksList .tk-text { cursor: pointer; flex: 1; word-break: break-word; color: var(--fg); }
   #tasksList .tk-text.done { color: var(--muted); }
+  #tasksList .tk-todo-tag { flex-shrink: 0; font-size: 9px; font-weight: 700; letter-spacing: .04em; line-height: 1.5;
+    color: var(--accent); border: 1px dashed var(--accent); border-radius: 4px; padding: 0 4px; margin-top: 1px; }
   #tasksList .tk-empty { color: var(--muted); padding: 16px 13px; text-align: center; cursor: default; }
   #tasksPanel .tk-foot { padding: 8px 13px; border-top: 1px solid var(--rule); font-size: 12px; color: var(--muted); }
   #tasksPanel .tk-foot label { display: flex; align-items: center; gap: 6px; cursor: pointer; }
@@ -371,7 +417,7 @@
   #fixesPanel .tk-foot { padding: 8px 13px; border-top: 1px solid var(--rule); }
   #fixesPanel .tk-foot .btn { width: 100%; }
   /* ----- snippets: the / picker ----- */
-  #slashMenu { position: fixed; z-index: 45; min-width: 244px; max-width: 360px; background: var(--surface-panel);
+  #slashMenu { position: fixed; z-index: 45; min-width: 244px; max-width: 360px; background: var(--card-bg);
     border: 1px solid var(--rule); border-radius: var(--radius); box-shadow: var(--shadow-md); padding: 4px; display: none; max-height: 300px; overflow: auto; }
   #slashMenu.show { display: block; }
   #slashMenu .sm-row { display: flex; align-items: center; gap: 9px; padding: 6px 9px; border-radius: 6px; cursor: pointer; }
@@ -417,14 +463,27 @@
   #readList li { display: flex; gap: 8px; align-items: flex-start; padding: 8px 12px; font-size: 13px; line-height: 1.45; cursor: pointer; border-bottom: 1px solid var(--rule); }
   #readList li:hover { background: var(--rule); }
   #readList li.tk-empty { color: var(--muted); justify-content: center; cursor: default; }
-  #readList .rd-badge { flex-shrink: 0; font-size: 10px; font-weight: 700; color: #fff; background: #d4a35a; border-radius: 4px; padding: 1px 5px; margin-top: 1px; }
-  #readList .rd-badge.vh { background: #e54848; }
+  #readList .rd-badge { flex-shrink: 0; font-size: 10px; font-weight: 700; color: #fff; background: var(--warn-solid); border-radius: 4px; padding: 1px 5px; margin-top: 1px; }
+  #readList .rd-badge.vh { background: var(--danger-ink); }
   #readList .rd-sent { color: var(--fg); word-break: break-word; }
   #readList li.rd-hard-li { flex-wrap: wrap; }
   #readList li.rd-hard-li .rd-sent { flex: 1; }
   #readList .rd-simplify-btn { flex-shrink: 0; background: none; border: 1px solid var(--rule); border-radius: 5px; color: var(--accent); font-size: 12px; padding: 1px 7px; cursor: pointer; font-family: inherit; align-self: flex-start; }
   #readList .rd-simplify-btn:hover { background: var(--rule); }
   #readList .rd-simplify-btn:disabled { opacity: .5; cursor: default; }
+  #readList .rd-why { flex-basis: 100%; margin-top: 4px; font-size: 11px; line-height: 1.4; color: var(--muted); }
+  /* L2 plainer-words (retext-simplify) */
+  .read-simplify { text-decoration: underline dotted; text-decoration-color: var(--accent); text-underline-offset: 2px; }
+  #simplifyBox:empty { display: none; }
+  #simplifyBox { border-bottom: 1px solid var(--rule); }
+  #simplifyBox .sp-head { padding: 9px 12px 4px; font-size: 11px; font-weight: 700; color: var(--muted); }
+  #simplifyBox .sp-empty, #simplifyBox .sp-loading { padding: 0 12px 9px; font-size: 12px; color: var(--muted); }
+  #simplifyBox .sp-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 5px 12px; }
+  #simplifyBox .sp-word { font-size: 13px; font-weight: 600; color: var(--fg); background: none; border: 0; padding: 0; cursor: pointer; font-family: inherit; text-decoration: underline dotted; }
+  #simplifyBox .sp-arrow { color: var(--muted); font-size: 12px; }
+  #simplifyBox .sp-sug { font-size: 12px; padding: 2px 8px; border: 1px solid var(--rule); border-radius: 5px; background: none; color: var(--accent); cursor: pointer; font-family: inherit; }
+  #simplifyBox .sp-sug:hover { background: var(--rule); }
+  #simplifyBox .sp-none { font-size: 11px; color: var(--muted); }
   #readList .rd-fix { flex-basis: 100%; margin-top: 7px; padding: 8px 9px; background: color-mix(in srgb, var(--accent) 8%, transparent); border-radius: 6px; cursor: default; }
   #readList .rd-fix-text { font-size: 13px; line-height: 1.5; color: var(--fg); white-space: pre-wrap; }
   #readList .rd-fix-text.thinking { color: var(--muted); font-style: italic; }
@@ -432,6 +491,34 @@
   #readList .rd-fix-actions button { font-size: 12px; padding: 4px 10px; border-radius: 5px; border: 1px solid var(--rule); background: none; color: var(--fg); cursor: pointer; font-family: inherit; }
   #readList .rd-fix-actions button.use { background: var(--accent); color: #fff; border-color: var(--accent); }
   #readPanel .tk-foot { padding: 8px 12px; border-top: 1px solid var(--rule); display: flex; flex-direction: column; gap: 7px; }
+  /* writing coach — orchestration layer over the existing checks */
+  #coach-status { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; color: var(--muted); cursor: pointer; padding: 3px 7px; border-radius: 5px; }
+  #coach-status:hover { background: var(--rule); }
+  #coach-status .co-lab { font-weight: 600; }
+  #coach-status .co-lvl { font-weight: 700; font-size: 10px; padding: 0 4px; border-radius: 4px; border: 1px solid var(--rule); }
+  #coach-status .co-lvl.has { color: var(--warn-ink); border-color: var(--warn-solid); }
+  #coach-status .co-lvl.ok { color: var(--ok-ink); border-color: var(--ok-ink); }
+  #coachPanel { position: fixed; top: 42px; bottom: 30px; right: 0; width: min(340px, 86vw); z-index: 12; background: var(--card-bg); border-left: 1px solid var(--rule); box-shadow: var(--shadow); display: none; flex-direction: column; }
+  #coachPanel.show { display: flex; }
+  #coachPanel .tk-head { display: flex; align-items: center; justify-content: space-between; padding: 9px 12px; border-bottom: 1px solid var(--rule); font-size: 13px; color: var(--fg); }
+  #coachPanel .tk-head small { color: var(--muted); margin-left: 6px; }
+  #coachPanel .co-intro { padding: 10px 12px; font-size: 12px; line-height: 1.5; color: var(--muted); border-bottom: 1px solid var(--rule); }
+  #coachLadder { list-style: none; margin: 0; padding: 6px 0; overflow: auto; flex: 1; }
+  #coachLadder li { padding: 11px 12px; border-bottom: 1px solid var(--rule); }
+  #coachLadder li.cur { background: color-mix(in srgb, var(--accent) 7%, transparent); }
+  #coachLadder li.done { opacity: .65; }
+  #coachLadder li.soon, #coachLadder li.locked { opacity: .5; }
+  #coachLadder .co-row { display: flex; align-items: baseline; gap: 8px; }
+  #coachLadder .co-num { flex-shrink: 0; font-size: 10px; font-weight: 700; color: var(--muted); border: 1px solid var(--rule); border-radius: 4px; padding: 1px 5px; }
+  #coachLadder li.cur .co-num { color: var(--accent); border-color: var(--accent); }
+  #coachLadder li.done .co-num { color: var(--ok-ink); border-color: var(--ok-ink); }
+  #coachLadder .co-name { font-size: 13px; font-weight: 600; color: var(--fg); flex: 1; }
+  #coachLadder .co-stat { flex-shrink: 0; font-size: 11px; color: var(--muted); }
+  #coachLadder li.done .co-stat { color: var(--ok-ink); }
+  #coachLadder li.cur .co-stat { color: var(--warn-ink); }
+  #coachLadder .co-sub { margin-top: 3px; font-size: 11px; line-height: 1.4; color: var(--muted); }
+  #coachLadder .co-cta { margin-top: 8px; font-size: 12px; padding: 4px 10px; border-radius: 5px; border: 1px solid var(--accent); background: var(--accent); color: #fff; cursor: pointer; font-family: inherit; }
+  body.draft #coach-status { display: none; }
   #readPanel .rd-targets { display: flex; flex-wrap: wrap; gap: 4px; }
   #readPanel .rd-targets button { font-size: 11px; padding: 3px 8px; background: none; border: 1px solid var(--rule); border-radius: 4px; color: var(--fg); cursor: pointer; font-family: inherit; }
   #readPanel .rd-targets button.sel { background: var(--accent); color: #fff; border-color: var(--accent); }
@@ -451,16 +538,18 @@
   #aiPanel.show { display: flex; }
   #aiPanel .tk-head { display: flex; align-items: center; justify-content: space-between; padding: 9px 12px; border-bottom: 1px solid var(--rule); font-size: 13px; color: var(--fg); }
   #aiPanel .ai-src { padding: 6px 12px; font-size: 11px; color: var(--muted); border-bottom: 1px solid var(--rule); }
+  #aiPanel .ai-modelrow { align-items: center; gap: 6px; padding: 6px 12px; font-size: 11px; color: var(--muted); border-bottom: 1px solid var(--rule); }
+  #aiPanel #aiModelSelect { font-family: inherit; font-size: 11px; color: var(--fg); background: var(--bg); border: 1px solid var(--rule); border-radius: var(--radius-control); padding: 2px 6px; cursor: pointer; max-width: 200px; }
   #aiPanel .ai-body { flex: 1; overflow-y: auto; padding: 12px 14px; font-size: 14px; line-height: 1.55; white-space: pre-wrap; color: var(--fg); }
   #aiPanel .ai-body.placeholder { color: var(--muted); font-style: italic; }
-  #aiPanel .ai-caveat { padding: 6px 12px; font-size: 10.5px; color: var(--muted); border-top: 1px solid var(--rule); }
+  #aiPanel .ai-caveat { padding: 6px 12px; font-size: 11px; color: var(--muted); border-top: 1px solid var(--rule); }
   #aiPanel .tk-foot { padding: 8px 12px; border-top: 1px solid var(--rule); display: flex; flex-wrap: wrap; gap: 6px; }
   #aiPanel .tk-foot button { font-size: 12px; padding: 5px 10px; background: none; border: 1px solid var(--rule); border-radius: 5px; color: var(--fg); cursor: pointer; font-family: inherit; }
   #aiPanel .tk-foot button:hover { background: var(--rule); }
   #aiPanel .tk-foot button.accent { background: var(--accent); color: #fff; border-color: var(--accent); }
   #aiPanel .ai-body::-webkit-scrollbar { width: 8px; } #aiPanel .ai-body::-webkit-scrollbar-thumb { background: var(--rule); border-radius: 4px; } #aiPanel .ai-body::-webkit-scrollbar-track { background: transparent; }
-  #aiPanel .df-del { color: #c0392b; text-decoration: line-through; text-decoration-thickness: 1px; }
-  #aiPanel .df-add { color: #1e8449; }
+  #aiPanel .df-del { color: var(--danger-ink); text-decoration: line-through; text-decoration-thickness: 1px; }
+  #aiPanel .df-add { color: var(--ok-ink); }
   [data-theme="dark"] #aiPanel .df-del { color: #ff8a80; } [data-theme="dark"] #aiPanel .df-add { color: #7ee2a8; }
   #aiPanel .ai-clean { color: var(--muted); font-style: italic; }
   #aiTasks { border-top: 1px solid var(--rule); padding: 0; max-height: 38%; overflow-y: auto; }
@@ -481,13 +570,13 @@
   #cloudList .cl-name { font-size: 13px; color: var(--fg); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   #cloudList .cl-date { font-size: 11px; color: var(--muted); margin-top: 2px; }
   #cloudList .cl-del { background: none; border: 0; color: var(--muted); cursor: pointer; font-size: 13px; padding: 4px 6px; border-radius: 5px; flex-shrink: 0; }
-  #cloudList .cl-del:hover { background: var(--rule); color: #e54848; }
+  #cloudList .cl-del:hover { background: var(--rule); color: var(--danger-ink); }
   #cloudSearchWrap { padding: 8px 10px; border-bottom: 1px solid var(--rule); }
   #cloudSearch { width: 100%; box-sizing: border-box; padding: 7px 9px; font-size: 13px; font-family: inherit; border: 1px solid var(--rule-strong); border-radius: var(--radius-control); background: var(--bg); color: var(--fg); }
   #cloudSearch:focus { outline: none; border-color: var(--text-primary); }
   #cloudList .cl-snip { font-size: 11px; color: var(--muted); margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   #cloudList .cl-snip mark { background: color-mix(in srgb, var(--accent) 30%, transparent); color: var(--fg); border-radius: 2px; padding: 0 1px; }
-  #pasteChooser, #fontMenu, #timerMenu, #soundMenu, #shareMenu, #copyMenu, #fileMenu, #gramPopover, #accountMenu, #tagMenu { position: fixed; z-index: 40; min-width: 230px; background: var(--surface-panel);
+  #pasteChooser, #fontMenu, #timerMenu, #soundMenu, #shareMenu, #copyMenu, #fileMenu, #gramPopover, #accountMenu, #tagMenu { position: fixed; z-index: 40; min-width: 230px; background: var(--card-bg);
     border: 1px solid var(--rule); border-radius: var(--radius); box-shadow: var(--shadow-md); padding: 5px; display: none; }
   #pasteChooser.show, #fontMenu.show, #timerMenu.show, #soundMenu.show, #shareMenu.show, #copyMenu.show, #fileMenu.show, #gramPopover.show, #accountMenu.show, #tagMenu.show { display: block; }
   #tagMenu { padding: 11px; min-width: 260px; }
@@ -496,7 +585,7 @@
   #tagMenu .tm-tags:empty::before { content: "No tags yet"; color: var(--muted); font-size: 12px; font-style: italic; }
   .tag-chip { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; padding: 2px 4px 2px 8px; border-radius: 11px; background: color-mix(in srgb, var(--accent) 14%, transparent); color: var(--fg); }
   .tag-chip button { background: none; border: 0; color: var(--muted); cursor: pointer; font-size: 12px; padding: 0 2px; line-height: 1; }
-  .tag-chip button:hover { color: #e54848; }
+  .tag-chip button:hover { color: var(--danger-ink); }
   #tagMenu .tm-row { display: flex; gap: 6px; margin-bottom: 8px; }
   #tagMenu .tm-row input { flex: 1; min-width: 0; padding: 6px 9px; font-size: 13px; font-family: inherit; border: 1px solid var(--rule-strong); border-radius: var(--radius-control); background: var(--bg); color: var(--fg); }
   #tagMenu .tm-row input:focus { outline: none; border-color: var(--text-primary); }
@@ -550,12 +639,12 @@
   @keyframes timerpulse { 0%,100% { background: transparent; } 50% { background: color-mix(in srgb, var(--accent) 25%, transparent); } }
   #pasteChooser button small { color: var(--muted); display: block; font-size: 11px; margin-top: 1px; }
   #toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
-    background: var(--surface-panel); color: var(--fg); padding: 9px 15px; border-radius: var(--radius-control);
+    background: var(--card-bg); color: var(--fg); padding: 9px 15px; border-radius: var(--radius-control);
     border: 1px solid var(--rule); box-shadow: var(--shadow-md); font-size: 13px; z-index: 60;
     opacity: 0; transition: opacity .2s; pointer-events: none; }
   #toast.show { opacity: 1; }
   #updateBanner { position: fixed; left: 50%; transform: translateX(-50%); bottom: 42px; z-index: 70;
-    display: none; align-items: center; gap: 10px; background: var(--surface-panel); color: var(--fg);
+    display: none; align-items: center; gap: 10px; background: var(--card-bg); color: var(--fg);
     border: 1px solid var(--rule); border-radius: var(--radius); box-shadow: var(--shadow-md); padding: 8px 9px 8px 14px; font-size: 13px; }
   #updateBanner.show { display: flex; }
   #updateBanner .btn { font-size: 12px; }
@@ -565,6 +654,34 @@
 </style>
 </head>
 <body>
+  <!-- Lucide icon sprite (MIT) — the icon set Ghost uses. See theme-sync/icons.svg. -->
+  <svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" style="position:absolute" aria-hidden="true"
+       fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <defs>
+      <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></symbol>
+      <symbol id="i-headphones" viewBox="0 0 24 24"><path d="M3 14h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7a9 9 0 0 1 18 0v7a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3"/></symbol>
+      <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></symbol>
+      <symbol id="i-pencil" viewBox="0 0 24 24"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></symbol>
+      <symbol id="i-copy" viewBox="0 0 24 24"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></symbol>
+      <symbol id="i-clipboard" viewBox="0 0 24 24"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></symbol>
+      <symbol id="i-list-checks" viewBox="0 0 24 24"><path d="M13 5h8"/><path d="M13 12h8"/><path d="M13 19h8"/><path d="m3 17 2 2 4-4"/><path d="m3 7 2 2 4-4"/></symbol>
+      <symbol id="i-tag" viewBox="0 0 24 24"><path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"/><circle cx="7.5" cy="7.5" r=".5" fill="currentColor"/></symbol>
+      <symbol id="i-sparkles" viewBox="0 0 24 24"><path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z"/><path d="M20 2v4"/><path d="M22 4h-4"/><circle cx="4" cy="20" r="2"/></symbol>
+      <symbol id="i-settings" viewBox="0 0 24 24"><path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"/><circle cx="12" cy="12" r="3"/></symbol>
+      <symbol id="i-play" viewBox="0 0 24 24"><path d="M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z"/></symbol>
+      <symbol id="i-pause" viewBox="0 0 24 24"><rect x="14" y="3" width="5" height="18" rx="1"/><rect x="5" y="3" width="5" height="18" rx="1"/></symbol>
+      <symbol id="i-rotate-ccw" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></symbol>
+      <symbol id="i-rotate-cw" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></symbol>
+      <symbol id="i-spell-check" viewBox="0 0 24 24"><path d="m6 16 6-12 6 12"/><path d="M8 12h8"/><path d="m16 20 2 2 4-4"/></symbol>
+      <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></symbol>
+      <symbol id="i-type" viewBox="0 0 24 24"><path d="M12 4v16"/><path d="M4 7V5a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v2"/><path d="M9 20h6"/></symbol>
+      <symbol id="i-square-check" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="m9 12 2 2 4-4"/></symbol>
+      <symbol id="i-table" viewBox="0 0 24 24"><path d="M12 3v18"/><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M3 15h18"/></symbol>
+      <symbol id="i-cloud" viewBox="0 0 24 24"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></symbol>
+      <symbol id="i-highlighter" viewBox="0 0 24 24"><path d="m9 11-6 6v3h9l3-3"/><path d="m22 12-4.6 4.6a2 2 0 0 1-2.8 0l-5.2-5.2a2 2 0 0 1 0-2.8L14 4"/></symbol>
+      <symbol id="i-grip-vertical" viewBox="0 0 24 24"><circle cx="9" cy="12" r="1"/><circle cx="9" cy="5" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="19" r="1"/></symbol>
+    </defs>
+  </svg>
   <div id="topbar">
     <div class="row" id="topleft">
       <button id="fileBtn" title="Menu"><img src="scribe-icon.svg" alt="Scribe" width="22" height="22"></button>
@@ -572,30 +689,31 @@
     </div>
     <div class="row" id="topright">
       <div id="modeToggle" title="Draft = write freely, all checking silenced · Review = bring feedback back"><button id="modeDraft" type="button">Draft</button><button id="modeReview" type="button" class="active">Review</button></div>
+      <span id="coach-status" title="Writing coach — sense your level, climb L1→L4"><span class="co-lab">Coach</span><span class="co-lvl"></span></span>
       <span class="gram-group">
         <span id="grammar-status" title="Spelling &amp; grammar check"><span class="gram-dot"></span><span id="gram-count"></span></span>
-        <button class="btn ic" id="btn-autofix" title="Auto-fix grammar (also flags table calculation errors)">AF</button>
+        <button class="btn ic" id="btn-autofix" title="Auto-fix grammar (also flags table calculation errors)"><svg class="ico"><use href="#i-spell-check"/></svg></button>
       </span>
       <span id="read-status" title="Readability — click to set audience level"><span class="rd-ico">Aa</span><span id="rd-grade"></span></span>
       <span id="ai-status" title="Proofread with local AI">Proofread</span>
-      <button class="btn ic" id="timer" title="Timer — click to start · click to pause · double-click to reset">🕐</button>
-      <button class="btn ic" id="sound" title="Focus noise — click to choose · click to pause · double-click to stop">🎧</button>
+      <button class="btn ic" id="timer" title="Timer — click to start · click to pause · double-click to reset"><svg class="ico"><use href="#i-clock"/></svg></button>
+      <button class="btn ic" id="sound" title="Focus noise — click to choose · click to pause · double-click to stop"><svg class="ico"><use href="#i-headphones"/></svg></button>
       <button class="btn" id="accountBtn" title="Sign in to sync your notes">Sign in</button>
     </div>
   </div>
   <div id="composeBar">
     <div id="composeFmt"></div>
-    <button class="btn ic" id="composePreview" title="Preview ⇄ Edit (rendered view)">👁</button>
-    <button class="btn ic" id="composeCopy" title="Copy as… (Markdown / WhatsApp / Telegram / Plain / Gmail)">⧉</button>
+    <button class="btn ic" id="composePreview" title="Preview ⇄ Edit (rendered view)"><svg class="ico"><use href="#i-eye"/></svg></button>
+    <button class="btn ic" id="composeCopy" title="Copy as… (Markdown / WhatsApp / Telegram / Plain / Gmail)"><svg class="ico"><use href="#i-copy"/></svg></button>
   </div>
   <div id="editor"></div>
   <div id="previewArea"></div>
   <div id="bottomstrip">
     <span id="drawhint">type <b>/</b> for snippets · <b>/draw</b> · <b>/task</b></span>
     <div class="row" style="gap:8px">
-      <button class="btn ic" id="btn-snippets" title="Snippets — manage &amp; insert (type / in the doc)">❏</button>
-      <button class="btn ic" id="btn-tasks" title="All tasks (T)">T</button>
-      <button class="btn ic" id="btn-tags" title="Tags for this note">🏷</button>
+      <button class="btn ic" id="btn-snippets" title="Snippets — manage &amp; insert (type / in the doc)"><svg class="ico"><use href="#i-clipboard"/></svg></button>
+      <button class="btn ic" id="btn-tasks" title="All tasks"><svg class="ico"><use href="#i-list-checks"/></svg></button>
+      <button class="btn ic" id="btn-tags" title="Tags for this note"><svg class="ico"><use href="#i-tag"/></svg></button>
     </div>
   </div>
 
@@ -612,39 +730,47 @@
 
   <div id="fmtBar"></div>
   <div id="tasksPanel">
-    <div class="tk-head"><span>Tasks <small id="tasksCount"></small></span><button class="btn ic" id="tasksClose" title="Close">✕</button></div>
+    <div class="tk-head"><span>Tasks <small id="tasksCount"></small></span><button class="btn ic" id="tasksClose" title="Close"><svg class="ico"><use href="#i-x"/></svg></button></div>
     <ul id="tasksList"></ul>
     <div class="tk-foot"><label><input type="checkbox" id="tasksShowDone" /> show done</label></div>
   </div>
   <div id="fixesPanel">
-    <div class="tk-head"><span>Auto-fixed <small id="fixesCount"></small></span><button class="btn ic" id="fixesClose" title="Close">✕</button></div>
+    <div class="tk-head"><span>Auto-fixed <small id="fixesCount"></small></span><button class="btn ic" id="fixesClose" title="Close"><svg class="ico"><use href="#i-x"/></svg></button></div>
     <ul id="fixesList"></ul>
-    <div class="tk-foot"><button class="btn" id="fixesUndo" title="Undo all these fixes">↺ Undo all</button></div>
+    <div class="tk-foot"><button class="btn" id="fixesUndo" title="Undo all these fixes"><svg class="ico"><use href="#i-rotate-ccw"/></svg> Undo all</button></div>
   </div>
   <div id="snipPanel">
-    <div class="tk-head"><span>Snippets <small id="snipCount"></small></span><button class="btn ic" id="snipClose" title="Close">✕</button></div>
+    <div class="tk-head"><span>Snippets <small id="snipCount"></small></span><button class="btn ic" id="snipClose" title="Close"><svg class="ico"><use href="#i-x"/></svg></button></div>
     <ul id="snipList"></ul>
-    <div class="tk-foot"><button class="btn" id="snipNew" title="Save the current selection as a snippet">＋ New from selection</button></div>
+    <div class="tk-foot"><button class="btn" id="snipNew" title="Save the current selection as a snippet"><svg class="ico"><use href="#i-plus"/></svg> New from selection</button></div>
   </div>
   <div id="readPanel">
-    <div class="tk-head"><span><span class="rd-title">Hard sentences</span> <small id="readCount"></small></span><button class="btn ic" id="readClose" title="Close">✕</button></div>
+    <div class="tk-head"><span><span class="rd-title">Hard sentences</span> <small id="readCount"></small></span><button class="btn ic" id="readClose" title="Close"><svg class="ico"><use href="#i-x"/></svg></button></div>
     <div class="rd-grade-line" id="readGrade"></div>
+    <div id="simplifyBox"></div>
     <ul id="readList"></ul>
     <div class="tk-foot">
+      <button class="btn" id="readSimplifyAll" style="display:none"><svg class="ico"><use href="#i-sparkles"/></svg> Simplify all</button>
       <div class="rd-targets" id="readTargets"></div>
       <button class="btn" id="readHL"></button>
     </div>
   </div>
+  <div id="coachPanel">
+    <div class="tk-head"><span><span class="rd-title">Writing coach</span> <small id="coachWhere"></small></span><button class="btn ic" id="coachClose" title="Close"><svg class="ico"><use href="#i-x"/></svg></button></div>
+    <div class="co-intro" id="coachIntro"></div>
+    <ul id="coachLadder"></ul>
+  </div>
   <div id="aiPanel">
-    <div class="tk-head"><span>✦ <span id="aiTitle">Summary</span></span><button class="btn ic" id="aiClose" title="Close">✕</button></div>
+    <div class="tk-head"><span><svg class="ico" style="vertical-align:-2px"><use href="#i-sparkles"/></svg> <span id="aiTitle">Summary</span></span><button class="btn ic" id="aiClose" title="Close"><svg class="ico"><use href="#i-x"/></svg></button></div>
     <div class="ai-src" id="aiSrc"></div>
+    <div class="ai-modelrow" id="aiModelRow" style="display:none;"><span>Model</span><select id="aiModelSelect"></select></div>
     <div class="ai-body placeholder" id="aiBody"></div>
     <div id="aiTasks"></div>
-    <div class="ai-caveat">Local model — may be wrong or miss nuance. Nothing leaves your machine.</div>
+    <div class="ai-caveat">Suggestions only — the model can be wrong, and the idea is yours. Keep what helps, ignore the rest.</div>
     <div class="tk-foot" id="aiFoot"></div>
   </div>
   <div id="cloudPanel">
-    <div class="tk-head"><span>☁ Cloud notes</span><button class="btn ic" id="cloudClose" title="Close">✕</button></div>
+    <div class="tk-head"><span><svg class="ico" style="vertical-align:-2px"><use href="#i-cloud"/></svg> Cloud notes</span><button class="btn ic" id="cloudClose" title="Close"><svg class="ico"><use href="#i-x"/></svg></button></div>
     <div id="cloudSearchWrap"><input id="cloudSearch" type="text" placeholder="Search your notes…" autocomplete="off" spellcheck="false"></div>
     <div id="cloudTagBar"></div>
     <ul id="cloudList"></ul>
@@ -665,13 +791,15 @@
   <div id="helpDialog"></div>
   <div id="feedbackDialog"></div>
   <div id="updateBanner">
-    <span>✨ New version available</span>
+    <span>New version available</span>
     <button class="btn accent" id="updateReload">Reload</button>
-    <button class="btn ic" id="updateDismiss" title="Dismiss">✕</button>
+    <button class="btn ic" id="updateDismiss" title="Dismiss"><svg class="ico"><use href="#i-x"/></svg></button>
   </div>
   <div id="bootError"></div>
 
   <script>
+    // Lucide icon helper — inline SVG by id (see the sprite at top of <body>)
+    const ICO = n => '<svg class="ico"><use href="#i-' + n + '"/></svg>';
     window.EXCALIDRAW_ASSET_PATH = "https://unpkg.com/@excalidraw/excalidraw@0.17.6/dist/";
     function showBootError(msg) {
       const el = document.getElementById("bootError");
@@ -774,7 +902,7 @@
         };
       }
       const sh = {};
-      for (const id of docSheetIds()) { const s = sheets.get(id); if (s) sh[id] = { name: s.name || "", rows: s.rows, cols: s.cols, cells: s.cells, formats: s.formats || {}, colWidths: s.colWidths || [] }; }
+      for (const id of docSheetIds()) { const s = sheets.get(id); if (s) sh[id] = { name: s.name || "", rows: s.rows, cols: s.cols, cells: s.cells, formats: s.formats || {}, colWidths: s.colWidths || [], showTotals: !!s.showTotals }; }
       return { version: 1, text: view.state.doc.toString(), scenes: s, sheets: sh, tags: docTags };
     }
     let saveTimer = null;
@@ -792,7 +920,7 @@
         const cells = s.cells || [];
         const cols = s.cols || (cells[0] ? cells[0].length : 3);
         const cw = (s.colWidths && s.colWidths.length === cols) ? s.colWidths : Array(cols).fill(96);
-        sheets.set(id, { name: s.name || "", rows: s.rows || cells.length || 4, cols, cells, formats: s.formats || {}, colWidths: cw });
+        sheets.set(id, { name: s.name || "", rows: s.rows || cells.length || 4, cols, cells, formats: s.formats || {}, colWidths: cw, showTotals: !!s.showTotals });
       }
       docTags = Array.isArray(data?.tags) ? data.tags.filter(t => typeof t === "string") : [];
       if (typeof renderTagButton === "function") renderTagButton();
@@ -824,7 +952,7 @@
         ttl.className = "ttl";
         const grip = document.createElement("span");
         grip.className = "drawblock-grip";
-        grip.textContent = "⠿";
+        grip.innerHTML = ICO('grip-vertical');
         grip.title = "Drag to move this drawing";
         grip.addEventListener("pointerdown", (e) => startBlockDrag(id, e, wrap));
         const nameEl = document.createElement("span");
@@ -1098,6 +1226,61 @@
       const vals = computeSheet(sheet);
       return vals.map((row, r) => row.map((v, c) => fmtCell(sheet, r, c, v)));
     }
+    // sum each column's numeric values → formatted strings (used by the totals row, TSV copy, exports)
+    function computeTotals(sheet) {
+      const vals = computeSheet(sheet); const out = [];
+      for (let c = 0; c < sheet.cols; c++) {
+        let sum = 0, any = false;
+        for (let r = 0; r < sheet.rows; r++) { const v = vals[r] && vals[r][c]; if (typeof v === "number") { sum += v; any = true; } }
+        out.push(any ? (Math.round(sum * 100) / 100).toLocaleString("en-IN", { maximumFractionDigits: 2 }) : "");
+      }
+      return out;
+    }
+    function copyAsTSV(sheet) {
+      let disp = trimGrid(displaySheet(sheet));
+      if (!disp) { toast("Sheet is empty"); return; }
+      if (sheet.showTotals) disp = [...disp, computeTotals(sheet).slice(0, disp[0].length)];
+      const tsv = disp.map(row => row.join("\t")).join("\n");
+      (navigator.clipboard?.writeText ? navigator.clipboard.writeText(tsv) : Promise.reject()).then(() => toast("Copied as TSV")).catch(() => { fallbackCopy(tsv); toast("Copied as TSV"); });
+    }
+    // ---------- /sheet formula autocomplete: suggest function names while typing =FUNC ----------
+    const SHEET_FUNCS = [["SUM", "SUM(range)"], ["AVERAGE", "AVERAGE(range)"], ["AVG", "AVG(range)"], ["MIN", "MIN(range)"], ["MAX", "MAX(range)"], ["COUNT", "COUNT(range)"], ["PRODUCT", "PRODUCT(range)"], ["ROUND", "ROUND(n, digits)"], ["ABS", "ABS(n)"]];
+    let sheetAutoEl = null, sheetAutoState = null;
+    function sheetAutoHide() { if (sheetAutoEl) sheetAutoEl.style.display = "none"; sheetAutoState = null; }
+    function sheetAutoUpdate(inp) {
+      const val = inp.value, pos = inp.selectionStart;
+      if (val[0] !== "=") return sheetAutoHide();
+      let i = pos; while (i > 0 && /[A-Za-z]/.test(val[i - 1])) i--;
+      const prefix = val.slice(i, pos);
+      if (!prefix) return sheetAutoHide();
+      const matches = SHEET_FUNCS.filter(f => f[0].startsWith(prefix.toUpperCase()));
+      if (!matches.length) return sheetAutoHide();
+      if (!sheetAutoEl) { sheetAutoEl = document.createElement("div"); sheetAutoEl.id = "sheetAuto"; document.body.appendChild(sheetAutoEl); }
+      sheetAutoEl.innerHTML = "";
+      matches.forEach((f, idx) => {
+        const row = document.createElement("div"); row.className = "sa-row" + (idx === 0 ? " sel" : "");
+        row.innerHTML = "<b>" + f[0] + "</b><small>" + esc(f[1]) + "</small>";
+        row.addEventListener("mousedown", (e) => { e.preventDefault(); sheetAutoAccept(inp, f); });
+        sheetAutoEl.appendChild(row);
+      });
+      sheetAutoState = { input: inp, matches, sel: 0 };
+      const r = inp.getBoundingClientRect();
+      sheetAutoEl.style.left = r.left + "px"; sheetAutoEl.style.top = (r.bottom + 2) + "px"; sheetAutoEl.style.display = "block";
+    }
+    function sheetAutoMove(d) {
+      if (!sheetAutoState) return;
+      const rows = sheetAutoEl.querySelectorAll(".sa-row");
+      if (rows[sheetAutoState.sel]) rows[sheetAutoState.sel].classList.remove("sel");
+      sheetAutoState.sel = (sheetAutoState.sel + d + rows.length) % rows.length;
+      if (rows[sheetAutoState.sel]) { rows[sheetAutoState.sel].classList.add("sel"); rows[sheetAutoState.sel].scrollIntoView({ block: "nearest" }); }
+    }
+    function sheetAutoAccept(inp, f) {
+      const val = inp.value, pos = inp.selectionStart;
+      let i = pos; while (i > 0 && /[A-Za-z]/.test(val[i - 1])) i--;
+      inp.value = val.slice(0, i) + f[0] + "(" + val.slice(pos);
+      const caret = i + f[0].length + 1; inp.setSelectionRange(caret, caret);
+      sheetAutoHide(); inp.focus();
+    }
     // trim trailing all-empty rows/columns for clean export; returns null if entirely empty
     function trimGrid(disp) {
       let maxR = -1, maxC = -1;
@@ -1119,7 +1302,7 @@
 
         const bar = document.createElement("div"); bar.className = "sheetblock-bar";
         const ttl = document.createElement("div"); ttl.className = "ttl";
-        const grip = document.createElement("span"); grip.className = "sheetblock-grip"; grip.textContent = "▦";
+        const grip = document.createElement("span"); grip.className = "sheetblock-grip"; grip.innerHTML = ICO('grip-vertical');
         const nameEl = document.createElement("span"); nameEl.className = "sheetblock-name"; nameEl.contentEditable = "true"; nameEl.spellcheck = false;
         nameEl.textContent = (sheet.name || "").trim() || "sheet";
         nameEl.addEventListener("input", () => { sheet.name = nameEl.textContent.trim(); scheduleSave(); });
@@ -1148,13 +1331,35 @@
         boldBtn.addEventListener("mousedown", (e) => { e.preventDefault(); applyFmt(f => { f.b = !f.b; }); });
         const numBtn = document.createElement("button"); numBtn.textContent = "123"; numBtn.title = "Number format (General → 0.00 → $ → %)";
         numBtn.addEventListener("mousedown", (e) => { e.preventDefault(); applyFmt(f => { const i = FMT_CYCLE.indexOf(f.fmt || "gen"); f.fmt = FMT_CYCLE[(i + 1) % FMT_CYCLE.length]; }); });
-        const hlBtn = document.createElement("button"); hlBtn.textContent = "▦"; hlBtn.title = "Highlight cell";
+        const hlBtn = document.createElement("button"); hlBtn.innerHTML = ICO('highlighter'); hlBtn.title = "Highlight cell";
         hlBtn.addEventListener("mousedown", (e) => { e.preventDefault(); applyFmt(f => { f.hl = !f.hl; }); });
-        fmtbar.appendChild(boldBtn); fmtbar.appendChild(numBtn); fmtbar.appendChild(hlBtn);
+        const totBtn = document.createElement("button"); totBtn.textContent = "Σ"; totBtn.title = "Totals row — sums each column";
+        totBtn.classList.toggle("on", !!sheet.showTotals);
+        totBtn.addEventListener("mousedown", (e) => { e.preventDefault(); sheet.showTotals = !sheet.showTotals; totBtn.classList.toggle("on", !!sheet.showTotals); scheduleSave(); buildGrid(); });
+        const tsvBtn = document.createElement("button"); tsvBtn.textContent = "TSV"; tsvBtn.title = "Copy as TSV (paste into Excel / Sheets)";
+        tsvBtn.addEventListener("mousedown", (e) => { e.preventDefault(); copyAsTSV(sheet); });
+        fmtbar.appendChild(boldBtn); fmtbar.appendChild(numBtn); fmtbar.appendChild(hlBtn); fmtbar.appendChild(totBtn); fmtbar.appendChild(tsvBtn);
         wrap.appendChild(fmtbar);
 
         const table = document.createElement("table"); table.className = "sheetgrid";
         const inputs = [];
+        let sortState = null, totalSpans = [];
+        // sort data rows (keeping row 0 as the header) by a column; remaps cells + per-cell formats; toggles asc/desc
+        function doSort(c) {
+          const dir = (sortState && sortState.c === c && sortState.dir === "asc") ? "desc" : "asc";
+          const vals = computeSheet(sheet);
+          const idx = []; for (let r = 1; r < sheet.rows; r++) idx.push(r);
+          idx.sort((ra, rb) => {
+            let a = vals[ra] && vals[ra][c], b = vals[rb] && vals[rb][c];
+            const cmp = (typeof a === "number" && typeof b === "number") ? a - b
+              : String(a == null ? "" : a).localeCompare(String(b == null ? "" : b), undefined, { numeric: true });
+            return dir === "asc" ? cmp : -cmp;
+          });
+          const order = [0, ...idx];
+          sheet.cells = order.map(oi => sheet.cells[oi]);
+          if (sheet.formats) { const nf = {}; order.forEach((oi, ni) => { for (let cc = 0; cc < sheet.cols; cc++) { const k = oi + ":" + cc; if (sheet.formats[k]) nf[ni + ":" + cc] = sheet.formats[k]; } }); sheet.formats = nf; }
+          sortState = { c, dir }; scheduleSave(); buildGrid();
+        }
         function recompute() {
           const vals = computeSheet(sheet);
           for (let r = 0; r < sheet.rows; r++) for (let c = 0; c < sheet.cols; c++) {
@@ -1163,11 +1368,15 @@
             const d = fmtCell(sheet, r, c, vals[r][c]);
             const isErr = /^#(ERR|CIRC|DIV)/.test(d);
             inp.style.fontWeight = f.b ? "700" : "";          // styles apply even to the focused cell
-            inp.style.color = isErr ? "#c0392b" : "";
-            inp.parentElement.style.background = isErr ? "color-mix(in srgb, #e54848 16%, transparent)" : (f.hl ? "color-mix(in srgb, var(--accent) 14%, transparent)" : "");
+            inp.style.color = isErr ? "var(--danger-ink)" : "";
+            inp.parentElement.style.background = isErr ? "color-mix(in srgb, var(--danger-ink) 16%, transparent)" : (f.hl ? "color-mix(in srgb, var(--accent) 14%, transparent)" : "");
             if (document.activeElement === inp) continue;       // don't clobber the value being edited
             inp.value = d;
             inp.style.textAlign = (!isErr && typeof vals[r][c] === "number") ? "right" : "left";
+          }
+          if (sheet.showTotals && totalSpans.length) {
+            const t = computeTotals(sheet);
+            for (let c = 0; c < sheet.cols; c++) if (totalSpans[c]) { totalSpans[c].textContent = t[c]; totalSpans[c].parentElement.style.textAlign = t[c] ? "right" : ""; }
           }
         }
         function focusCell(r, c) { if (inputs[r] && inputs[r][c]) inputs[r][c].focus(); }
@@ -1185,7 +1394,10 @@
           if (editing) {
             const head = document.createElement("tr"); head.appendChild(document.createElement("th"));
             for (let c = 0; c < sheet.cols; c++) {
-              const th = document.createElement("th"); th.textContent = String.fromCharCode(65 + c);
+              const th = document.createElement("th"); th.style.cursor = "pointer"; th.title = "Click to sort by this column";
+              th.appendChild(document.createTextNode(String.fromCharCode(65 + c)));
+              if (sortState && sortState.c === c) { const ind = document.createElement("span"); ind.className = "sort-ind"; ind.textContent = sortState.dir === "asc" ? "▲" : "▼"; th.appendChild(ind); }
+              th.addEventListener("click", (e) => { if (e.target.classList.contains("col-resizer")) return; doSort(c); });
               const rz = document.createElement("div"); rz.className = "col-resizer";
               (function (col, ci) {
                 rz.addEventListener("pointerdown", (e) => {
@@ -1208,13 +1420,27 @@
             for (let c = 0; c < sheet.cols; c++) {
               const td = document.createElement("td"); const inp = document.createElement("input"); inp.type = "text";
               inp.addEventListener("focus", () => { lastCell = { r, c }; inp.value = sheet.cells[r][c] || ""; inp.style.textAlign = "left"; updateFmtBtns(); });
-              inp.addEventListener("blur", () => commit(r, c, inp.value));
+              inp.addEventListener("blur", () => { commit(r, c, inp.value); sheetAutoHide(); });
+              inp.addEventListener("input", () => sheetAutoUpdate(inp));
               inp.addEventListener("keydown", (e) => {
+                if (sheetAutoState && sheetAutoState.input === inp) { // formula autocomplete is open → keys drive it
+                  if (e.key === "ArrowDown") { e.preventDefault(); sheetAutoMove(1); return; }
+                  if (e.key === "ArrowUp") { e.preventDefault(); sheetAutoMove(-1); return; }
+                  if (e.key === "Enter" || e.key === "Tab") { e.preventDefault(); sheetAutoAccept(inp, sheetAutoState.matches[sheetAutoState.sel]); return; }
+                  if (e.key === "Escape") { e.preventDefault(); sheetAutoHide(); return; }
+                }
                 if (e.key === "Enter") { e.preventDefault(); commit(r, c, inp.value); focusCell(r + 1, c); }
                 else if (e.key === "Tab") { e.preventDefault(); commit(r, c, inp.value); focusCell(r, c + 1 < sheet.cols ? c + 1 : 0); }
               });
               td.appendChild(inp); tr.appendChild(td); inputs[r][c] = inp;
             }
+            table.appendChild(tr);
+          }
+          totalSpans = [];
+          if (sheet.showTotals) {
+            const tr = document.createElement("tr"); tr.className = "sheet-totals";
+            if (editing) { const rh = document.createElement("th"); rh.textContent = "Σ"; tr.appendChild(rh); }
+            for (let c = 0; c < sheet.cols; c++) { const td = document.createElement("td"); const sp = document.createElement("span"); td.appendChild(sp); tr.appendChild(td); totalSpans[c] = sp; }
             table.appendChild(tr);
           }
           recompute();
@@ -1229,7 +1455,7 @@
         add.appendChild(addRow); add.appendChild(addCol); wrap.appendChild(add);
 
         // view ⇆ edit: at rest it's a plain table; click to edit (toolbar + headers + resize), click outside to settle.
-        function outsideEdit(e) { if (!wrap.contains(e.target)) exitEdit(); }
+        function outsideEdit(e) { if (!wrap.contains(e.target) && !e.target.closest("#sheetAuto")) exitEdit(); }
         function enterEdit() {
           if (wrap.classList.contains("editing")) return;
           wrap.classList.add("editing"); buildGrid();
@@ -1329,6 +1555,7 @@
       if (wrap) wrap.title = state === "loading" ? "Starting grammar check…"
         : state === "error" ? "Grammar check unavailable"
         : (count ? count + " issue" + (count === 1 ? "" : "s") + " — spelling & grammar" : "No issues — spelling & grammar");
+      if (typeof updateCoach === "function") updateCoach(); // keep the coach ladder in sync with grammar
     }
 
     const setLints = StateEffect.define();
@@ -1374,7 +1601,37 @@
         deco = deco.map(tr.changes);
         for (const e of tr.effects) if (e.is(setReadDecos)) {
           const b = new RangeSetBuilder();
-          for (const r of e.value) b.add(r.from, r.to, Decoration.mark({ class: r.cls }));
+          for (const r of e.value) b.add(r.from, r.to, Decoration.mark(r.why ? { class: r.cls, attributes: { title: r.why } } : { class: r.cls }));
+          deco = b.finish();
+        }
+        return deco;
+      },
+      provide: f => EditorView.decorations.from(f),
+    });
+    // L2 "plainer words" — retext-simplify findings, separate field so word marks never clash with sentence marks
+    const setSimplifyDecos = StateEffect.define();
+    const simplifyField = StateField.define({
+      create() { return Decoration.none; },
+      update(deco, tr) {
+        deco = deco.map(tr.changes);
+        for (const e of tr.effects) if (e.is(setSimplifyDecos)) {
+          const b = new RangeSetBuilder();
+          for (const r of e.value) b.add(r.from, r.to, Decoration.mark({ class: "read-simplify", attributes: { title: r.title } }));
+          deco = b.finish();
+        }
+        return deco;
+      },
+      provide: f => EditorView.decorations.from(f),
+    });
+    // L1 "Trim" — strike-through preview of suggested cuts (separate field; maps through edits so positions stay valid)
+    const setTrimDecos = StateEffect.define();
+    const trimField = StateField.define({
+      create() { return Decoration.none; },
+      update(deco, tr) {
+        deco = deco.map(tr.changes);
+        for (const e of tr.effects) if (e.is(setTrimDecos)) {
+          const b = new RangeSetBuilder();
+          for (const r of e.value) b.add(r.from, r.to, Decoration.mark({ class: "trim-strike", attributes: r.why ? { title: r.why } : {} }));
           deco = b.finish();
         }
         return deco;
@@ -1488,7 +1745,8 @@
     function closeFixesPanel() { document.getElementById("fixesPanel").classList.remove("show"); }
     function renderFixesPanel() {
       const listEl = document.getElementById("fixesList");
-      document.getElementById("fixesCount").textContent = lastAutoFix.length ? (lastAutoFix.length + (lastAutoFix.length === 1 ? " fix" : " fixes")) : "";
+      const engName = engine === "languagetool" ? "LanguageTool" : "Harper";
+      document.getElementById("fixesCount").textContent = lastAutoFix.length ? (lastAutoFix.length + (lastAutoFix.length === 1 ? " fix" : " fixes") + " · " + engName) : "";
       listEl.innerHTML = "";
       if (!lastAutoFix.length) { const li = document.createElement("li"); li.className = "tk-empty"; li.textContent = "Nothing auto-fixed yet."; listEl.appendChild(li); return; }
       for (const f of lastAutoFix) {
@@ -1561,25 +1819,36 @@
       view.dispatch({ changes: { from: pos, to: pos + 1, insert: (ch === "x" || ch === "X") ? " " : "x" } });
       scheduleSave();
     }
+    const TODO_RE = /^todo\b:?/i; // a task whose text starts with "TODO" = a prominent gap-to-fill placeholder
     function buildTasks(state) {
       const deco = new RangeSetBuilder();
       const atoms = new RangeSetBuilder();
+      let prevTodo = null; // {checked} when the immediately-previous line was a TODO headline
       for (let i = 1; i <= state.doc.lines; i++) {
         const line = state.doc.line(i);
         const m = TASK_RE.exec(line.text);
-        if (!m) continue;
-        const start = line.from + m[1].length; // the bullet char
-        const status = start + 3;              // char between [ ]
-        const checked = m[2] !== " ";
-        if (checked) {
-          // completed → recede into plain text: hide the whole "- [x] " marker, no tint, no strike
-          deco.add(start, start + 6, Decoration.replace({}));
-          atoms.add(start, start + 6, Decoration.replace({}));
-        } else {
-          deco.add(line.from, line.from, Decoration.line({ class: "task-line" }));
-          deco.add(start, start + 5, Decoration.replace({ widget: new CheckboxWidget(false, status) }));
-          atoms.add(start, start + 5, Decoration.replace({}));
+        if (m) {
+          const start = line.from + m[1].length; // the bullet char
+          const status = start + 3;              // char between [ ]
+          const checked = m[2] !== " ";
+          const isTodo = TODO_RE.test(line.text.slice(m[1].length + 6)); // text after "- [ ] "
+          if (checked) {
+            // completed → recede into plain text: hide the whole "- [x] " marker, no tint, no strike
+            deco.add(start, start + 6, Decoration.replace({}));
+            atoms.add(start, start + 6, Decoration.replace({}));
+          } else {
+            deco.add(line.from, line.from, Decoration.line({ class: isTodo ? "todo-line" : "task-line" }));
+            deco.add(start, start + 5, Decoration.replace({ widget: new CheckboxWidget(false, status) }));
+            atoms.add(start, start + 5, Decoration.replace({}));
+          }
+          prevTodo = isTodo ? { checked } : null;
+          continue;
         }
+        // a TODO's context line = an indented italic note directly under the headline ("  _why…_")
+        if (prevTodo && /^\s+_.+_\s*$/.test(line.text)) {
+          deco.add(line.from, line.from, Decoration.line({ class: "todo-context" + (prevTodo.checked ? " done" : "") }));
+        }
+        prevTodo = null;
       }
       return { deco: deco.finish(), atoms: atoms.finish() };
     }
@@ -1605,6 +1874,15 @@
       scheduleSave();
       hideFmtBar();
       toast(changes.length === 1 ? "Made a task" : "Made " + changes.length + " tasks");
+    }
+    // Drop a TODO placeholder (headline + optional context note) at the end of the doc. Shows in the editor AND the task panel.
+    function insertTodoBlock(headline, context) {
+      const clean = String(headline || "").replace(TODO_RE, "").replace(/^[:\s]+/, "").trim() || "fill this in";
+      let ins = "\n- [ ] TODO: " + clean + "\n";
+      if (context && String(context).trim()) ins += "  _" + String(context).trim().replace(/_/g, "") + "_\n";
+      view.dispatch({ changes: { from: view.state.doc.length, insert: ins } });
+      scheduleSave();
+      toast("TODO added");
     }
     function wrapSel(prefix, suffix) {
       const sel = view.state.selection.main; if (sel.empty) return;
@@ -1652,11 +1930,11 @@
         el.appendChild(b);
       }
       const sep = document.createElement("span"); sep.className = "fmtsep"; el.appendChild(sep);
-      const sb = document.createElement("button"); sb.innerHTML = "&#10063;"; sb.title = "Save selection as a snippet";
+      const sb = document.createElement("button"); sb.innerHTML = ICO('clipboard'); sb.title = "Save selection as a snippet";
       sb.addEventListener("mousedown", (e) => { e.preventDefault(); captureSnippet(); }); el.appendChild(sb);
       if (aiReady && !draftMode()) {
         const s2 = document.createElement("span"); s2.className = "fmtsep"; el.appendChild(s2);
-        const ab = document.createElement("button"); ab.innerHTML = "✦"; ab.title = "Proofread selection (local AI)";
+        const ab = document.createElement("button"); ab.innerHTML = ICO('sparkles'); ab.title = "Proofread selection (local AI)";
         ab.addEventListener("mousedown", (e) => { e.preventDefault(); runProofread("selection"); }); el.appendChild(ab);
       }
     }
@@ -1729,7 +2007,7 @@
       for (let i = 1; i <= doc.lines; i++) {
         const line = doc.line(i);
         const m = /^(\s*)[-*+] \[([ xX])\] (.*)$/.exec(line.text);
-        if (m) out.push({ from: line.from, checked: m[2] !== " ", text: m[3], statusPos: line.from + m[1].length + 3 });
+        if (m) out.push({ from: line.from, checked: m[2] !== " ", text: m[3], todo: TODO_RE.test(m[3]), statusPos: line.from + m[1].length + 3 });
       }
       return out;
     }
@@ -1743,16 +2021,20 @@
       listEl.innerHTML = "";
       if (!shown.length) {
         const li = document.createElement("li"); li.className = "tk-empty";
-        li.textContent = tasks.length ? "All done 🎉" : "No tasks yet — type /task, or select text and press ⌘↵";
+        li.textContent = tasks.length ? "All done" : "No tasks yet — type /task or /todo, or select text and press ⌘↵";
         listEl.appendChild(li); return;
       }
       for (const t of shown) {
         const li = document.createElement("li");
         const box = document.createElement("span"); box.className = "task-check" + (t.checked ? " done" : "");
         box.addEventListener("mousedown", (e) => { e.preventDefault(); toggleTaskStatus(t.statusPos); });
-        const txt = document.createElement("span"); txt.className = "tk-text" + (t.checked ? " done" : ""); txt.textContent = t.text || "(empty task)";
+        const txt = document.createElement("span"); txt.className = "tk-text" + (t.checked ? " done" : "");
+        // TODO items: show a "TODO" tag and strip the literal prefix from the displayed text
+        txt.textContent = (t.todo ? t.text.replace(TODO_RE, "").replace(/^[:\s]+/, "") : t.text) || (t.todo ? "(empty TODO)" : "(empty task)");
         txt.addEventListener("click", () => { view.dispatch({ selection: { anchor: t.from }, effects: EditorView.scrollIntoView(t.from, { y: "center" }) }); view.focus(); });
-        li.appendChild(box); li.appendChild(txt); listEl.appendChild(li);
+        li.appendChild(box);
+        if (t.todo) { const tg = document.createElement("span"); tg.className = "tk-todo-tag"; tg.textContent = "TODO"; li.appendChild(tg); }
+        li.appendChild(txt); listEl.appendChild(li);
       }
     }
     function toggleTasksPanel() {
@@ -1782,6 +2064,8 @@
           EditorView.atomicRanges.of(v => v.state.field(sheetField)),
           lintField,
           readField,
+          simplifyField,
+          trimField,
           taskField,
           EditorView.atomicRanges.of(v => v.state.field(taskField).atoms),
           EditorView.lineWrapping,
@@ -1801,6 +2085,7 @@
             ...historyKeymap,
             { key: "Mod-s", run: () => { saveFile(); return true; } },
             { key: "Mod-o", preventDefault: true, run: () => { openFile(); return true; } },
+            { key: "Mod-n", preventDefault: true, run: () => { newNote(); return true; } },
           ]),
           EditorView.updateListener.of((u) => {
             if (u.docChanged) { setDirty(true); scheduleSave(); scheduleLint(); scheduleRead(); hideGramPopover(); }
@@ -1840,6 +2125,14 @@
       const sel = cmView.state.selection.main;
       if (!sel.empty) return false;
       const line = cmView.state.doc.lineAt(sel.head);
+      // /todo ... → a prominent TODO placeholder (a gap you can't miss on a re-read; also shows in the task panel)
+      const dm = /^(\s*)\/todo\b[ ]?(.*)$/i.exec(line.text);
+      if (dm) {
+        const insert = dm[1] + "- [ ] TODO: " + dm[2];
+        cmView.dispatch({ changes: { from: line.from, to: line.to, insert }, selection: { anchor: line.from + insert.length } });
+        scheduleSave();
+        return true;
+      }
       // /task ... → a checkbox task line
       const tm = /^(\s*)\/task\b[ ]?(.*)$/i.exec(line.text);
       if (tm) {
@@ -1898,7 +2191,7 @@
       if (/^\s*[-*+] \[[ xX]\] /m.test(t)) return "task";
       return "text";
     }
-    const TYPE_META = { text: { ico: "⌨", tag: "Text" }, task: { ico: "✓", tag: "Task" }, drawing: { ico: "✎", tag: "Drawing" }, sheet: { ico: "▦", tag: "Sheet" }, manage: { ico: "⚙", tag: "Manage" } };
+    const TYPE_META = { text: { ico: ICO('type'), tag: "Text" }, task: { ico: ICO('square-check'), tag: "Task" }, todo: { ico: ICO('clock'), tag: "TODO" }, drawing: { ico: ICO('pencil'), tag: "Drawing" }, sheet: { ico: ICO('table'), tag: "Sheet" }, manage: { ico: ICO('settings'), tag: "Manage" } };
     function snippetPreview(s) {
       let t = (s.text || "").replace(DRAW_RE, (m, id) => "🖼 " + ((s.scenes && s.scenes[id] && s.scenes[id].name) || "drawing"));
       return t.replace(/\s+/g, " ").trim();
@@ -1952,6 +2245,7 @@
       { kind: "cmd", nick: "draw", type: "drawing", preview: "insert a drawing block" },
       { kind: "cmd", nick: "sheet", type: "sheet", preview: "a calculating table / mini-sheet" },
       { kind: "cmd", nick: "task", type: "task", preview: "a checkbox task" },
+      { kind: "cmd", nick: "todo", type: "todo", preview: "a TODO placeholder — a gap to fill later" },
     ];
     let slashOpen = false, slashItems = [], slashIndex = 0;
     function currentSlashQuery() {
@@ -1991,7 +2285,7 @@
         row.addEventListener("mousedown", (e) => { e.preventDefault(); slashIndex = i; acceptSlash(); });
         el.appendChild(row);
       });
-      const foot = document.createElement("div"); foot.className = "sm-foot"; foot.textContent = "⚙ Manage snippets…";
+      const foot = document.createElement("div"); foot.className = "sm-foot"; foot.innerHTML = ICO('settings') + " Manage snippets…";
       foot.addEventListener("mousedown", (e) => { e.preventDefault(); closeSlash(); openSnipPanel(); });
       el.appendChild(foot);
     }
@@ -2052,7 +2346,7 @@
       const ul = document.getElementById("snipList"); ul.innerHTML = "";
       if (!names.length) {
         const li = document.createElement("li"); li.className = "tk-empty";
-        li.innerHTML = "No snippets yet.<br>Select text/tasks/a drawing → tap <b>❏</b> in the format bar to save one.<br>Then type <b>/name</b> in the doc to paste it.";
+        li.innerHTML = "No snippets yet.<br>Select text/tasks/a drawing → tap the <b>snippets</b> button to save one.<br>Then type <b>/name</b> in the doc to paste it.";
         ul.appendChild(li); return;
       }
       for (const nm of names) {
@@ -2066,7 +2360,7 @@
         const edit = mkBtn("Edit", () => toggleEdit());
         const ren = mkBtn("Rename", () => renameSnippet(nm));
         const del = mkBtn("Delete", () => { if (confirm('Delete snippet "/' + nm + '"?')) { const a = loadSnippets(); delete a[nm]; saveSnippets(a); renderSnipPanel(); } });
-        del.style.color = "var(--danger, #c0392b)";
+        del.style.color = "var(--danger-ink)";
         acts.append(ins, edit, ren, del);
         li.append(top, prev, acts);
         let editing = false, ta = null, saveBtn = null;
@@ -2123,7 +2417,7 @@
           files: sc.files || {},
           scrollToContent: true,
         },
-        excalidrawAPI: (api) => { overlayApi = api; },
+        excalidrawAPI: (api) => { overlayApi = api; setTimeout(() => { try { api.setActiveTool({ type: "freedraw" }); } catch {} }, 60); }, // default to the pen/hand-draw tool
       }));
     }
 
@@ -2167,7 +2461,7 @@
         a.href = URL.createObjectURL(blob); a.download = catName(curName); a.click();
         URL.revokeObjectURL(a.href);
         curName = catName(curName); document.getElementById("filename").textContent = curName;
-        setDirty(false); toast("Saved 🐈"); return;
+        setDirty(false); toast("Saved"); return;
       }
       try {
         if (!fileHandle) {
@@ -2200,6 +2494,65 @@
       } catch (e) { if (e.name !== "AbortError") { toast("Open failed"); console.warn(e); } }
     }
 
+    // start a fresh blank note — clears text, drawings, sheets, tags and detaches any file/cloud link
+    function newNote() {
+      const hasContent = view.state.doc.length > 0;
+      const dirty = document.getElementById("dirty").textContent === "·";
+      const savedDurably = !!fileHandle || !!currentCloudId;
+      if (hasContent && (dirty || !savedDurably)) {
+        if (!confirm("Start a new note? Your current note will be cleared — save it first if you want to keep it.")) return;
+      }
+      const text = loadFromData({ version: 1, text: "", scenes: {}, sheets: {}, tags: [] }); // resets scenes/sheets/docTags
+      fileHandle = null;
+      if (typeof setCloudId === "function") setCloudId(null); // not tied to a cloud doc anymore
+      curName = "untitled.kitten";
+      document.getElementById("filename").textContent = curName;
+      view.dispatch({ changes: { from: 0, to: view.state.doc.length, insert: text }, effects: refreshDraw.of(null) });
+      setDirty(false); scheduleSave(); view.focus(); toast("New note");
+    }
+
+    // import an external concept note (someone else's) → fresh note, ready to run the coach on
+    async function pdfToText(file) {
+      const pdfjs = await import("https://esm.sh/pdfjs-dist@4.7.76/build/pdf.min.mjs");
+      try { pdfjs.GlobalWorkerOptions.workerSrc = "https://esm.sh/pdfjs-dist@4.7.76/build/pdf.worker.min.mjs"; } catch {}
+      const data = await file.arrayBuffer();
+      const doc = await pdfjs.getDocument({ data }).promise;
+      let out = "";
+      for (let i = 1; i <= doc.numPages; i++) { const page = await doc.getPage(i); const tc = await page.getTextContent(); out += tc.items.map(it => it.str).join(" ") + "\n\n"; }
+      return out;
+    }
+    async function importNote() {
+      const hasContent = view.state.doc.length > 0;
+      const dirty = document.getElementById("dirty").textContent === "·";
+      const savedDurably = !!fileHandle || !!currentCloudId;
+      if (hasContent && (dirty || !savedDurably)) {
+        if (!confirm("Import a note? Your current note will be replaced — save it first if you want to keep it.")) return;
+      }
+      let file;
+      try {
+        if (window.showOpenFilePicker) {
+          const [h] = await window.showOpenFilePicker({ types: [{ description: "Concept note", accept: { "text/plain": [".txt", ".md", ".markdown"], "application/pdf": [".pdf"] } }] });
+          file = await h.getFile();
+        } else {
+          file = await new Promise((res) => { const i = document.createElement("input"); i.type = "file"; i.accept = ".txt,.md,.markdown,.pdf"; i.onchange = () => res(i.files[0]); i.click(); });
+        }
+      } catch (e) { if (e.name !== "AbortError") toast("Import cancelled"); return; }
+      if (!file) return;
+      toast("Importing " + file.name + "…");
+      let text = "";
+      try { text = (/\.pdf$/i.test(file.name) ? await pdfToText(file) : await file.text()) || ""; }
+      catch (e) { console.warn("import", e); toast("Couldn't read that file"); return; }
+      text = text.trim();
+      if (!text) { toast("No text found in that file"); return; }
+      loadFromData({ version: 1, text: "", scenes: {}, sheets: {}, tags: [] }); // fresh note, no leftover drawings/sheets
+      fileHandle = null; if (typeof setCloudId === "function") setCloudId(null);
+      curName = (file.name.replace(/\.[^.]+$/, "") || "imported") + ".kitten";
+      document.getElementById("filename").textContent = curName;
+      view.dispatch({ changes: { from: 0, to: view.state.doc.length, insert: text }, effects: refreshDraw.of(null) });
+      setDirty(true); scheduleSave(); view.focus();
+      toast("Imported — open the Coach to review it");
+    }
+
     document.getElementById("fileBtn").addEventListener("click", (e) => { e.stopPropagation(); toggleFileMenu(); });
     document.getElementById("btn-autofix").addEventListener("click", autoFixAll);
     document.getElementById("fixesClose").addEventListener("click", closeFixesPanel);
@@ -2207,8 +2560,10 @@
     document.getElementById("modeDraft").addEventListener("click", () => setDraftMode(true));
     document.getElementById("modeReview").addEventListener("click", () => setDraftMode(false));
     document.getElementById("read-status").addEventListener("click", toggleReadPanel);
+    document.getElementById("coach-status").addEventListener("click", toggleCoachPanel);
     document.getElementById("readClose").addEventListener("click", closeReadPanel);
     document.getElementById("readHL").addEventListener("click", () => { localStorage.setItem("scribeNext.readHighlight", readHighlightOn() ? "0" : "1"); computeReadability(); });
+    document.getElementById("readSimplifyAll").addEventListener("click", runSimplifyAll);
     const timerEl = document.getElementById("timer");
     timerEl.addEventListener("click", (e) => { e.stopPropagation(); onTimerClick(); });
     timerEl.addEventListener("dblclick", (e) => { e.stopPropagation(); onTimerDblClick(); });
@@ -2256,11 +2611,18 @@
       if (tasksPanelOpen) toggleTasksPanel();
       if (document.getElementById("fixesPanel").classList.contains("show")) closeFixesPanel();
       if (readPanelOpen) closeReadPanel();
+      if (typeof coachPanelOpen !== "undefined" && coachPanelOpen) closeCoachPanel();
       if (typeof aiPanelOpen === "function" && aiPanelOpen()) closeAIPanel();
       if (typeof cloudPanelOpen === "function" && cloudPanelOpen()) closeCloudPanel();
       hideGramPopover();
     }
     view.contentDOM.addEventListener("mousedown", closeSidePanels);
+    // Any click outside an open side panel (and outside its trigger button) closes them all.
+    document.addEventListener("mousedown", (e) => {
+      if (e.target.closest("#aiPanel,#cloudPanel,#readPanel,#coachPanel,#tasksPanel,#fixesPanel,#snipPanel,#slashMenu")) return; // inside a panel
+      if (e.target.closest("#btn-tasks,#btn-autofix,#read-status,#coach-status,#ai-status,#btn-snippets,#fileBtn,#fileMenu,#fmtBar,#composeFmt")) return; // a trigger
+      closeSidePanels(); if (typeof closeSnipPanel === "function") closeSnipPanel();
+    }, true);
     view.contentDOM.addEventListener("click", () => { const sel = view.state.selection.main; if (sel.empty) showGramPopoverAt(sel.head); else hideGramPopover(); });
     window.addEventListener("keydown", (e) => { if (e.key === "Escape") { if (previewing()) exitPreview(); closeSidePanels(); closeSnipPanel(); closeSlash(); if (aiPanelOpen()) closeAIPanel(); closeAccountMenu(); if (cloudPanelOpen()) closeCloudPanel(); closeTagMenu(); hideAbout(); hideHelp(); hideFeedback(); } });
 
@@ -2280,7 +2642,7 @@
     }
     function openFontMenu() {
       const el = document.getElementById("fontMenu");
-      const cur = document.body.dataset.font || "mono";
+      const cur = document.body.dataset.font || "lexend";
       el.innerHTML = "";
       for (const [val, label] of FONTS) {
         const b = document.createElement("button");
@@ -2336,9 +2698,14 @@
         b.addEventListener("mousedown", (e) => { e.preventDefault(); fn(); });
         fly.appendChild(b); return b;
       };
+      item("New note", "", () => { closeFileMenu(); newNote(); });
+      const ndiv = document.createElement("div"); ndiv.style.cssText = "border-top:1px solid var(--rule); margin:4px 0;"; el.appendChild(ndiv);
       item("Save", "⌘S", () => { closeFileMenu(); saveFile(); });
       item("Open", "⌘O", () => { closeFileMenu(); openFile(); });
-      item("Export / Share", "PDF", () => { closeFileMenu(); exportPDF(); });
+      item("Import note…", "txt · md · pdf", () => { closeFileMenu(); importNote(); });
+      item("Export / share", "PDF", () => { closeFileMenu(); exportPDF(); });
+      item("Connect cloud AI", cloudConnected() ? "✓" : "", () => { closeFileMenu(); setCloudKey(); });
+      item("Usage", "", () => { closeFileMenu(); alert(usageSummary()); });
       if (authUser) {
         const cdiv = document.createElement("div"); cdiv.style.cssText = "border-top:1px solid var(--rule); margin:4px 0;"; el.appendChild(cdiv);
         item("Save to cloud", "☁", () => { closeFileMenu(); saveToCloud(); });
@@ -2434,14 +2801,14 @@
         const { error } = await supabase.from("feedback").insert({ message: msg, email, app_version: window.SCRIBE_BUILD || "local" });
         if (error) throw error;
         track("feedback_sent");
-        document.querySelector("#feedbackDialog .fb-card").innerHTML = '<h2>Thank you 🙏</h2><div class="fb-sub" style="margin:8px 0 14px;">Your feedback was sent.</div><div class="fb-actions"><button class="primary" id="fbDone">Done</button></div>';
+        document.querySelector("#feedbackDialog .fb-card").innerHTML = '<h2>Thank you</h2><div class="fb-sub" style="margin:8px 0 14px;">Your feedback was sent.</div><div class="fb-actions"><button class="primary" id="fbDone">Done</button></div>';
         document.getElementById("fbDone").addEventListener("click", hideFeedback);
       } catch (e) { btn.disabled = false; btn.textContent = "Send"; toast("Couldn't send: " + (e.message || e)); }
     }
     function showHelp() {
       const el = document.getElementById("helpDialog");
       el.innerHTML = '<div class="help-card">'
-        + '<div class="help-head"><h2>Scribe — quick guide</h2><button id="helpClose" title="Close">✕</button></div>'
+        + '<div class="help-head"><h2>Scribe — quick guide</h2><button id="helpClose" title="Close"><svg class="ico"><use href="#i-x"/></svg></button></div>'
         + '<div class="help-body">'
         + '<h3>The basics</h3><p>Just start typing — Scribe <b>saves as you go</b>. It uses Markdown, but you can ignore that and write plainly.</p>'
         + '<h3>The menu</h3><p>The <b>icon in the top-left</b> is your menu: Save, Open, Export to PDF, Theme, Font, and this guide.</p>'
@@ -2449,7 +2816,7 @@
         + '<li><b>Select text</b> → a small toolbar appears (bold, italic, headings, link…).</li>'
         + '<li>Type <code>/</code> at the start of a line for <b>tasks</b>, <b>drawings</b>, <b>tables</b>, and saved <b>snippets</b>.</li>'
         + '<li><b>Tasks:</b> <code>/task</code> + Enter, or select lines and press <code>⌘↵</code>. The <b>T</b> button lists them.</li>'
-        + '<li><b>Tags:</b> the <b>🏷</b> button — add your own or let it suggest some.</li></ul>'
+        + '<li><b>Tags:</b> the <b>tags</b> button — add your own or let it suggest some.</li></ul>'
         + '<h3>Writing help</h3><ul>'
         + '<li>Misspellings get a wavy underline — click for fixes, or <b>Ignore</b> / add to your dictionary.</li>'
         + '<li>The grade badge (e.g. <code>G10</code>) shows how easy your writing is to read; click it for hard sentences.</li>'
@@ -2475,7 +2842,7 @@
         const v = await r.json();
         btn.disabled = false; btn.textContent = "Check for updates";
         if (v && v.build && v.build !== window.SCRIBE_BUILD) {
-          msg.innerHTML = '✨ Update available. <a href="#" id="aboutReload">Reload now</a>';
+          msg.innerHTML = 'Update available. <a href="#" id="aboutReload">Reload now</a>';
           document.getElementById("aboutReload").addEventListener("click", (e) => { e.preventDefault(); location.reload(); });
         } else { msg.textContent = "✓ You're up to date."; }
       } catch (e) { btn.disabled = false; btn.textContent = "Check for updates"; msg.textContent = "Couldn't check — you may be offline."; }
@@ -2498,14 +2865,14 @@
     function previewing() { return document.body.classList.contains("previewing"); }
     async function enterPreview() {
       document.body.classList.add("previewing");
-      document.getElementById("composePreview").textContent = "✎";
+      document.getElementById("composePreview").innerHTML = ICO('pencil');
       const pa = document.getElementById("previewArea");
       pa.innerHTML = '<div class="pv-loading">rendering…</div>';
       try { pa.innerHTML = '<div class="pv-doc">' + (await buildPrintHTML()) + "</div>"; }
       catch (e) { pa.innerHTML = '<div class="pv-loading">Preview failed.</div>'; console.warn("preview", e); }
       pa.scrollTop = 0;
     }
-    function exitPreview() { document.body.classList.remove("previewing"); document.getElementById("composePreview").textContent = "👁"; view.focus(); }
+    function exitPreview() { document.body.classList.remove("previewing"); document.getElementById("composePreview").innerHTML = ICO('eye'); view.focus(); }
     function togglePreview() { if (previewing()) exitPreview(); else enterPreview(); }
 
     // ----- Draft ⇄ Review: Draft silences all checking (grammar, readability, spellcheck, badges) so you write without judging -----
@@ -2516,11 +2883,12 @@
       view.contentDOM.setAttribute("spellcheck", on ? "false" : "true");
       document.getElementById("modeDraft")?.classList.toggle("active", on);
       document.getElementById("modeReview")?.classList.toggle("active", !on);
-      if (on) view.dispatch({ effects: [setLints.of([]), setReadDecos.of([])] }); // clear all underlines/highlights
+      if (on) view.dispatch({ effects: [setLints.of([]), setReadDecos.of([]), setSimplifyDecos.of([])] }); // clear all underlines/highlights
       else { scheduleLint(); computeReadability(); }                              // bring feedback back
       if (on) closeAIPanel();          // Draft mode: no AI either
       renderToolbars();                // show/hide the ✦ summarize button in the format bar
       updateCatMood();
+      updateCoach();                   // hide/refresh the coach indicator (Review-only)
     }
     function toggleDraftMode() { setDraftMode(!draftMode()); }
 
@@ -2541,6 +2909,27 @@
       const sents = Math.max(1, (text.match(/[.!?]+(?=\s|$)/g) || []).length);
       const syll = words.reduce((s, w) => s + countSyllables(w), 0);
       return 0.39 * (wc / sents) + 11.8 * (syll / wc) - 15.59;
+    }
+    // explain WHY a sentence reads hard — decomposes the SAME two drivers fkGrade scores on:
+    // sentence length (words/sentence) and word complexity (syllables/word). No invented signals.
+    function readWhy(t) {
+      const words = readWords(t);
+      const wc = words.length;
+      if (!wc) return "";
+      const seen = new Set(), complex = []; // 3+ syllable words = the FK complexity driver; dedupe, keep original casing
+      for (const w of words) {
+        if (countSyllables(w) >= 3) { const k = w.toLowerCase(); if (!seen.has(k)) { seen.add(k); complex.push(w); } }
+      }
+      complex.sort((a, b) => countSyllables(b) - countSyllables(a)); // worst offenders first
+      const parts = [];
+      if (wc >= 35) parts.push("very long (" + wc + " words)");
+      else if (wc >= 20) parts.push("long (" + wc + " words)"); // ~20 words is where length alone tips a normal sentence over G10
+      if (complex.length) {
+        parts.push(complex.length + " complex word" + (complex.length === 1 ? "" : "s") +
+          " (" + complex.slice(0, 3).join(", ") + (complex.length > 3 ? "…" : "") + ")");
+      }
+      if (!parts.length) { const syll = words.reduce((s, w) => s + countSyllables(w), 0); parts.push("dense wording (~" + (syll / wc).toFixed(1) + " syllables per word)"); }
+      return parts.join(" · ");
     }
     function segmentSentences(text) {
       const out = []; let i = 0, start = 0;
@@ -2578,22 +2967,80 @@
         const t = doc.slice(from, to);
         if (/⟦(?:draw|sheet):[a-z0-9]+⟧/.test(t) || readWords(t).length < 5) continue;
         const g = fkGrade(t);
-        if (g != null && g > lvl.grade) hard.push({ from, to, grade: g });
+        if (g != null && g > lvl.grade) hard.push({ from, to, grade: g, why: readWhy(t) });
       }
       return { overall, hard, lvl, doc };
     }
     let readPanelOpen = false;
+    // ----- L2 "plainer words" — retext-simplify (lazy-loaded, runs synchronously on the readability debounce) -----
+    let simplifyProc = null, simplifyReady = false, simplifyLoading = false, lastSimplify = [];
+    async function initSimplify() {
+      if (simplifyReady || simplifyLoading) return;
+      simplifyLoading = true;
+      try {
+        const [rt, sm] = await Promise.all([ import("https://esm.sh/retext@9"), import("https://esm.sh/retext-simplify@8") ]);
+        simplifyProc = rt.retext().use(sm.default);
+        simplifyReady = true;
+        computeReadability(); // re-run now that plain-word analysis is available
+      } catch (e) { console.warn("plain-words (retext-simplify) failed to load", e); }
+      finally { simplifyLoading = false; }
+    }
+    function computeSimplify(doc) {
+      if (!simplifyReady) return [];
+      let msgs = [];
+      try { msgs = simplifyProc.processSync(doc).messages || []; } catch (e) { return []; }
+      const out = [];
+      for (const m of msgs) {
+        const s = m.place && m.place.start, e = m.place && m.place.end;
+        if (!s || !e || s.offset == null || e.offset == null) continue;
+        out.push({ from: s.offset, to: e.offset, actual: m.actual || doc.slice(s.offset, e.offset), expected: Array.isArray(m.expected) ? m.expected : [] });
+      }
+      out.sort((a, b) => a.from - b.from);
+      return out;
+    }
+    function runSimplify() {
+      if (draftMode()) { lastSimplify = []; view.dispatch({ effects: setSimplifyDecos.of([]) }); return; }
+      if (!simplifyReady) { lastSimplify = []; initSimplify(); return; }
+      lastSimplify = computeSimplify(view.state.doc.toString());
+      view.dispatch({ effects: setSimplifyDecos.of(lastSimplify.map(f => ({ from: f.from, to: f.to, title: f.expected.length ? "Plainer: " + f.expected.join(", ") : "Consider a plainer word" }))) });
+    }
+    function renderSimplifyBox() {
+      const box = document.getElementById("simplifyBox"); if (!box) return;
+      box.innerHTML = "";
+      if (draftMode()) return;
+      if (!simplifyReady) { box.innerHTML = '<div class="sp-head">Plainer words</div><div class="sp-loading">Loading the plain-language check…</div>'; return; }
+      const items = lastSimplify;
+      const head = document.createElement("div"); head.className = "sp-head"; head.textContent = items.length ? "Plainer words · " + items.length : "Plainer words"; box.appendChild(head);
+      if (!items.length) { const e = document.createElement("div"); e.className = "sp-empty"; e.textContent = "No complex words flagged — sounds plain."; box.appendChild(e); return; }
+      for (const f of items) {
+        const row = document.createElement("div"); row.className = "sp-row";
+        const w = document.createElement("button"); w.className = "sp-word"; w.textContent = f.actual; w.title = "Jump to it";
+        w.addEventListener("click", () => { view.dispatch({ selection: { anchor: f.from }, effects: EditorView.scrollIntoView(f.from, { y: "center" }) }); view.focus(); });
+        const arrow = document.createElement("span"); arrow.className = "sp-arrow"; arrow.textContent = "→";
+        row.append(w, arrow);
+        if (f.expected.length) f.expected.slice(0, 3).forEach(sug => {
+          const b = document.createElement("button"); b.className = "sp-sug"; b.textContent = sug; b.title = "Replace with “" + sug + "”";
+          b.addEventListener("click", () => { view.dispatch({ changes: { from: f.from, to: f.to, insert: sug } }); toast("Replaced with “" + sug + "”"); computeReadability(); });
+          row.appendChild(b);
+        });
+        else { const e = document.createElement("span"); e.className = "sp-none"; e.textContent = "try a plainer word"; row.appendChild(e); }
+        box.appendChild(row);
+      }
+    }
     function computeReadability() {
       if (draftMode()) { view.dispatch({ effects: setReadDecos.of([]) }); return; } // Draft mode: no readability checking
       const r = computeReadHard();
+      lastRead = r; // cache so the coach reads readability without re-parsing the doc
       updateReadIndicator(r);
-      view.dispatch({ effects: setReadDecos.of(readHighlightOn() ? r.hard.map(h => ({ from: h.from, to: h.to, cls: h.grade > r.lvl.grade + 4 ? "read-veryhard" : "read-hard" })) : []) });
+      view.dispatch({ effects: setReadDecos.of(readHighlightOn() ? r.hard.map(h => ({ from: h.from, to: h.to, cls: h.grade > r.lvl.grade + 4 ? "read-veryhard" : "read-hard", why: gradeLabel(Math.round(h.grade)) + (h.why ? " — " + h.why : "") })) : []) });
+      runSimplify(); // L2 plainer-words pass (updates lastSimplify + its decorations)
       if (readPanelOpen) renderReadPanel();
+      updateCoach();
     }
     function gradeAbbr(n) { if (n == null) return "Aa"; const g = Math.max(1, Math.round(n)); return g <= 12 ? "G" + g : g <= 16 ? "UG" : "PG"; }
     function updateReadIndicator(r) {
       const wrap = document.getElementById("read-status");
-      document.querySelector("#read-status .rd-ico").textContent = gradeAbbr(r.overall); // doc's reading level, e.g. G11
+      document.querySelector("#read-status .rd-ico").textContent = gradeAbbr(r.lvl.grade); // the TARGET level you set (e.g. G12) — reflects your selection
       const g = document.getElementById("rd-grade");
       const n = r.hard.length, veryHard = r.hard.some(h => h.grade > r.lvl.grade + 4);
       g.textContent = n === 0 ? "✓" : String(n);
@@ -2602,24 +3049,26 @@
       wrap.title = "Readability (human) — reads at ~" + gr + " · target " + r.lvl.label + " · " + (n ? n + " hard sentence" + (n === 1 ? "" : "s") : "all within target") + " · click for details";
     }
     function renderReadPanel() {
+      renderSimplifyBox(); // L2 plainer-words section sits above the hard-sentence list
       const ul = document.getElementById("readList"); ul.innerHTML = "";
       const hl = document.getElementById("readHL");
       const r = computeReadHard();
       document.getElementById("readGrade").textContent = r.overall == null ? "—" : "Reads at about " + gradeLabel(Math.max(1, Math.round(r.overall))) + " · target " + r.lvl.label;
       document.getElementById("readCount").textContent = r.hard.length ? (r.hard.length + " hard") : "";
       if (!r.hard.length) {
-        const li = document.createElement("li"); li.className = "tk-empty"; li.textContent = "Nothing above your target — clean read 🎉"; ul.appendChild(li);
+        const li = document.createElement("li"); li.className = "tk-empty"; li.textContent = "Nothing above your target — reads clean."; ul.appendChild(li);
       } else for (const h of r.hard) {
         const li = document.createElement("li"); li.className = "rd-hard-li";
         const veryHard = h.grade > r.lvl.grade + 4;
         const badge = document.createElement("span"); badge.className = "rd-badge" + (veryHard ? " vh" : ""); badge.textContent = gradeLabel(Math.round(h.grade));
         const sent = document.createElement("span"); sent.className = "rd-sent"; sent.textContent = r.doc.slice(h.from, h.to).replace(/\s+/g, " ").trim().slice(0, 90);
-        li.append(badge, sent);
+        li.append(badge, sent); li._h = h;
         if (aiReady) {
-          const sb = document.createElement("button"); sb.className = "rd-simplify-btn"; sb.innerHTML = "✦"; sb.title = "Simplify this sentence (local AI)";
+          const sb = document.createElement("button"); sb.className = "rd-simplify-btn"; sb.innerHTML = ICO('sparkles'); sb.title = "Simplify this sentence (local AI)";
           sb.addEventListener("click", (e) => { e.stopPropagation(); simplifyHardSentence(h, li, sb); });
-          li.append(sb);
+          li.append(sb); li._sb = sb;
         }
+        if (h.why) { const why = document.createElement("div"); why.className = "rd-why"; why.textContent = "Hard because: " + h.why; li.appendChild(why); }
         li.addEventListener("click", () => { view.dispatch({ selection: { anchor: h.from }, effects: EditorView.scrollIntoView(h.from, { y: "center" }) }); view.focus(); });
         ul.appendChild(li);
       }
@@ -2632,10 +3081,98 @@
         tsel.appendChild(b);
       }
       hl.textContent = (readHighlightOn() ? "✓ " : "") + "Highlight in text"; hl.classList.toggle("on", readHighlightOn());
+      const sa = document.getElementById("readSimplifyAll");
+      if (sa) sa.style.display = (aiReady && r.hard.length) ? "" : "none"; // only when local AI is connected + there's something to fix
+    }
+    async function runSimplifyAll() {
+      if (!aiReady) { toast("Local AI isn't connected"); return; }
+      const rows = [...document.querySelectorAll("#readList .rd-hard-li")];
+      if (!rows.length) { toast("Nothing to simplify"); return; }
+      const btn = document.getElementById("readSimplifyAll"); const orig = btn ? btn.innerHTML : "";
+      if (btn) { btn.disabled = true; btn.textContent = "Simplifying… 0/" + rows.length; }
+      let i = 0;
+      for (const li of rows) {
+        i++;
+        if (li.isConnected && li._h && li._sb) { try { await simplifyHardSentence(li._h, li, li._sb); } catch {} }
+        if (btn) btn.textContent = "Simplifying… " + i + "/" + rows.length;
+      }
+      if (btn) { btn.disabled = false; btn.innerHTML = orig; }
     }
     function openReadPanel() { readPanelOpen = true; document.getElementById("readPanel").classList.add("show"); renderReadPanel(); }
     function closeReadPanel() { readPanelOpen = false; document.getElementById("readPanel").classList.remove("show"); }
     function toggleReadPanel() { if (readPanelOpen) closeReadPanel(); else openReadPanel(); }
+
+    // ---------- writing coach (Phase 0): orchestrate the existing checks into the L1→L4 ladder ----------
+    let lastRead = null;          // cached readability result, refreshed by computeReadability
+    let coachPanelOpen = false;
+    // À la carte ladder — run any level, any order, nothing gated. L1/L2 = on-demand (LLM); L3/L4 = auto-sensed.
+    const COACH_LEVELS = [
+      { n: 1, name: "Brain-dump", key: "dump" },       // think: get it out + completeness check
+      { n: 2, name: "Pressure-test", key: "reflect" }, // think: challenge the idea
+      { n: 3, name: "Write it well", key: "gram" },    // grammar + proofread (correct & coherent)
+      { n: 4, name: "Make it land", key: "read" },     // readability + plain words + tone (reader-facing)
+    ];
+    function coachSense() {
+      const r = lastRead || computeReadHard();
+      return { read: r ? r.hard.length : 0, simp: lastSimplify.length, gram: currentLints.length };
+    }
+    function coachHasIssues(s) { return s.gram > 0 || s.read > 0 || s.simp > 0; } // only the auto-sensed levels (L3/L4)
+    function updateCoach() {
+      const lvlEl = document.querySelector("#coach-status .co-lvl");
+      if (!lvlEl) return;
+      if (draftMode()) { lvlEl.textContent = ""; lvlEl.className = "co-lvl"; if (coachPanelOpen) renderCoachPanel(); return; }
+      const issues = coachHasIssues(coachSense());
+      lvlEl.textContent = issues ? "•" : "✓";
+      lvlEl.className = "co-lvl " + (issues ? "has" : "ok");
+      if (coachPanelOpen) renderCoachPanel();
+    }
+    function coachJumpToFirstLint() {
+      const first = currentLints.slice().sort((a, b) => a.from - b.from)[0];
+      if (!first) return;
+      view.dispatch({ selection: { anchor: first.from }, effects: EditorView.scrollIntoView(first.from, { y: "center" }) });
+      view.focus();
+      try { showGramPopoverAt(first.from); } catch {}
+    }
+    function renderCoachPanel() {
+      const intro = document.getElementById("coachIntro"), ladder = document.getElementById("coachLadder"), where = document.getElementById("coachWhere");
+      if (!ladder) return;
+      ladder.innerHTML = "";
+      if (draftMode()) {
+        where.textContent = "";
+        intro.textContent = "You're in Draft mode — coaching is off so you can write freely. Switch to Review when you're ready to improve it.";
+        return;
+      }
+      const s = coachSense(), ok = aiAvailable();
+      where.textContent = "";
+      intro.textContent = "Run any level, in any order — nothing's locked. Each one suggests; you decide what to keep.";
+      const rows = [
+        { L: COACH_LEVELS[0], desc: "Get your raw thoughts down — text, drawings, sheets. No judging yet.",
+          stat: "", need: !ok, ctas: ok ? [["Check structure & gaps →", runFindMissing], ["Trim what's not needed →", runTrim]] : [] },
+        { L: COACH_LEVELS[1], desc: "Challenge the thinking — assumptions, evidence, systems, numbers.",
+          stat: "", need: !ok, ctas: ok ? [["Pressure-test the idea →", runPressureTest]] : [] },
+        { L: COACH_LEVELS[2], desc: "Grammar, spelling, proofread — make it correct & coherent.",
+          stat: s.gram > 0 ? (s.gram + " issue" + (s.gram === 1 ? "" : "s")) : "clear",
+          ctas: [ ...(s.gram > 0 ? [["Fix grammar →", coachJumpToFirstLint]] : []), ...(ok ? [["Proofread →", () => runProofread("doc")]] : []) ] },
+        { L: COACH_LEVELS[3], desc: "Readability, plainer words, tone — so any reader gets it.",
+          stat: (s.read || s.simp) ? [s.read ? s.read + " hard" : "", s.simp ? s.simp + " word" + (s.simp === 1 ? "" : "s") : ""].filter(Boolean).join(" · ") : "clear",
+          ctas: [["Work on clarity →", openReadPanel]] },
+      ];
+      for (const { L, desc, stat, ctas, need } of rows) {
+        const li = document.createElement("li");
+        li.className = stat === "clear" ? "done" : "";
+        const row = document.createElement("div"); row.className = "co-row";
+        const num = document.createElement("span"); num.className = "co-num"; num.textContent = "L" + L.n;
+        const name = document.createElement("span"); name.className = "co-name"; name.textContent = L.name;
+        const st = document.createElement("span"); st.className = "co-stat"; st.textContent = need ? "needs a model" : stat;
+        row.append(num, name, st); li.appendChild(row);
+        const sub = document.createElement("div"); sub.className = "co-sub"; sub.textContent = need ? "Connect cloud AI (menu) to use this." : desc; li.appendChild(sub);
+        for (const [label, fn] of ctas) { const b = document.createElement("button"); b.className = "co-cta"; b.textContent = label; b.addEventListener("click", () => { closeCoachPanel(); fn(); }); li.appendChild(b); }
+        ladder.appendChild(li);
+      }
+    }
+    function openCoachPanel() { closeSidePanels(); coachPanelOpen = true; document.getElementById("coachPanel").classList.add("show"); renderCoachPanel(); }
+    function closeCoachPanel() { coachPanelOpen = false; document.getElementById("coachPanel").classList.remove("show"); }
+    function toggleCoachPanel() { if (coachPanelOpen) closeCoachPanel(); else openCoachPanel(); }
 
     const COPY_TARGETS = [
       ["md", "Markdown", "verbatim"],
@@ -2688,7 +3225,7 @@
     function renderTimer() {
       const el = document.getElementById("timer");
       updateCatMood();
-      if (!timer.mode) { el.textContent = "🕐"; el.className = "btn ic"; return; }
+      if (!timer.mode) { el.innerHTML = ICO('clock'); el.className = "btn ic"; return; }
       const elapsed = timerElapsed();
       if (timer.mode === "focus") {
         const rem = timer.durationMs - elapsed;
@@ -2709,7 +3246,7 @@
     function endFocus() {
       stopTick(); timer.running = false; timer.accMs = timer.durationMs;
       const el = document.getElementById("timer"); el.textContent = "0:00"; el.className = "btn ic ended";
-      toast("Time's up — nice work. Take a break 🌿");
+      toast("Time's up — take a break");
       setTimeout(() => { if (timer.mode === "focus" && !timer.running) resetTimer(); }, 4000);
     }
     let timerMenuKey = null;
@@ -2723,13 +3260,13 @@
       const el = document.getElementById("timerMenu"); el.innerHTML = "";
       const add = (label, fn) => { const b = document.createElement("button"); b.innerHTML = label; b.addEventListener("mousedown", (e) => { e.preventDefault(); fn(); closeTimerMenu(); }); el.appendChild(b); };
       if (!timer.mode) {
-        add("▶ Flow <small>count up — no pressure</small>", startFlow);
-        add("▶ Focus 15 min", () => startFocus(15));
-        add("▶ Focus 25 min", () => startFocus(25));
-        add("▶ Focus 50 min", () => startFocus(50));
+        add(ICO('play') + " Flow <small>count up — no pressure</small>", startFlow);
+        add(ICO('play') + " Focus 15 min", () => startFocus(15));
+        add(ICO('play') + " Focus 25 min", () => startFocus(25));
+        add(ICO('play') + " Focus 50 min", () => startFocus(50));
       } else {
-        if (timer.running) add("⏸ Pause", pauseTimer); else add("▶ Resume", resumeTimer);
-        add("↺ Reset", resetTimer);
+        if (timer.running) add(ICO('pause') + " Pause", pauseTimer); else add(ICO('play') + " Resume", resumeTimer);
+        add(ICO('rotate-ccw') + " Reset", resetTimer);
       }
       el.classList.add("show");
       const r = document.getElementById("timer").getBoundingClientRect();
@@ -2826,8 +3363,9 @@
     // ---------- share / export ----------
     function escapeHtml(s) { return s.replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c])); }
     function sheetToMarkdown(sheet) {
-      const disp = trimGrid(displaySheet(sheet));
+      let disp = trimGrid(displaySheet(sheet));
       if (!disp || !disp[0].length) return "";
+      if (sheet.showTotals) disp = [...disp, computeTotals(sheet).slice(0, disp[0].length)];
       const esc = (v) => String(v).replace(/\|/g, "\\|").replace(/\n/g, " ");
       const header = disp[0].map(esc);
       const sep = header.map(() => "---");
@@ -2843,8 +3381,9 @@
     }
     function fallbackCopy(text) { const ta = document.createElement("textarea"); ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0"; document.body.appendChild(ta); ta.select(); try { document.execCommand("copy"); } catch {} ta.remove(); }
     function sheetToPrintHTML(sheet) {
-      const disp = trimGrid(displaySheet(sheet));
+      let disp = trimGrid(displaySheet(sheet));
       if (!disp) return "";
+      if (sheet.showTotals) disp = [...disp, computeTotals(sheet).slice(0, disp[0].length)];
       const name = (sheet.name || "").trim();
       const numRe = /^-?[₹$]?[\d,]+\.?\d*%?$/;
       let rows = "";
@@ -3033,6 +3572,7 @@
     // ---------- local AI (Ollama) — proofread + task extraction; mirrors the LanguageTool power-up pattern ----------
     let aiUrl = localStorage.getItem("scribeNext.aiUrl") || "http://localhost:11434";
     let aiModel = localStorage.getItem("scribeNext.aiModel") || "";
+    let aiModels = []; // all models Ollama reports — populated by initAI, shown in the picker
     let aiReady = false, aiBusy = false, aiAbort = null, aiScope = null, aiCorrected = "";
     function setAIIndicator(state) {
       const el = document.getElementById("ai-status"); if (!el) return;
@@ -3042,16 +3582,21 @@
         : state === "busy" ? "Proofreading…"
         : "Ollama not running — start the Ollama app, then click to retry";
     }
-    async function initAI() {
+    async function initAI() { // cloud-only: detect Ollama but don't surface it; indicator reflects cloud connection
       try {
         const r = await fetch(aiUrl + "/api/tags", { method: "GET" });
         if (!r.ok) throw new Error("tags " + r.status);
-        const names = ((await r.json()).models || []).map(m => m.name);
-        if (!names.length) { aiReady = false; setAIIndicator("off"); return; }
-        if (!names.includes(aiModel)) aiModel = names.find(n => /gemma/i.test(n)) || names[0];
-        localStorage.setItem("scribeNext.aiModel", aiModel);
-        aiReady = true; setAIIndicator("ready"); renderToolbars();
-      } catch (e) { aiReady = false; setAIIndicator("off"); }
+        aiModels = ((await r.json()).models || []).map(m => m.name); aiReady = !!aiModels.length; // kept for future local re-enable
+      } catch (e) { aiReady = false; }
+      ensureCloudModel(); setAIIndicator(cloudConnected() ? "ready" : "off"); renderToolbars(); renderModelPicker();
+    }
+    function renderModelPicker() {
+      const sel = document.getElementById("aiModelSelect"), row = document.getElementById("aiModelRow");
+      if (!sel || !row) return;
+      const opts = [...(claudeKey() ? CLAUDE_MODELS : []), ...orModels]; // cloud-only (local hidden); prepend ...aiModels.map(m=>[m,m]) to re-enable local
+      if (!opts.length) { row.style.display = "none"; return; }
+      row.style.display = "flex";
+      sel.innerHTML = opts.map(([v, l]) => '<option value="' + esc(v) + '"' + (v === aiModel ? " selected" : "") + ">" + esc(l) + "</option>").join("");
     }
     function aiCleanMarkers(text) {
       return text
@@ -3063,6 +3608,7 @@
     function closeAIPanel() {
       if (aiAbort) { try { aiAbort.abort(); } catch {} aiAbort = null; }
       aiBusy = false; document.getElementById("aiPanel").classList.remove("show");
+      try { clearTrim(); } catch {} // don't leave cut-preview strikes in the doc after the panel is gone
       if (aiReady) setAIIndicator("ready");
     }
     function aiMkBtn(label, fn, cls) { const b = document.createElement("button"); b.textContent = label; if (cls) b.className = cls; b.addEventListener("click", fn); return b; }
@@ -3090,7 +3636,7 @@
       const body = document.getElementById("aiBody"); body.classList.remove("placeholder");
       const d = aiDiff(orig, corrected);
       if (!d) { body.textContent = corrected; return true; } // can't diff cheaply → treat as changed
-      if (!d.some(x => x.t !== "same")) { body.innerHTML = '<span class="ai-clean">No changes needed — reads clean. ✓</span>'; return false; }
+      if (!d.some(x => x.t !== "same")) { body.innerHTML = '<span class="ai-clean">No changes needed — reads clean.</span>'; return false; }
       body.innerHTML = d.map(x => x.t === "same" ? escapeHtml(x.s)
         : x.t === "del" ? '<span class="df-del">' + escapeHtml(x.s) + '</span>'
         : '<span class="df-add">' + escapeHtml(x.s) + '</span>').join("");
@@ -3100,7 +3646,7 @@
       const foot = document.getElementById("aiFoot"); foot.innerHTML = "";
       if (hasChanges) foot.appendChild(aiMkBtn("✓ Accept all edits", acceptProofread, "accent"));
       foot.appendChild(aiMkBtn("Copy", () => { const t = aiCorrected; (navigator.clipboard?.writeText ? navigator.clipboard.writeText(t) : Promise.reject()).then(() => toast("Copied")).catch(() => { fallbackCopy(t); toast("Copied"); }); }));
-      foot.appendChild(aiMkBtn("↻ Redo", () => runProofread(aiScope && aiScope.had ? "selection" : "doc")));
+      foot.appendChild(aiMkBtn("Redo", () => runProofread(aiScope && aiScope.had ? "selection" : "doc")));
     }
     function acceptProofread() {
       if (!aiCorrected || !aiScope) return;
@@ -3117,43 +3663,261 @@
       const text = aiCleanMarkers(view.state.sliceDoc(from, to)).trim();
       aiScope = { from, to, had: useSel };
       document.getElementById("aiTitle").textContent = "Proofread";
-      document.getElementById("aiSrc").textContent = (useSel ? "Editing your selection" : "Editing the whole note") + " · " + (aiModel || "local");
+      document.getElementById("aiSrc").textContent = (useSel ? "Editing your selection" : "Editing the whole note");
+      renderModelPicker();
       const body = document.getElementById("aiBody"), foot = document.getElementById("aiFoot"), tasksEl = document.getElementById("aiTasks");
       foot.innerHTML = ""; tasksEl.innerHTML = "";
       if (!text) { body.classList.add("placeholder"); body.textContent = "Nothing to proofread — write or select some text first."; openAIPanel(); return; }
-      if (!aiReady) { body.classList.add("placeholder"); body.textContent = "Ollama isn't running. Start the Ollama app, then retry."; foot.appendChild(aiMkBtn("↻ Retry", () => initAI().then(() => runProofread(scope)))); openAIPanel(); return; }
+      if (!aiAvailable()) { body.classList.add("placeholder"); body.textContent = "No model connected — pick Claude in the Model dropdown, or start the Ollama app."; foot.appendChild(aiMkBtn("↻ Retry", () => initAI().then(() => runProofread(scope)))); openAIPanel(); return; }
       openAIPanel(); body.classList.add("placeholder"); body.textContent = "Reading…";
       aiBusy = true; setAIIndicator("busy");
       if (aiAbort) { try { aiAbort.abort(); } catch {} }
       aiAbort = new AbortController();
       const prompt = "You are a careful copy-editor. Correct spelling, grammar, punctuation, and clearly awkward phrasing in the text below. Preserve the author's voice, style, and word choices. Do NOT rewrite for style, do not restructure, do not change meaning, do not add or remove content. Return ONLY the corrected text, nothing else.\n\n---\n" + text;
-      let acc = "", ok = false;
+      let ok = false;
       try {
-        const r = await fetch(aiUrl + "/api/generate", { method: "POST", headers: { "Content-Type": "application/json" }, signal: aiAbort.signal, body: JSON.stringify({ model: aiModel, prompt, stream: true, options: { temperature: 0.2 } }) });
-        if (!r.ok || !r.body) throw new Error("generate " + r.status);
-        const reader = r.body.getReader(), dec = new TextDecoder(); let buf = "";
         body.classList.remove("placeholder"); body.textContent = "";
-        while (true) {
-          const { done, value } = await reader.read(); if (done) break;
-          buf += dec.decode(value, { stream: true });
-          let nl;
-          while ((nl = buf.indexOf("\n")) >= 0) {
-            const line = buf.slice(0, nl).trim(); buf = buf.slice(nl + 1); if (!line) continue;
-            try { const j = JSON.parse(line); if (j.response) { acc += j.response; body.textContent = acc; body.scrollTop = body.scrollHeight; } } catch {}
-          }
-        }
-        aiCorrected = acc.trim();
+        aiCorrected = (await aiStream(prompt, (a) => { body.textContent = a; body.scrollTop = body.scrollHeight; }, aiAbort.signal, { temperature: 0.2 })).trim();
         buildProofFoot(renderDiff(text, aiCorrected));
         ok = true;
       } catch (e) {
         if (e.name === "AbortError") { /* user closed/redid */ }
-        else { body.classList.add("placeholder"); body.textContent = "Proofread failed: " + (e.message || e) + "\nIs Ollama running?"; }
-      } finally { aiBusy = false; aiAbort = null; if (aiReady) setAIIndicator("ready"); }
-      if (ok && aiPanelOpen()) findTasks(text).catch(() => {}); // scan for to-dos after proofread (non-blocking)
+        else { body.classList.add("placeholder"); body.textContent = "Proofread failed: " + (e.message || e); }
+      } finally { aiBusy = false; aiAbort = null; setAIIndicator(aiReady ? "ready" : "off"); }
+      if (ok && aiPanelOpen() && !isClaude(aiModel)) findTasks(text).catch(() => {}); // task-scan only on local for now
+    }
+    // L2 "Pressure-test" — challenge the THINKING (not the prose), grounded in the distilled corpus. Suggest-only, no score, no rewrite.
+    // shared house-style for ALL coach feedback — keeps Scribe an advisor, not an authority, and aimed at the text not the person
+    const COACH_STANCE =
+      "How to give this feedback (strict, applies to everything below):\n" +
+      "- Talk about the TEXT, never the author. Write 'the note says…', 'this line assumes…', 'the draft is missing…' — NEVER 'you said', 'you assume', 'you forgot'. Do not comment on the person at all.\n" +
+      "- Offer options, not orders: 'consider…', 'one option is…', 'the draft could…'. Never 'you must', 'you should', or 'do this'. The author decides what to keep — these are suggestions, not instructions.\n" +
+      "- You can be wrong; note uncertainty instead of asserting. Do NOT deliver a verdict on whether the idea will succeed or fail — surface considerations and leave the judgment to the author.\n" +
+      "- Use GENDER-NEUTRAL language throughout: singular 'they', no 'he/she', no gendered assumptions about people, roles, or readers (no 'chairman', 'manpower', etc.). Any rewrite or suggested wording you propose must itself be gender-neutral.\n" +
+      "- Be respectful and peer-level, never PATRONISING: no praise-padding, no talking down, no over-explaining the obvious, no 'simply'/'just'/'obviously'/'as you know'. Assume a capable adult. Plain and direct beats encouraging-but-condescending.\n\n";
+    const L2_SCAFFOLD =
+      "You are a rigorous, honest thinking partner for a social-enterprise incubator. PRESSURE-TEST the concept below — challenge the THINKING, not the grammar or style. Tie every point to the actual text or numbers (quote a few words). No flattery, no score, do NOT rewrite.\n\n" +
+      "Use these proven lenses:\n" +
+      "- DISCONFIRMATION (most important): Inversion — the strongest case AGAINST the idea / how it fails. Falsifiability — what observable evidence would prove it WRONG? If nothing could, it's too vague.\n" +
+      "- EVIDENCE (Poor Economics): outcomes vs outputs — is the impact a real outcome or just activity? Beware vanity metrics and assuming good intentions = results. Has anything like this been field-tested? Watch ideology / ignorance / inertia in the design.\n" +
+      "- REASONING (mental models): causation vs correlation; second-order effects (then what? unintended consequences); map ≠ territory (where the plan meets messy reality); base rates (how often do similar efforts actually work?).\n" +
+      "- SYSTEMS (Meadows): intervening at a weak leverage point (tweaking numbers) vs a strong one (goals, rules, who decides, mindset)? Any system traps — policy resistance, dependence, fixes that fail, drift?\n" +
+      "- NUMBERS (only if a table/sheet is present): do they add up (totals, consistency)? do they support the claim — realistic assumptions, cost per REAL outcome?\n\n" +
+      "LEAD WITH ONE LINE — `Start here:` the single highest-leverage problem to fix first (so a busy/ADHD reader gets the one thing that matters before anything else).\n" +
+      "Then these sections, each 1–3 short concrete bullets (skip any with nothing real to say). Keep it scannable — short bullets, no padding:\n" +
+      "**Strongest case against**\n**Hidden assumptions**\n**What would disprove this**\n**Systems blind spots**\n**Numbers check**\n**Lenses applied** (name the 2–4 models most relevant here)\n\n---\n";
+
+    async function runPressureTest() {
+      const text = aiCleanMarkers(view.state.sliceDoc(0, view.state.doc.length)).trim();
+      document.getElementById("aiTitle").textContent = "Pressure-test — your thinking";
+      document.getElementById("aiSrc").textContent = "Level 2 · challenging the idea · " + (aiModel || "no model");
+      renderModelPicker();
+      const body = document.getElementById("aiBody"), foot = document.getElementById("aiFoot"), tasksEl = document.getElementById("aiTasks");
+      foot.innerHTML = ""; tasksEl.innerHTML = "";
+      if (!text) { body.classList.add("placeholder"); body.textContent = "Nothing to pressure-test yet — write or import a concept first."; openAIPanel(); return; }
+      if (!aiAvailable()) {
+        body.classList.add("placeholder");
+        body.textContent = "No model connected. Connect a cloud model (Claude via Anthropic or OpenRouter — recommended for this), or start the Ollama app for a local model.";
+        foot.appendChild(aiMkBtn("Connect cloud AI", setCloudKey, "accent"));
+        foot.appendChild(aiMkBtn("↻ Retry local", () => initAI().then(() => aiAvailable() && runPressureTest())));
+        openAIPanel(); return;
+      }
+      openAIPanel(); body.classList.add("placeholder"); body.textContent = "Pressure-testing…";
+      aiBusy = true; setAIIndicator("busy");
+      if (aiAbort) { try { aiAbort.abort(); } catch {} }
+      aiAbort = new AbortController();
+      try {
+        body.classList.remove("placeholder"); body.textContent = "";
+        const res = await aiStream(COACH_STANCE + L2_SCAFFOLD + text, (acc) => { body.textContent = acc; body.scrollTop = body.scrollHeight; }, aiAbort.signal, { temperature: 0.4 });
+        body.innerHTML = escapeHtml(res).replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>").replace(/\n/g, "<br>"); // light markdown render for **bold** headings
+        foot.appendChild(aiMkBtn("Redo", runPressureTest));
+      } catch (e) {
+        if (e.name !== "AbortError") { body.classList.add("placeholder"); body.textContent = "Couldn't run it: " + (e.message || e); }
+      } finally { aiBusy = false; aiAbort = null; setAIIndicator(aiReady ? "ready" : "off"); }
+    }
+    // L1 "Brain-dump" completeness — infer the doc type and flag what a strong version of it would still need. Suggest-only, scales to the type.
+    const L1_SCAFFOLD =
+      "You are helping an author at the brain-dump stage. FIRST infer the document type from the text (e.g. casual note / journal, email or team message, grant proposal, business one-pager, research / impact / M&E report). THEN, for a strong version of THAT type, list the components it usually has and mark each Present or MISSING.\n" +
+      "Scale to the type: a journal or quick email may have nothing missing — say so plainly; don't impose proposal structure on casual writing.\n" +
+      "For each MISSING piece: one line on why it matters, plus a short placeholder the author could drop in (e.g. a `## Budget` heading with a one-line TODO).\n" +
+      "ALSO judge whether the content is reasonably ORGANIZED for that type (related things grouped, sensible order). Only flag a problem if it's genuinely muddled — a short note or an already-structured draft is fine; don't force structure.\n" +
+      "Keep it scannable. No score. Do NOT rewrite the text. Sections:\n" +
+      "**Looks like:** <the document type>\n**Has:** <short list of what's present>\n**Missing:** <each: why it matters + a placeholder to add — or 'nothing major' for casual writing>\n**Order:** <one line — 'reads in a sensible order' OR what's out of order / ungrouped>\n" +
+      "Then output one line: exactly one of `ORGANIZE: YES` (only if reorganizing into sections would clearly help) or `ORGANIZE: NO`.\n" +
+      "Finally, on the LAST line, output the missing pieces as a JSON array of ready-to-drop placeholders, each `{\"todo\":\"short gap to fill\",\"why\":\"one-line reason it matters\"}` — write both in plain, considerate language so they need no further editing; empty array `[]` for casual writing with nothing major. Format: `GAPS: [...]`\n\n---\n";
+    // ---------- L1 "Trim" — suggest cuts (info-overload guard), preview as strike-through, remove on confirm ----------
+    const TRIM_SCAFFOLD =
+      "You are a sharp editor helping cut bloat so a busy reader isn't overloaded. FIRST infer the document type. Then find passages that DON'T pull their weight for THAT type: redundancy (restates what's already said), filler / throat-clearing, tangents that don't serve the main point, and low-value detail.\n" +
+      "Aggressiveness BY TYPE: be CONSERVATIVE on a story, journal, or personal / creative piece — a lyrical aside or deliberate repetition may BE the point; only flag clear duplication there. Be more willing to cut on a proposal, email, report, or business writing.\n" +
+      "RULES:\n- Suggest CUTS only — do NOT rewrite, reword, summarize, or merge. Each cut is a verbatim span to delete.\n- Quote the span to cut EXACTLY as it appears (so it can be found in the text), trimmed to the smallest sensible removable unit — a sentence or clause, not a whole section unless it's all genuinely cuttable.\n- Lead with the single highest-value cut first.\n- Never touch a line containing ⟦draw:…⟧ or ⟦sheet:…⟧.\n- If little or nothing should go, return an empty array — do NOT invent cuts to seem useful.\n- Talk about the text, not the author. The author decides; you can be wrong.\n" +
+      "Output ONLY a JSON array — each item {\"text\":\"exact span to remove\",\"why\":\"one short line: why it doesn't pull its weight\"}. Format: CUTS: [...]\n\n---\n";
+    let trimCands = []; // [{text, why, from, to}]  from=-1 when not locatable
+    function clearTrim() { trimCands = []; try { view.dispatch({ effects: setTrimDecos.of([]) }); } catch {} }
+    function applyTrimStrikes() {
+      const doc = view.state.doc.toString();
+      const claimed = [], ranges = [];
+      for (const c of trimCands) {
+        let from = -1, search = 0;
+        while (true) {                                   // first occurrence not already claimed by another cut
+          const idx = doc.indexOf(c.text, search);
+          if (idx < 0) break;
+          const to = idx + c.text.length;
+          if (!claimed.some(r => idx < r.to && to > r.from)) { from = idx; break; }
+          search = idx + 1;
+        }
+        if (from >= 0) { const to = from + c.text.length; c.from = from; c.to = to; claimed.push({ from, to }); ranges.push({ from, to, why: c.why }); }
+        else c.from = -1;
+      }
+      ranges.sort((a, b) => a.from - b.from);
+      try { view.dispatch({ effects: setTrimDecos.of(ranges) }); } catch {}
+    }
+    function removeTrim(c) {
+      const doc = view.state.doc.toString();
+      let from = c.from, to = c.to;
+      if (from < 0 || doc.slice(from, to) !== c.text) { const idx = doc.indexOf(c.text); if (idx < 0) { toast("Couldn't find it — maybe already edited"); trimCands = trimCands.filter(x => x !== c); applyTrimStrikes(); renderTrimList(); return; } from = idx; to = idx + c.text.length; }
+      if (doc[to] === " ") to++; else if (from > 0 && doc[from - 1] === " ") from--; // avoid a leftover double space
+      view.dispatch({ changes: { from, to, insert: "" } });
+      trimCands = trimCands.filter(x => x !== c); scheduleSave();
+      applyTrimStrikes(); renderTrimList(); toast("Cut");
+    }
+    function keepTrim(c) { trimCands = trimCands.filter(x => x !== c); applyTrimStrikes(); renderTrimList(); }
+    function renderTrimList() {
+      const el = document.getElementById("aiTasks"); el.innerHTML = "";
+      const live = trimCands.filter(c => c.from >= 0);
+      if (!live.length) return;
+      const head = document.createElement("div"); head.className = "ai-tasks-head"; head.textContent = "Cut suggestions (" + live.length + ") — struck through in your text"; el.appendChild(head);
+      const list = document.createElement("div"); list.className = "ai-tasks-list";
+      trimCands.forEach(c => {
+        if (c.from < 0) return;
+        const row = document.createElement("div"); row.className = "ai-task-row";
+        const span = document.createElement("span"); span.style.flex = "1";
+        const q = c.text.length > 90 ? c.text.slice(0, 90) + "…" : c.text;
+        span.innerHTML = '<span style="text-decoration:line-through;color:var(--muted)">' + escapeHtml(q) + "</span>" + (c.why ? '<br><span style="color:var(--muted);font-size:12px">' + escapeHtml(c.why) + "</span>" : "");
+        const btns = document.createElement("span"); btns.style.cssText = "display:flex;gap:4px;flex-shrink:0";
+        btns.append(aiMkBtn("Remove", () => removeTrim(c), "accent"), aiMkBtn("Keep", () => keepTrim(c)));
+        row.appendChild(span); row.appendChild(btns); list.appendChild(row);
+      });
+      el.appendChild(list);
+    }
+    async function runTrim() {
+      const text = aiCleanMarkers(view.state.sliceDoc(0, view.state.doc.length)).trim();
+      document.getElementById("aiTitle").textContent = "Trim — cut what's not pulling its weight";
+      document.getElementById("aiSrc").textContent = "Level 1 · less to read, more impact · " + (aiModel || "no model");
+      renderModelPicker();
+      const body = document.getElementById("aiBody"), foot = document.getElementById("aiFoot"), tasksEl = document.getElementById("aiTasks");
+      foot.innerHTML = ""; tasksEl.innerHTML = ""; clearTrim();
+      if (!text) { body.classList.add("placeholder"); body.textContent = "Nothing here yet — write something first."; openAIPanel(); return; }
+      if (!aiAvailable()) { body.classList.add("placeholder"); body.textContent = "No model connected. Connect a cloud model (Claude via Anthropic or OpenRouter) from the menu."; foot.appendChild(aiMkBtn("Connect cloud AI", setCloudKey, "accent")); openAIPanel(); return; }
+      openAIPanel(); body.classList.add("placeholder"); body.textContent = "Looking for what you could cut…";
+      aiBusy = true; setAIIndicator("busy");
+      if (aiAbort) { try { aiAbort.abort(); } catch {} }
+      aiAbort = new AbortController();
+      try {
+        const res = await aiStream(COACH_STANCE + TRIM_SCAFFOLD + text, () => {}, aiAbort.signal, { temperature: 0.2 });
+        let cuts = []; const cm = res.match(/CUTS:\s*(\[[\s\S]*\])/i) || res.match(/(\[[\s\S]*\])/);
+        if (cm) { try { cuts = JSON.parse(cm[1]).filter(c => c && typeof c.text === "string" && c.text.trim()); } catch {} }
+        body.classList.remove("placeholder");
+        if (!cuts.length) { body.textContent = "Nothing jumps out as cuttable — it reads tight. ✓"; foot.appendChild(aiMkBtn("Redo", runTrim)); return; }
+        trimCands = cuts.map(c => ({ text: c.text, why: c.why || "", from: -1, to: -1 }));
+        applyTrimStrikes();
+        const located = trimCands.filter(c => c.from >= 0).length;
+        if (!located) { body.textContent = "Found some candidates but couldn't locate them in your text — it may have changed. Try Redo."; foot.appendChild(aiMkBtn("Redo", runTrim)); return; }
+        body.innerHTML = "<strong>" + located + " thing" + (located === 1 ? "" : "s") + " you could cut</strong> — shown struck through in your text. Remove the ones you agree with; the idea and your voice are yours.";
+        if (located < trimCands.length) body.innerHTML += '<br><span style="color:var(--muted);font-size:12px">(' + (trimCands.length - located) + " couldn't be located — skipped.)</span>";
+        renderTrimList();
+        foot.appendChild(aiMkBtn("Redo", runTrim));
+      } catch (e) {
+        if (e.name !== "AbortError") { body.classList.add("placeholder"); body.textContent = "Couldn't run it: " + (e.message || e); }
+      } finally { aiBusy = false; aiAbort = null; setAIIndicator(aiReady ? "ready" : "off"); }
+    }
+    // L1 → TODO: render each missing piece as a single opt-in "+ TODO" button (calm — one at a time, never auto-added)
+    function renderGapTodos(gaps) {
+      const el = document.getElementById("aiTasks"); el.innerHTML = "";
+      const head = document.createElement("div"); head.className = "ai-tasks-head";
+      head.textContent = "Drop in as TODO placeholders (" + gaps.length + ")"; el.appendChild(head);
+      const list = document.createElement("div"); list.className = "ai-tasks-list";
+      gaps.forEach(g => {
+        const row = document.createElement("div"); row.className = "ai-task-row";
+        const span = document.createElement("span"); span.style.flex = "1";
+        span.innerHTML = "<strong>" + escapeHtml(g.todo) + "</strong>" + (g.why ? '<br><span style="color:var(--muted);font-size:12px">' + escapeHtml(g.why) + "</span>" : "");
+        const add = aiMkBtn("+ TODO", () => { insertTodoBlock(g.todo, g.why || ""); add.textContent = "✓ added"; add.disabled = true; });
+        row.appendChild(span); row.appendChild(add); list.appendChild(row);
+      });
+      el.appendChild(list);
+    }
+    async function runFindMissing() {
+      const text = aiCleanMarkers(view.state.sliceDoc(0, view.state.doc.length)).trim();
+      document.getElementById("aiTitle").textContent = "What's missing — your draft";
+      document.getElementById("aiSrc").textContent = "Level 1 · completeness for this kind of document · " + (aiModel || "no model");
+      renderModelPicker();
+      const body = document.getElementById("aiBody"), foot = document.getElementById("aiFoot"), tasksEl = document.getElementById("aiTasks");
+      foot.innerHTML = ""; tasksEl.innerHTML = "";
+      if (!text) { body.classList.add("placeholder"); body.textContent = "Nothing here yet — dump some thoughts first."; openAIPanel(); return; }
+      if (!aiAvailable()) {
+        body.classList.add("placeholder");
+        body.textContent = "No model connected. Connect a cloud model (Claude via Anthropic or OpenRouter) from the menu.";
+        foot.appendChild(aiMkBtn("Connect cloud AI", setCloudKey, "accent"));
+        openAIPanel(); return;
+      }
+      openAIPanel(); body.classList.add("placeholder"); body.textContent = "Checking what's missing…";
+      aiBusy = true; setAIIndicator("busy");
+      if (aiAbort) { try { aiAbort.abort(); } catch {} }
+      aiAbort = new AbortController();
+      try {
+        body.classList.remove("placeholder"); body.textContent = "";
+        const stripMeta = s => s.replace(/\n*GAPS:[\s\S]*$/i, "").replace(/\n*ORGANIZE:\s*(YES|NO)[^\n]*$/i, "").trim();
+        const res = await aiStream(COACH_STANCE + L1_SCAFFOLD + text, (acc) => { body.textContent = stripMeta(acc); body.scrollTop = body.scrollHeight; }, aiAbort.signal, { temperature: 0.3 });
+        const needsOrg = /ORGANIZE:\s*YES/i.test(res);
+        const shown = stripMeta(res);
+        body.innerHTML = escapeHtml(shown).replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>").replace(/\n/g, "<br>");
+        // parse the machine list and offer each missing piece as a one-click TODO (opt-in, per item — never a batch dump)
+        let gaps = []; const gm = res.match(/GAPS:\s*(\[[\s\S]*\])/i);
+        if (gm) { try { gaps = JSON.parse(gm[1]).filter(g => g && g.todo); } catch {} }
+        if (gaps.length) renderGapTodos(gaps);
+        if (needsOrg && aiAvailable()) foot.appendChild(aiMkBtn("Organize into sections →", runReorganize, "accent")); // only offered when the check finds an ordering problem
+        foot.appendChild(aiMkBtn("Redo", runFindMissing));
+      } catch (e) {
+        if (e.name !== "AbortError") { body.classList.add("placeholder"); body.textContent = "Couldn't run it: " + (e.message || e); }
+      } finally { aiBusy = false; aiAbort = null; setAIIndicator(aiReady ? "ready" : "off"); }
+    }
+    // L1 "Reorganize into sections" — restructure the author's OWN content under standard headings for the inferred type. Preview → apply on consent; reversible.
+    const REORG_SCAFFOLD =
+      "You are organizing an author's rough draft into a clean structure — NOT editing their writing. FIRST infer the document type (grant funding proposal, business one-pager, program/project plan, research / impact / M&E report, email, or note). THEN reorganize the author's EXISTING content under the standard sections for that type, as markdown `##` headings in a sensible order.\n" +
+      "RULES:\n- Preserve the author's own words — move their text under the right heading. Do NOT rewrite, summarize, paraphrase, add claims, or delete content.\n- Keep any line containing ⟦draw:…⟧ or ⟦sheet:…⟧ EXACTLY as written, on its own line, under the most relevant heading.\n- If a standard section has no content yet, add the heading with a one-line `_[TODO: …]_` placeholder.\n- For a casual note or email, light structure (or none) is fine — don't force proposal sections.\n- Output ONLY the reorganized document in markdown. No preamble, no commentary, no code fences.\n\n---\n";
+    let reorgText = "";
+    function applyReorg() {
+      if (!reorgText) return;
+      view.dispatch({ changes: { from: 0, to: view.state.doc.length, insert: reorgText }, effects: refreshDraw.of(null) });
+      reorgText = ""; toast("Organized — ⌘Z to undo"); closeAIPanel();
+    }
+    async function runReorganize() {
+      const text = view.state.sliceDoc(0, view.state.doc.length).trim(); // RAW — keep ⟦draw⟧/⟦sheet⟧ tokens so they survive the rewrite
+      document.getElementById("aiTitle").textContent = "Organize into sections";
+      document.getElementById("aiSrc").textContent = "Level 1 · a structure for this kind of document · " + (aiModel || "no model");
+      renderModelPicker();
+      const body = document.getElementById("aiBody"), foot = document.getElementById("aiFoot"), tasksEl = document.getElementById("aiTasks");
+      foot.innerHTML = ""; tasksEl.innerHTML = ""; reorgText = "";
+      if (!text) { body.classList.add("placeholder"); body.textContent = "Nothing here yet — dump some thoughts first."; openAIPanel(); return; }
+      if (!aiAvailable()) {
+        body.classList.add("placeholder"); body.textContent = "No model connected. Connect a cloud model (Claude via Anthropic or OpenRouter) from the menu.";
+        foot.appendChild(aiMkBtn("Connect cloud AI", setCloudKey, "accent")); openAIPanel(); return;
+      }
+      openAIPanel(); body.classList.add("placeholder"); body.textContent = "Proposing a structure…";
+      aiBusy = true; setAIIndicator("busy");
+      if (aiAbort) { try { aiAbort.abort(); } catch {} }
+      aiAbort = new AbortController();
+      try {
+        body.classList.remove("placeholder"); body.textContent = "";
+        reorgText = await aiStream(REORG_SCAFFOLD + text, (acc) => { body.textContent = acc; body.scrollTop = body.scrollHeight; }, aiAbort.signal, { temperature: 0.2 });
+        foot.appendChild(aiMkBtn("Apply to note", applyReorg, "accent"));
+        foot.appendChild(aiMkBtn("Redo", runReorganize));
+      } catch (e) {
+        if (e.name !== "AbortError") { body.classList.add("placeholder"); body.textContent = "Couldn't run it: " + (e.message || e); }
+      } finally { aiBusy = false; aiAbort = null; setAIIndicator(aiReady ? "ready" : "off"); }
     }
     async function findTasks(text) {
       const tasksEl = document.getElementById("aiTasks");
-      const r = await fetch(aiUrl + "/api/generate", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ model: aiModel, prompt: "List any to-do items or action items the author needs to do, mentioned in the text. Be conservative — only real tasks, not narrative or description. Return JSON {\"tasks\":[\"short imperative task\", ...]}; empty array if none.\n\n" + text, format: "json", stream: false, options: { temperature: 0 } }) });
+      const r = await fetch(aiUrl + "/api/generate", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ model: aiModel, think: false, prompt: "List any to-do items or action items the author needs to do, mentioned in the text. Be conservative — only real tasks, not narrative or description. Return JSON {\"tasks\":[\"short imperative task\", ...]}; empty array if none.\n\n" + text, format: "json", stream: false, options: { temperature: 0 } }) });
       if (!r.ok) return;
       let tasks = [];
       try { tasks = (JSON.parse((await r.json()).response).tasks || []).filter(t => typeof t === "string" && t.trim()); } catch {}
@@ -3176,15 +3940,139 @@
       }));
     }
     document.getElementById("aiClose").addEventListener("click", closeAIPanel);
+    document.getElementById("aiModelSelect").addEventListener("change", (e) => {
+      aiModel = e.target.value; localStorage.setItem("scribeNext.aiModel", aiModel);
+      if ((isClaude(aiModel) && !claudeKey()) || (isOpenRouter(aiModel) && !orKey())) setCloudKey();
+      setAIIndicator(aiReady ? "ready" : "off"); toast("AI model: " + aiModel);
+    });
     document.getElementById("ai-status").addEventListener("click", () => {
       if (aiBusy) return;
-      if (!aiReady) { initAI().then(() => aiReady ? runProofread("doc") : toast("Ollama not running — start the Ollama app")); return; }
+      if (!aiAvailable()) { initAI().then(() => aiAvailable() ? runProofread("doc") : toast("No model — pick Claude or start Ollama")); return; }
       runProofread("doc");
     });
 
-    // shared streaming generate (used by sentence-simplify in the readability tray)
+    // ---- model routing: cloud (Anthropic direct OR OpenRouter) or Ollama (local) ----
+    function isClaude(m) { return /^claude/i.test(m || ""); }   // Anthropic-direct id, e.g. claude-sonnet-4-6
+    function isOpenRouter(m) { return /\//.test(m || ""); }      // OpenRouter id has a slash, e.g. anthropic/claude-...
+    function claudeKey() { return localStorage.getItem("scribeNext.anthropicKey") || ""; }
+    function orKey() { return localStorage.getItem("scribeNext.openrouterKey") || ""; }
+    function cloudConnected() { return !!claudeKey() || !!orKey(); }
+    const CLAUDE_MODELS = [["claude-sonnet-4-6", "Claude Sonnet 4.6 · Anthropic"], ["claude-opus-4-8", "Claude Opus 4.8 · Anthropic"]];
+    let orModels = []; // [[id,label],...] fetched from OpenRouter when its key is set
+    // one "Connect cloud AI" entry — paste either an Anthropic (sk-ant-…) or OpenRouter (sk-or-…) key; routed by prefix
+    function setCloudKey() {
+      const k = prompt("Paste a cloud AI key — Anthropic (sk-ant-…) or OpenRouter (sk-or-…). Stored locally in THIS browser only. Blank = clear both.", "");
+      if (k === null) return;
+      const key = k.trim();
+      if (!key) { localStorage.removeItem("scribeNext.anthropicKey"); localStorage.removeItem("scribeNext.openrouterKey"); orModels = []; toast("Cloud keys cleared"); renderModelPicker(); return; }
+      if (/^sk-or-/.test(key)) { localStorage.setItem("scribeNext.openrouterKey", key); toast("OpenRouter connected"); initOpenRouter(); }
+      else if (/^sk-ant-/.test(key)) { localStorage.setItem("scribeNext.anthropicKey", key); toast("Anthropic connected"); ensureCloudModel(); renderModelPicker(); setAIIndicator("ready"); }
+      else { toast("Unrecognized key — expected sk-ant-… or sk-or-…"); }
+    }
+    async function initOpenRouter() {
+      const key = orKey(); if (!key) { orModels = []; renderModelPicker(); return; }
+      try {
+        const r = await fetch("https://openrouter.ai/api/v1/models", { headers: { Authorization: "Bearer " + key } });
+        if (!r.ok) throw new Error("models " + r.status);
+        const data = (await r.json()).data || [];
+        const claude = data.filter(m => /claude/i.test(m.id)).slice(0, 8); // short list (ADHD) — Claude focus
+        orModels = (claude.length ? claude : data.slice(0, 8)).map(m => [m.id, (m.name || m.id) + " · OpenRouter"]);
+      } catch (e) { console.warn("openrouter models", e); orModels = []; }
+      ensureCloudModel(); renderModelPicker(); setAIIndicator(cloudConnected() ? "ready" : "off");
+    }
+    function aiAvailable() { // cloud-only for now (local hidden) — re-add `aiReady ||` to re-enable local
+      return (isOpenRouter(aiModel) && !!orKey()) || (isClaude(aiModel) && !!claudeKey());
+    }
+    function defaultCloudModel() { return claudeKey() ? "claude-sonnet-4-6" : (orModels[0] ? orModels[0][0] : ""); }
+    function ensureCloudModel() { // if a stale/local model is selected but cloud is connected, switch to a cloud default
+      if (cloudConnected() && !isClaude(aiModel) && !isOpenRouter(aiModel)) {
+        const m = defaultCloudModel(); if (m) { aiModel = m; localStorage.setItem("scribeNext.aiModel", aiModel); }
+      }
+    }
+    // lightweight usage tracking — measure the "heavy lifting" before any local-offload decision (server-side per-user later)
+    function recordUsage(model, inTok, outTok) {
+      try {
+        const u = JSON.parse(localStorage.getItem("scribeNext.usage") || "{}");
+        u.requests = (u.requests || 0) + 1; u.inTok = (u.inTok || 0) + (inTok || 0); u.outTok = (u.outTok || 0) + (outTok || 0);
+        u.byModel = u.byModel || {}; const b = u.byModel[model] || { req: 0, in: 0, out: 0 };
+        b.req++; b.in += inTok || 0; b.out += outTok || 0; u.byModel[model] = b;
+        localStorage.setItem("scribeNext.usage", JSON.stringify(u));
+      } catch {}
+    }
+    function usageSummary() {
+      let u; try { u = JSON.parse(localStorage.getItem("scribeNext.usage") || "{}"); } catch { u = {}; }
+      if (!u.requests) return "No AI usage tracked yet.";
+      let s = "Usage so far\n" + u.requests + " requests · ~" + (u.inTok || 0).toLocaleString() + " input / ~" + (u.outTok || 0).toLocaleString() + " output tokens\n";
+      for (const [m, b] of Object.entries(u.byModel || {})) s += "\n" + m + " — " + b.req + " req, ~" + b.in + " in / ~" + b.out + " out";
+      return s;
+    }
+    // Anthropic Messages API, browser-direct — single-user validation only (key never leaves this browser)
+    async function claudeStream(prompt, onToken, signal, options) {
+      const key = claudeKey();
+      if (!key) throw new Error("No Claude key — set it via menu → Connect Claude");
+      const body = { model: aiModel, max_tokens: 2048, stream: true, messages: [{ role: "user", content: prompt }] };
+      if (options && options.temperature != null) body.temperature = options.temperature;
+      const r = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST", signal,
+        headers: { "content-type": "application/json", "x-api-key": key, "anthropic-version": "2023-06-01", "anthropic-dangerous-direct-browser-access": "true" },
+        body: JSON.stringify(body),
+      });
+      if (!r.ok || !r.body) { let m = ""; try { m = (await r.json()).error?.message || ""; } catch {} throw new Error("Claude " + r.status + (m ? ": " + m : "")); }
+      const reader = r.body.getReader(), dec = new TextDecoder(); let buf = "", acc = "", inTok = 0, outTok = 0;
+      while (true) {
+        const { done, value } = await reader.read(); if (done) break;
+        buf += dec.decode(value, { stream: true });
+        let nl;
+        while ((nl = buf.indexOf("\n")) >= 0) {
+          const line = buf.slice(0, nl).trim(); buf = buf.slice(nl + 1);
+          if (!line.startsWith("data:")) continue;
+          const data = line.slice(5).trim(); if (!data || data === "[DONE]") continue;
+          try {
+            const j = JSON.parse(data);
+            if (j.type === "message_start") inTok = (j.message && j.message.usage && j.message.usage.input_tokens) || inTok;
+            else if (j.type === "message_delta") outTok = (j.usage && j.usage.output_tokens) || outTok;
+            else if (j.type === "content_block_delta" && j.delta && j.delta.type === "text_delta") { acc += j.delta.text; onToken(acc); }
+          } catch {}
+        }
+      }
+      recordUsage(aiModel, inTok || Math.round(prompt.length / 4), outTok || Math.round(acc.length / 4));
+      return acc.trim();
+    }
+    // OpenRouter — OpenAI-compatible Chat Completions, browser-direct (single-user validation only)
+    async function openrouterStream(prompt, onToken, signal, options) {
+      const key = orKey(); if (!key) throw new Error("No OpenRouter key");
+      const body = { model: aiModel, messages: [{ role: "user", content: prompt }], stream: true, stream_options: { include_usage: true } };
+      if (options && options.temperature != null) body.temperature = options.temperature;
+      const r = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+        method: "POST", signal,
+        headers: { "content-type": "application/json", "Authorization": "Bearer " + key, "HTTP-Referer": "https://scribe.app", "X-Title": "Scribe" },
+        body: JSON.stringify(body),
+      });
+      if (!r.ok || !r.body) { let m = ""; try { m = (await r.json()).error?.message || ""; } catch {} throw new Error("OpenRouter " + r.status + (m ? ": " + m : "")); }
+      const reader = r.body.getReader(), dec = new TextDecoder(); let buf = "", acc = "", inTok = 0, outTok = 0;
+      while (true) {
+        const { done, value } = await reader.read(); if (done) break;
+        buf += dec.decode(value, { stream: true });
+        let nl;
+        while ((nl = buf.indexOf("\n")) >= 0) {
+          const line = buf.slice(0, nl).trim(); buf = buf.slice(nl + 1);
+          if (!line.startsWith("data:")) continue;
+          const data = line.slice(5).trim(); if (!data || data === "[DONE]") continue;
+          try {
+            const j = JSON.parse(data);
+            if (j.usage) { inTok = j.usage.prompt_tokens || inTok; outTok = j.usage.completion_tokens || outTok; }
+            const t = j.choices && j.choices[0] && j.choices[0].delta && j.choices[0].delta.content; if (t) { acc += t; onToken(acc); }
+          } catch {}
+        }
+      }
+      recordUsage(aiModel, inTok || Math.round(prompt.length / 4), outTok || Math.round(acc.length / 4));
+      return acc.trim();
+    }
+    // shared streaming generate — routes OpenRouter / Anthropic (cloud) vs Ollama (local) by selected model
     async function aiStream(prompt, onToken, signal, options) {
-      const r = await fetch(aiUrl + "/api/generate", { method: "POST", headers: { "Content-Type": "application/json" }, signal, body: JSON.stringify({ model: aiModel, prompt, stream: true, options: options || {} }) });
+      if (isOpenRouter(aiModel)) return openrouterStream(prompt, onToken, signal, options);
+      if (isClaude(aiModel)) return claudeStream(prompt, onToken, signal, options);
+      const r = await fetch(aiUrl + "/api/generate", { method: "POST", headers: { "Content-Type": "application/json" }, signal, body: JSON.stringify({ model: aiModel, think: false, prompt, stream: true, options: options || {} }) });
       if (!r.ok || !r.body) throw new Error("generate " + r.status);
       const reader = r.body.getReader(), dec = new TextDecoder(); let buf = "", acc = "";
       while (true) {
@@ -3220,7 +4108,8 @@
           view.dispatch({ changes: { from: h.from, to: h.to, insert: suggestion } });
           toast("Sentence simplified"); computeReadability(); // re-renders the tray with fresh positions
         }); use.className = "use";
-        actions.append(use, aiMkBtn("✕", () => { fix.remove(); btn.disabled = false; }));
+        const dismiss = aiMkBtn("", () => { fix.remove(); btn.disabled = false; }); dismiss.innerHTML = ICO('x'); dismiss.title = "Dismiss";
+        actions.append(use, dismiss);
         fix.appendChild(actions);
       } catch (e) {
         if (e.name !== "AbortError") { out.classList.remove("thinking"); out.textContent = "Couldn't simplify — " + (e.message || e); }
@@ -3284,7 +4173,7 @@
       if (!supabase) {
         const p = document.createElement("div"); p.className = "am-label";
         p.textContent = "Cloud sync couldn't load" + (supabaseInitError ? " — " + supabaseInitError : "") + ". Scribe keeps working locally.";
-        const retry = document.createElement("button"); retry.textContent = "↻ Retry";
+        const retry = document.createElement("button"); retry.textContent = "Retry";
         retry.addEventListener("click", async () => { retry.disabled = true; retry.textContent = "Loading…"; await initSupabase(); closeAccountMenu(); openAccountMenu(); });
         el.append(p, retry);
       } else if (authUser) {
@@ -3353,7 +4242,7 @@
           const { data, error } = await supabase.from("documents").insert({ name, content }).select("id").single();
           if (error) throw error; setCloudId(data.id);
         }
-        cloudDirty = false; renderAccount(); toast("Saved to cloud ☁");
+        cloudDirty = false; renderAccount(); toast("Saved to cloud");
       } catch (e) { toast("Cloud save failed: " + (e.message || e)); }
     }
     function openCloudPanel() { document.getElementById("cloudPanel").classList.add("show"); }
@@ -3409,7 +4298,7 @@
       const list = document.getElementById("cloudList"); list.innerHTML = "";
       const q = (query || "").trim().toLowerCase();
       const empty = (txt) => { const li = document.createElement("li"); li.className = "cl-empty"; li.textContent = txt; list.appendChild(li); };
-      if (!cloudDocsCache.length) return empty("No cloud notes yet. Use “Save to cloud” in the 🐱 menu to add one.");
+      if (!cloudDocsCache.length) return empty("No cloud notes yet. Use “Save to cloud” in the menu to add one.");
       let docs = cloudDocsCache;
       if (cloudTagFilter) docs = docs.filter(d => Array.isArray(d.tags) && d.tags.includes(cloudTagFilter));
       if (q) docs = docs.filter(d => (d.name || "").toLowerCase().includes(q) || cleanBody(d.body).toLowerCase().includes(q));
@@ -3422,7 +4311,7 @@
         main.append(nm, dt);
         if (q) { const snip = matchSnippet(cleanBody(d.body), q); if (snip) main.appendChild(snip); }
         main.addEventListener("click", () => loadCloudDoc(d.id, d.name));
-        const del = document.createElement("button"); del.className = "cl-del"; del.innerHTML = "&#10005;"; del.title = "Delete from cloud";
+        const del = document.createElement("button"); del.className = "cl-del"; del.innerHTML = ICO('x'); del.title = "Delete from cloud";
         del.addEventListener("click", (e) => { e.stopPropagation(); deleteCloudDoc(d.id); });
         li.append(main, del); list.appendChild(li);
       }
@@ -3438,7 +4327,7 @@
         setCloudId(id); curName = catName(data.name || name || "untitled");
         document.getElementById("filename").textContent = curName; fileHandle = null; setDirty(false);
         try { localStorage.setItem(LS_KEY, JSON.stringify(serialize())); } catch {}
-        cloudDirty = false; renderAccount(); closeCloudPanel(); toast("Opened " + curName + " ☁");
+        cloudDirty = false; renderAccount(); closeCloudPanel(); toast("Opened " + curName);
       } catch (e) { toast("Couldn't open: " + (e.message || e)); }
     }
     async function deleteCloudDoc(id) {
@@ -3473,7 +4362,7 @@
       const tags = document.createElement("div"); tags.className = "tm-tags";
       for (const t of docTags) {
         const chip = document.createElement("span"); chip.className = "tag-chip"; chip.append("#" + t);
-        const x = document.createElement("button"); x.textContent = "✕"; x.title = "Remove";
+        const x = document.createElement("button"); x.innerHTML = ICO('x'); x.title = "Remove";
         x.addEventListener("click", () => { removeDocTag(t); renderTagMenu(suggested); });
         chip.appendChild(x); tags.appendChild(chip);
       }
@@ -3485,7 +4374,7 @@
       add.addEventListener("click", doAdd);
       input.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); doAdd(); } e.stopPropagation(); });
       row.append(input, add); el.appendChild(row);
-      if (aiReady) { const sug = document.createElement("button"); sug.className = "tm-suggest"; sug.textContent = "✦ Suggest tags"; sug.addEventListener("click", () => suggestTagsAI(sug)); el.appendChild(sug); }
+      if (aiReady) { const sug = document.createElement("button"); sug.className = "tm-suggest"; sug.innerHTML = ICO('sparkles') + " Suggest tags"; sug.addEventListener("click", () => suggestTagsAI(sug)); el.appendChild(sug); }
       const fresh = (suggested || []).filter(t => !docTags.includes(t));
       if (fresh.length) {
         const wrap = document.createElement("div"); wrap.className = "tm-suggested";
@@ -3508,10 +4397,10 @@
         if (!r.ok) throw new Error("generate " + r.status);
         let tags = []; try { tags = (JSON.parse((await r.json()).response).tags || []).map(normTag).filter(Boolean); } catch {}
         tags = [...new Set(tags)].filter(t => !docTags.includes(t)).slice(0, 6);
-        btn.disabled = false; btn.textContent = "✦ Suggest tags";
+        btn.disabled = false; btn.innerHTML = ICO('sparkles') + " Suggest tags";
         if (!tags.length) { toast("No new tags suggested"); return; }
         renderTagMenu(tags);
-      } catch (e) { btn.disabled = false; btn.textContent = "✦ Suggest tags"; toast("Suggest failed: " + (e.message || e)); }
+      } catch (e) { btn.disabled = false; btn.innerHTML = ICO('sparkles') + " Suggest tags"; toast("Suggest failed: " + (e.message || e)); }
     }
     document.getElementById("btn-tags").addEventListener("click", () => { document.getElementById("tagMenu").classList.contains("show") ? closeTagMenu() : openTagMenu(); });
 
@@ -3550,7 +4439,7 @@
           if (!l) { local[nick] = snip; changed = true; }
           else if ((snip.last || snip.created || 0) > (l.last || l.created || 0)) { local[nick] = snip; changed = true; }
         }
-        if (changed) { try { localStorage.setItem(SNIP_KEY, JSON.stringify(local)); } catch {} if (typeof snipPanelOpen !== "undefined" && snipPanelOpen && typeof renderSnipPanel === "function") renderSnipPanel(); }
+        if (changed) { try { localStorage.setItem(SNIP_KEY, JSON.stringify(local)); } catch {} if (document.getElementById("snipPanel")?.classList.contains("show") && typeof renderSnipPanel === "function") renderSnipPanel(); }
       }
       pushUserData(); // converge the cloud copy (seed it if empty, add anything local had)
     }
@@ -3564,6 +4453,8 @@
     if (roomyOn()) document.body.classList.add("roomy");
     initGrammar();
     initAI();
+    initOpenRouter(); // populate cloud models if an OpenRouter key is already saved
+    ensureCloudModel(); renderModelPicker(); // cloud-only: default to a cloud model + render picker even if Ollama is down
     initSupabase();
     initPostHog();
     computeReadability();
@@ -3591,7 +4482,7 @@
     });
     // Update awareness: compare the running build against the published one, show the banner when newer.
     (function () {
-      const APP_BUILD = "e66460451345"; // replaced with the build hash at deploy; stays the token on local file://
+      const APP_BUILD = "d4df9eea9e68"; // replaced with the build hash at deploy; stays the token on local file://
       window.SCRIBE_BUILD = (APP_BUILD === "__" + "BUILD__") ? "local" : APP_BUILD; // exposed for About
       if (APP_BUILD === "__" + "BUILD__") return; // not deployed (local/dev) → no auto update checks
       let notified = false;

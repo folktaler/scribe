@@ -2,7 +2,7 @@
    First load must be online (to populate the cache); after that the app + its
    CDN dependencies (CodeMirror, Excalidraw, Harper, marked, Tesseract, fonts)
    work fully offline. Bump CACHE to ship an update. */
-const CACHE = "scribe-v3";
+const CACHE = "scribe-v4";
 const SHELL = ["scribe-next.html", "manifest.webmanifest", "scribe-icon.svg"];
 
 self.addEventListener("install", (e) => {
@@ -26,6 +26,13 @@ self.addEventListener("fetch", (e) => {
   if (url.hostname.endsWith("supabase.co") || url.hostname.endsWith("posthog.com")) return;
 
   if (url.origin === location.origin) {
+    // Only ever manage Scribe's OWN files. On a shared localhost the toolkit serves
+    // sibling apps (tribe.html, index.html, …) from the same origin — caching those here
+    // made Scribe's SW serve other apps a STALE copy. Leave everything that isn't Scribe's
+    // straight to the network.
+    const p = url.pathname;
+    const mine = p.endsWith("scribe-next.html") || p.endsWith("scribe-icon.svg") || p.endsWith("manifest.webmanifest");
+    if (!mine) return;
     // App shell: network-first so updates land, fall back to cache offline.
     e.respondWith(
       fetch(req)
